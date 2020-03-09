@@ -9,7 +9,7 @@ Camera::Camera()
 {
 	//functional
 	m_movespeed = 0.30;
-	m_camRotRate = 0.03;
+	m_camRotRate = 0.01;
 
 	//camera
 	m_camPosition.x = 0.0f;
@@ -52,36 +52,45 @@ Camera::~Camera()
 
 DirectX::SimpleMath::Matrix Camera::Update(InputCommands _InputCommands)
 {
-	//TODO  any more complex than this, and the camera should be abstracted out to somewhere else
-	//camera motion is on a plane, so kill the 7 component of the look direction
-	Vector3 planarMotionVector = m_camLookDirection;
-	planarMotionVector.y = 0.0;
-
 	if (_InputCommands.rotRight)
 	{
-		m_camOrientation.y -= m_camRotRate ;
+		m_camOrientation.y -= m_camRotRate * _InputCommands.camRotate ;
 	}
 	if (_InputCommands.rotLeft)
 	{
-		m_camOrientation.y += m_camRotRate;
+		m_camOrientation.y += m_camRotRate * _InputCommands.camRotate;
 	}
 	if (_InputCommands.rotUp)
 	{
-		m_camOrientation.z += m_camRotRate;
+		m_camOrientation.z += m_camRotRate * _InputCommands.camRotate;
 	}
 	if (_InputCommands.rotDown)
 	{
-		m_camOrientation.z -= m_camRotRate;
+		m_camOrientation.z -= m_camRotRate * _InputCommands.camRotate;
+	}
+	if (_InputCommands.rollRight)
+	{
+		m_camOrientation.x -= m_camRotRate;
+	}
+	if (_InputCommands.rollLeft)
+	{
+		m_camOrientation.x -= m_camRotRate;
 	}
 
 	m_camLookDirection.x *= 3.1415 / 180;
 	m_camLookDirection.y *= 3.1415 / 180;
 	m_camLookDirection.z *= 3.1415 / 180;
 
+	if (m_camLookDirection.z < 1000)
+	{
+		m_camLookDirection.z = 50;
+	}
+
 	m_camLookDirection.x = sin(m_camOrientation.y) * cos(m_camOrientation.z);
-	m_camLookDirection.y = sin(m_camOrientation.z);
+	m_camLookDirection.y = sin(m_camOrientation.z);// *  cos(m_camOrientation.y);
 	m_camLookDirection.z = cos(m_camOrientation.y) * cos(m_camOrientation.z);
 	m_camLookDirection.Normalize();
+
 
 	//create right vector from look Direction
 	m_camLookDirection.Cross(Vector3::UnitY, m_camRight);

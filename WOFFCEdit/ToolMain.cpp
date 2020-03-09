@@ -281,6 +281,8 @@ void ToolMain::onActionSaveTerrain()
 
 void ToolMain::Tick(MSG *msg)
 {
+	
+
 	//do we have a selection
 	//do we have a mode
 	//are we clicking / dragging /releasing
@@ -291,11 +293,19 @@ void ToolMain::Tick(MSG *msg)
 
 	//Renderer Update Call
 	m_d3dRenderer.Tick(&m_toolInputCommands);
+
+	if (mouseMoved == true)
+	{
+		m_toolInputCommands.rotUp = false;
+		m_toolInputCommands.rotDown = false;
+		m_toolInputCommands.rotLeft = false;
+		m_toolInputCommands.rotRight = false;
+	}
+	mouseMoved = false;
 }
 
 void ToolMain::UpdateInput(MSG * msg)
 {
-
 	switch (msg->message)
 	{
 		//Global inputs,  mouse position and keys etc
@@ -308,13 +318,14 @@ void ToolMain::UpdateInput(MSG * msg)
 		break;
 
 	case WM_MOUSEMOVE:
+		mouseMoved = true;
 		mouse_x = GET_X_LPARAM(msg->lParam);
 		mouse_y = GET_Y_LPARAM(msg->lParam);
 		break;
 
 	case WM_LBUTTONDOWN:	//mouse button down,  you will probably need to check when its up too
 		//set some flag for the mouse button in inputcommands
-		
+
 		break;
 
 	case WM_LBUTTONUP:	//mouse button up,  you will probably need to check when its up too
@@ -330,7 +341,7 @@ void ToolMain::UpdateInput(MSG * msg)
 		m_toolInputCommands.forward = true;
 	}
 	else m_toolInputCommands.forward = false;
-	
+
 	if (m_keyArray['S'])
 	{
 		m_toolInputCommands.back = true;
@@ -364,15 +375,15 @@ void ToolMain::UpdateInput(MSG * msg)
 	//rotation
 	if (m_keyArray['L'])
 	{
-		m_toolInputCommands.rotRight = true;
+		m_toolInputCommands.rollRight = true;
 	}
-	else m_toolInputCommands.rotRight = false;
+	else m_toolInputCommands.rollRight = false;
 
 	if (m_keyArray['J'])
 	{
-		m_toolInputCommands.rotLeft = true;
+		m_toolInputCommands.rollLeft = true;
 	}
-	else m_toolInputCommands.rotLeft = false;
+	else m_toolInputCommands.rollLeft = false;
 
 	if (m_keyArray['I'])
 	{
@@ -387,30 +398,44 @@ void ToolMain::UpdateInput(MSG * msg)
 	else m_toolInputCommands.rotDown = false;
 
 	//Mouse controls
-	if (mouse_x - prev_mouse_x > 0)
+	////Minimum input before active
+	if (std::abs(mouse_x - prev_mouse_x) > 0.1 || std::abs(mouse_y - prev_mouse_y) > 0.1)
 	{
-		m_toolInputCommands.rotRight = true;
-	}
-	else m_toolInputCommands.rotRight = false;
 
-	if (mouse_x - prev_mouse_x < 0)
-	{
-		m_toolInputCommands.rotLeft = true;
-	}
-	else  m_toolInputCommands.rotLeft = false;
+		std::vector<int> rotate{ 0, 0 };
+		if (mouse_x - prev_mouse_x > 0)
+		{
+			m_toolInputCommands.rotRight = true;
+			rotate[0] = std::abs(mouse_x - prev_mouse_x);
+		}
+		else m_toolInputCommands.rotRight = false;
 
-	if (mouse_y - prev_mouse_y < 0)
-	{
-		m_toolInputCommands.rotUp = true;
-	}
-	else m_toolInputCommands.rotUp = false;
+		if (mouse_x - prev_mouse_x < 0)
+		{
+			m_toolInputCommands.rotLeft = true;
+			rotate[0] = std::abs(mouse_x - prev_mouse_x);
+		}
+		else  m_toolInputCommands.rotLeft = false;
 
-	if (mouse_y - prev_mouse_y > 0)
-	{
-		m_toolInputCommands.rotDown = true;
-	}
-	else m_toolInputCommands.rotDown = false;
+		if (mouse_y - prev_mouse_y < 0)
+		{
+			m_toolInputCommands.rotUp = true;
+			rotate[1] = std::abs(mouse_y - prev_mouse_y);
+		}
+		else m_toolInputCommands.rotUp = false;
 
+		if (mouse_y - prev_mouse_y > 0)
+		{
+			m_toolInputCommands.rotDown = true;
+			rotate[1] = std::abs(mouse_y - prev_mouse_y);
+		}
+		else m_toolInputCommands.rotDown = false;
+
+		m_toolInputCommands.camRotate = std::sqrt((rotate[0] * rotate[0]) + (rotate[1] * rotate[1]));
+	}	
 	prev_mouse_x = mouse_x;
 	prev_mouse_y = mouse_y;
+
+	m_toolInputCommands.m_x = mouse_x;
+	m_toolInputCommands.m_y = mouse_y;
 }

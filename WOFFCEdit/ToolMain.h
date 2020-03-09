@@ -45,11 +45,11 @@ private:	//variables
 	sqlite3 *m_databaseConnection;	//sqldatabase handle
 
 	//Mouse pos
-	int mouse_x;
-	int mouse_y;
-
-	int prev_mouse_x;
-	int prev_mouse_y;
+	bool	mouseMoved = false;
+	float	mouse_x;
+	float	mouse_y;
+	float	prev_mouse_x;
+	float	prev_mouse_y;
 
 	int m_width;		//dimensions passed to directX
 	int m_height;
