@@ -77,14 +77,18 @@ DirectX::SimpleMath::Matrix Camera::Update(InputCommands _InputCommands)
 		m_camOrientation.x -= m_camRotRate;
 	}
 
+	if (m_camOrientation.z < -1.5608)
+	{
+		m_camOrientation.z = -1.5508;
+	}
+	if (m_camOrientation.z > 1.5608)
+	{
+		m_camOrientation.z = 1.5508;
+	}
+
 	m_camLookDirection.x *= 3.1415 / 180;
 	m_camLookDirection.y *= 3.1415 / 180;
 	m_camLookDirection.z *= 3.1415 / 180;
-
-	if (m_camLookDirection.z < 1000)
-	{
-		m_camLookDirection.z = 50;
-	}
 
 	m_camLookDirection.x = sin(m_camOrientation.y) * cos(m_camOrientation.z);
 	m_camLookDirection.y = sin(m_camOrientation.z);// *  cos(m_camOrientation.y);
