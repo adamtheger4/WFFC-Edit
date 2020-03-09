@@ -7,7 +7,7 @@
 //ToolMain Class
 ToolMain::ToolMain()
 {
-
+	
 	m_currentChunk = 0;		//default value
 	m_selectedObject = 0;	//initial selection ID
 	m_sceneGraph.clear();	//clear the vector for the scenegraph
@@ -18,7 +18,10 @@ ToolMain::ToolMain()
 	m_toolInputCommands.back		= false;
 	m_toolInputCommands.left		= false;
 	m_toolInputCommands.right		= false;
-	
+	m_toolInputCommands.up			= false;
+	m_toolInputCommands.down		= false;
+	m_toolInputCommands.rotRight	= false;
+	m_toolInputCommands.rotLeft		= false;
 }
 
 
@@ -30,7 +33,6 @@ ToolMain::~ToolMain()
 
 int ToolMain::getCurrentSelectionID()
 {
-
 	return m_selectedObject;
 }
 
@@ -306,13 +308,21 @@ void ToolMain::UpdateInput(MSG * msg)
 		break;
 
 	case WM_MOUSEMOVE:
+		mouse_x = GET_X_LPARAM(msg->lParam);
+		mouse_y = GET_Y_LPARAM(msg->lParam);
 		break;
 
 	case WM_LBUTTONDOWN:	//mouse button down,  you will probably need to check when its up too
 		//set some flag for the mouse button in inputcommands
+		
+		break;
+
+	case WM_LBUTTONUP:	//mouse button up,  you will probably need to check when its up too
+	//set some flag for the mouse button in inputcommands
 		break;
 
 	}
+
 	//here we update all the actual app functionality that we want.  This information will either be used int toolmain, or sent down to the renderer (Camera movement etc
 	//WASD movement
 	if (m_keyArray['W'])
@@ -326,6 +336,7 @@ void ToolMain::UpdateInput(MSG * msg)
 		m_toolInputCommands.back = true;
 	}
 	else m_toolInputCommands.back = false;
+
 	if (m_keyArray['A'])
 	{
 		m_toolInputCommands.left = true;
@@ -337,17 +348,69 @@ void ToolMain::UpdateInput(MSG * msg)
 		m_toolInputCommands.right = true;
 	}
 	else m_toolInputCommands.right = false;
-	//rotation
+
 	if (m_keyArray['E'])
+	{
+		m_toolInputCommands.up = true;
+	}
+	else m_toolInputCommands.up = false;
+
+	if (m_keyArray['Q'])
+	{
+		m_toolInputCommands.down = true;
+	}
+	else m_toolInputCommands.down = false;
+
+	//rotation
+	if (m_keyArray['L'])
 	{
 		m_toolInputCommands.rotRight = true;
 	}
 	else m_toolInputCommands.rotRight = false;
-	if (m_keyArray['Q'])
+
+	if (m_keyArray['J'])
 	{
 		m_toolInputCommands.rotLeft = true;
 	}
 	else m_toolInputCommands.rotLeft = false;
 
-	//WASD
+	if (m_keyArray['I'])
+	{
+		m_toolInputCommands.rotUp = true;
+	}
+	else m_toolInputCommands.rotUp = false;
+
+	if (m_keyArray['K'])
+	{
+		m_toolInputCommands.rotDown = true;
+	}
+	else m_toolInputCommands.rotDown = false;
+
+	//Mouse controls
+	if (mouse_x - prev_mouse_x > 0)
+	{
+		m_toolInputCommands.rotRight = true;
+	}
+	else m_toolInputCommands.rotRight = false;
+
+	if (mouse_x - prev_mouse_x < 0)
+	{
+		m_toolInputCommands.rotLeft = true;
+	}
+	else  m_toolInputCommands.rotLeft = false;
+
+	if (mouse_y - prev_mouse_y < 0)
+	{
+		m_toolInputCommands.rotUp = true;
+	}
+	else m_toolInputCommands.rotUp = false;
+
+	if (mouse_y - prev_mouse_y > 0)
+	{
+		m_toolInputCommands.rotDown = true;
+	}
+	else m_toolInputCommands.rotDown = false;
+
+	prev_mouse_x = mouse_x;
+	prev_mouse_y = mouse_y;
 }

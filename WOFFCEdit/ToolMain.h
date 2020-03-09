@@ -44,6 +44,13 @@ private:	//variables
 	char	m_keyArray[256];
 	sqlite3 *m_databaseConnection;	//sqldatabase handle
 
+	//Mouse pos
+	int mouse_x;
+	int mouse_y;
+
+	int prev_mouse_x;
+	int prev_mouse_y;
+
 	int m_width;		//dimensions passed to directX
 	int m_height;
 	int m_currentChunk;			//the current chunk of thedatabase that we are operating on.  Dictates loading and saving. 

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Camera.h"
 #include "DeviceResources.h"
 #include "StepTimer.h"
 #include "SceneObject.h"
@@ -69,16 +70,8 @@ private:
 	DisplayChunk						m_displayChunk;
 	InputCommands						m_InputCommands;
 
-	//functionality
-	float								m_movespeed;
-
 	//camera
-	DirectX::SimpleMath::Vector3		m_camPosition;
-	DirectX::SimpleMath::Vector3		m_camOrientation;
-	DirectX::SimpleMath::Vector3		m_camLookAt;
-	DirectX::SimpleMath::Vector3		m_camLookDirection;
-	DirectX::SimpleMath::Vector3		m_camRight;
-	float m_camRotRate;
+	Camera m_camera;
 
 	//control variables
 	bool m_grid;							//grid rendering on / off
