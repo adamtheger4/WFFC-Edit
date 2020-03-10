@@ -12,7 +12,7 @@ SceneObject::SceneObject()
 	rotX = 0.0f;	rotY = 0.0f;	rotZ = 0.0f;
 	scaX = 0.0f;	scaY = 0.0f;	scaZ = 0.0f;
 	render = true;
-	collision = false;
+	collision = true;
 	collision_mesh ="";
 	collectable = false;
 	destructable = false;
@@ -48,7 +48,10 @@ SceneObject::SceneObject()
 	light_constant = 1;
 	light_linear = 1;
 	light_quadratic = 1;
+
+	
 }
+
 
 
 SceneObject::~SceneObject()

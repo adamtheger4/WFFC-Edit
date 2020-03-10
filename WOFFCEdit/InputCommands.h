@@ -14,6 +14,9 @@ struct InputCommands
 	bool rotDown;
 
 	bool mouseRotation;
-	float camRotate = 1;
+	float camRotateX = 1;
+	float camRotateY = 1;
 	float camMove = 1;
+
+	int intersects = 0;
 };

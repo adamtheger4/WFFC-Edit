@@ -12,7 +12,8 @@ ToolMain::ToolMain()
 	
 	m_currentChunk = 0;		//default value
 	m_selectedObject = 0;	//initial selection ID
-	m_sceneGraph.clear();	//clear the vector for the scenegraph
+	//m_sceneGraph.clear();	//clear the vector for the scenegraph
+	m_gameGraph.clear();
 	m_databaseConnection = NULL;
 
 	//zero input commands
@@ -70,9 +71,14 @@ void ToolMain::onActionInitialise(HWND handle, int width, int height)
 void ToolMain::onActionLoad()
 {
 	//load current chunk and objects into lists
-	if (!m_sceneGraph.empty())		//is the vector empty
+	//if (!m_sceneGraph.empty())		//is the vector empty
+	//{
+	//	m_sceneGraph.clear();		//if not, empty it
+	//}
+
+	if (m_gameGraph.empty())
 	{
-		m_sceneGraph.clear();		//if not, empty it
+		m_gameGraph.clear();
 	}
 
 	//SQL
@@ -87,11 +93,11 @@ void ToolMain::onActionLoad()
 	sqlCommand = "SELECT * from Objects";				//sql command which will return all records from the objects table.
 	//Send Command and fill result object
 	rc = sqlite3_prepare_v2(m_databaseConnection, sqlCommand, -1, &pResults, 0 );
-	
+
 	//loop for each row in results until there are no more rows.  ie for every row in the results. We create and object
 	while (sqlite3_step(pResults) == SQLITE_ROW)
 	{	
-		SceneObject newSceneObject;
+		GameObject newSceneObject;
 		newSceneObject.ID = sqlite3_column_int(pResults, 0);
 		newSceneObject.chunk_ID = sqlite3_column_int(pResults, 1);
 		newSceneObject.model_path		= reinterpret_cast<const char*>(sqlite3_column_text(pResults, 2));
@@ -150,9 +156,12 @@ void ToolMain::onActionLoad()
 		newSceneObject.light_linear = sqlite3_column_double(pResults, 54);
 		newSceneObject.light_quadratic = sqlite3_column_double(pResults, 55);
 	
+		const DirectX::BoundingSphere bounding_sphere(DirectX::XMFLOAT3 { newSceneObject.posX, newSceneObject.posY, newSceneObject.posZ }, 1.0f);
+		newSceneObject.bounding_sphere = bounding_sphere;
 
 		//send completed object to scenegraph
-		m_sceneGraph.push_back(newSceneObject);
+		//m_sceneGraph.push_back(newSceneObject);
+		m_gameGraph.push_back(newSceneObject);
 	}
 
 	//THE WORLD CHUNK
@@ -185,7 +194,8 @@ void ToolMain::onActionLoad()
 
 
 	//Process REsults into renderable
-	m_d3dRenderer.BuildDisplayList(&m_sceneGraph);
+	std::vector<SceneObject> sceneGraph = GameGraphToSceneGraph(m_gameGraph);
+	m_d3dRenderer.BuildDisplayList(&sceneGraph);
 	//build the renderable chunk 
 	m_d3dRenderer.BuildDisplayChunk(&m_chunk);
 
@@ -208,69 +218,69 @@ void ToolMain::onActionSave()
 
 	//Populate with our new objects
 	std::wstring sqlCommand2;
-	int numObjects = m_sceneGraph.size();	//Loop thru the scengraph.
+	int numObjects = m_gameGraph.size();	//Loop thru the scengraph.
 
 	for (int i = 0; i < numObjects; i++)
 	{
 		std::stringstream command;
 		command << "INSERT INTO Objects " 
-			<<"VALUES(" << m_sceneGraph.at(i).ID << ","
-			<< m_sceneGraph.at(i).chunk_ID  << ","
-			<< "'" << m_sceneGraph.at(i).model_path <<"'" << ","
-			<< "'" << m_sceneGraph.at(i).tex_diffuse_path << "'" << ","
-			<< m_sceneGraph.at(i).posX << ","
-			<< m_sceneGraph.at(i).posY << ","
-			<< m_sceneGraph.at(i).posZ << ","
-			<< m_sceneGraph.at(i).rotX << ","
-			<< m_sceneGraph.at(i).rotY << ","
-			<< m_sceneGraph.at(i).rotZ << ","
-			<< m_sceneGraph.at(i).scaX << ","
-			<< m_sceneGraph.at(i).scaY << ","
-			<< m_sceneGraph.at(i).scaZ << ","
-			<< m_sceneGraph.at(i).render << ","
-			<< m_sceneGraph.at(i).collision << ","
-			<< "'" << m_sceneGraph.at(i).collision_mesh << "'" << ","
-			<< m_sceneGraph.at(i).collectable << ","
-			<< m_sceneGraph.at(i).destructable << ","
-			<< m_sceneGraph.at(i).health_amount << ","
-			<< m_sceneGraph.at(i).editor_render << ","
-			<< m_sceneGraph.at(i).editor_texture_vis << ","
-			<< m_sceneGraph.at(i).editor_normals_vis << ","
-			<< m_sceneGraph.at(i).editor_collision_vis << ","
-			<< m_sceneGraph.at(i).editor_pivot_vis << ","
-			<< m_sceneGraph.at(i).pivotX << ","
-			<< m_sceneGraph.at(i).pivotY << ","
-			<< m_sceneGraph.at(i).pivotZ << ","
-			<< m_sceneGraph.at(i).snapToGround << ","
-			<< m_sceneGraph.at(i).AINode << ","
-			<< "'" << m_sceneGraph.at(i).audio_path << "'" << ","
-			<< m_sceneGraph.at(i).volume << ","
-			<< m_sceneGraph.at(i).pitch << ","
-			<< m_sceneGraph.at(i).pan << ","
-			<< m_sceneGraph.at(i).one_shot << ","
-			<< m_sceneGraph.at(i).play_on_init << ","
-			<< m_sceneGraph.at(i).play_in_editor << ","
-			<< m_sceneGraph.at(i).min_dist << ","
-			<< m_sceneGraph.at(i).max_dist << ","
-			<< m_sceneGraph.at(i).camera << ","
-			<< m_sceneGraph.at(i).path_node << ","
-			<< m_sceneGraph.at(i).path_node_start << ","
-			<< m_sceneGraph.at(i).path_node_end << ","
-			<< m_sceneGraph.at(i).parent_id << ","
-			<< m_sceneGraph.at(i).editor_wireframe << ","
-			<< "'" << m_sceneGraph.at(i).name << "'" << ","
+			<<"VALUES(" << m_gameGraph.at(i).ID << ","
+			<< m_gameGraph.at(i).chunk_ID  << ","
+			<< "'" << m_gameGraph.at(i).model_path <<"'" << ","
+			<< "'" << m_gameGraph.at(i).tex_diffuse_path << "'" << ","
+			<< m_gameGraph.at(i).posX << ","
+			<< m_gameGraph.at(i).posY << ","
+			<< m_gameGraph.at(i).posZ << ","
+			<< m_gameGraph.at(i).rotX << ","
+			<< m_gameGraph.at(i).rotY << ","
+			<< m_gameGraph.at(i).rotZ << ","
+			<< m_gameGraph.at(i).scaX << ","
+			<< m_gameGraph.at(i).scaY << ","
+			<< m_gameGraph.at(i).scaZ << ","
+			<< m_gameGraph.at(i).render << ","
+			<< m_gameGraph.at(i).collision << ","
+			<< "'" << m_gameGraph.at(i).collision_mesh << "'" << ","
+			<< m_gameGraph.at(i).collectable << ","
+			<< m_gameGraph.at(i).destructable << ","
+			<< m_gameGraph.at(i).health_amount << ","
+			<< m_gameGraph.at(i).editor_render << ","
+			<< m_gameGraph.at(i).editor_texture_vis << ","
+			<< m_gameGraph.at(i).editor_normals_vis << ","
+			<< m_gameGraph.at(i).editor_collision_vis << ","
+			<< m_gameGraph.at(i).editor_pivot_vis << ","
+			<< m_gameGraph.at(i).pivotX << ","
+			<< m_gameGraph.at(i).pivotY << ","
+			<< m_gameGraph.at(i).pivotZ << ","
+			<< m_gameGraph.at(i).snapToGround << ","
+			<< m_gameGraph.at(i).AINode << ","
+			<< "'" << m_gameGraph.at(i).audio_path << "'" << ","
+			<< m_gameGraph.at(i).volume << ","
+			<< m_gameGraph.at(i).pitch << ","
+			<< m_gameGraph.at(i).pan << ","
+			<< m_gameGraph.at(i).one_shot << ","
+			<< m_gameGraph.at(i).play_on_init << ","
+			<< m_gameGraph.at(i).play_in_editor << ","
+			<< m_gameGraph.at(i).min_dist << ","
+			<< m_gameGraph.at(i).max_dist << ","
+			<< m_gameGraph.at(i).camera << ","
+			<< m_gameGraph.at(i).path_node << ","
+			<< m_gameGraph.at(i).path_node_start << ","
+			<< m_gameGraph.at(i).path_node_end << ","
+			<< m_gameGraph.at(i).parent_id << ","
+			<< m_gameGraph.at(i).editor_wireframe << ","
+			<< "'" << m_gameGraph.at(i).name << "'" << ","
 
-			<< m_sceneGraph.at(i).light_type << ","
-			<< m_sceneGraph.at(i).light_diffuse_r << ","
-			<< m_sceneGraph.at(i).light_diffuse_g << ","
-			<< m_sceneGraph.at(i).light_diffuse_b << ","
-			<< m_sceneGraph.at(i).light_specular_r << ","
-			<< m_sceneGraph.at(i).light_specular_g << ","
-			<< m_sceneGraph.at(i).light_specular_b << ","
-			<< m_sceneGraph.at(i).light_spot_cutoff << ","
-			<< m_sceneGraph.at(i).light_constant << ","
-			<< m_sceneGraph.at(i).light_linear << ","
-			<< m_sceneGraph.at(i).light_quadratic
+			<< m_gameGraph.at(i).light_type << ","
+			<< m_gameGraph.at(i).light_diffuse_r << ","
+			<< m_gameGraph.at(i).light_diffuse_g << ","
+			<< m_gameGraph.at(i).light_diffuse_b << ","
+			<< m_gameGraph.at(i).light_specular_r << ","
+			<< m_gameGraph.at(i).light_specular_g << ","
+			<< m_gameGraph.at(i).light_specular_b << ","
+			<< m_gameGraph.at(i).light_spot_cutoff << ","
+			<< m_gameGraph.at(i).light_constant << ","
+			<< m_gameGraph.at(i).light_linear << ","
+			<< m_gameGraph.at(i).light_quadratic
 
 			<< ")";
 		std::string sqlCommand2 = command.str();
@@ -299,6 +309,15 @@ void ToolMain::Tick(MSG *msg)
 
 	//Renderer Update Call
 	m_d3dRenderer.Tick(&m_toolInputCommands);	
+
+	if (m_toolInputCommands.mouseRotation)
+	{
+		//Set cursor position to screen centre whilst mouse controls active.
+		GetWindowRect(m_toolHandle, &WindowRECT);
+		SetCursorPos(WindowRECT.CenterPoint().x, WindowRECT.CenterPoint().y);
+	}
+
+
 }
 
 void ToolMain::UpdateInput(MSG * msg)
@@ -381,51 +400,48 @@ void ToolMain::UpdateInput(MSG * msg)
 	{
 		m_toolInputCommands.camMove = 2.0f;
 
-		/*m_sceneGraph[m_selectedObject].posX = 20;
-		m_d3dRenderer.BuildDisplayList(&m_sceneGraph);*/
 	}
 	else m_toolInputCommands.camMove = 1.0f;
 
 	//Mouse controls
 	if (m_toolInputCommands.mouseRotation)
 	{
-		//Set cursor position to screen centre whilst mouse controls active.
-		GetWindowRect(m_toolHandle, &WindowRECT);
-		SetCursorPos(WindowRECT.CenterPoint().x, WindowRECT.CenterPoint().y);
-
 		if (m_once)
 		{
 			std::vector<int> rotate{ 0, 0 };
 			if (mouse_x > m_width / 2)
 			{
 				m_toolInputCommands.rotRight = true;
-				rotate[0] = (m_width / 2) - mouse_x;
+				rotate[0] = std::abs((m_width / 2) - mouse_x);
 			}
 			else m_toolInputCommands.rotRight = false;
 
 			if (mouse_x < m_width / 2)
 			{
 				m_toolInputCommands.rotLeft = true;
-				rotate[0] = (m_width / 2) - mouse_x;
+				rotate[0] = std::abs((m_width / 2) - mouse_x);
 			}
 			else  m_toolInputCommands.rotLeft = false;
 
 			if (mouse_y < m_height / 2)
 			{
 				m_toolInputCommands.rotUp = true;
-				rotate[1] = (m_height / 2) - mouse_y;
+				rotate[1] = std::abs((m_height / 2) - mouse_y);
 			}
 			else m_toolInputCommands.rotUp = false;
 
 			if (mouse_y > m_height / 2)
 			{
 				m_toolInputCommands.rotDown = true;
-				rotate[1] = (m_height / 2) - mouse_y;
+				rotate[1] = std::abs((m_height / 2) - mouse_y);
 			}
 			else m_toolInputCommands.rotDown = false;
 
-			m_toolInputCommands.camRotate = std::sqrt((rotate[0] * rotate[0]) + (rotate[1] * rotate[1]));
-		}	
+			//m_toolInputCommands.camRotate = std::sqrt((rotate[0] * rotate[0]) + (rotate[1] * rotate[1]));
+
+			m_toolInputCommands.camRotateX = rotate[0];
+			m_toolInputCommands.camRotateY = rotate[1];
+		}
 		m_once = true;
 	}
 	else
@@ -435,10 +451,162 @@ void ToolMain::UpdateInput(MSG * msg)
 		m_toolInputCommands.rotLeft = false;
 		m_toolInputCommands.rotRight = false;
 	}
+
+	//// MOVE SELECTED OBJECTS
+	if (m_keyArray['I'])
+	{
+		m_gameGraph[m_selectedObject].posZ += 0.1;
+		m_gameGraph[m_selectedObject].bounding_sphere.Center = m_gameGraph[m_selectedObject].bounding_sphere.Center + DirectX::XMFLOAT3(0.0f, 0.0f, 0.01f);
+	} 
+
+	if (m_keyArray['K'])
+	{
+		m_gameGraph[m_selectedObject].posZ -= 0.1;
+		m_gameGraph[m_selectedObject].bounding_sphere.Center = m_gameGraph[m_selectedObject].bounding_sphere.Center - DirectX::XMFLOAT3(0.01f, 0.0f, 0.0f);
+	}
+
+	if (m_keyArray['J'])
+	{
+		m_gameGraph[m_selectedObject].posX -= 0.1;
+		m_gameGraph[m_selectedObject].bounding_sphere.Center = m_gameGraph[m_selectedObject].bounding_sphere.Center - DirectX::XMFLOAT3(0.01f, 0.0f, 0.01f);
+	}
+
+	if (m_keyArray['L'])
+	{
+		m_gameGraph[m_selectedObject].posX += 0.1;
+		m_gameGraph[m_selectedObject].bounding_sphere.Center = m_gameGraph[m_selectedObject].bounding_sphere.Center + DirectX::XMFLOAT3(0.01f, 0.0f, 0.01f);
+	}
+}
+
+std::vector<SceneObject> ToolMain::GameGraphToSceneGraph(std::vector<GameObject> in_gameGraph)
+{
+	std::vector<SceneObject> sceneGraph;
+	
+	SceneObject sceneObject;
+	for (int i = 0; i < in_gameGraph.size(); i++)
+	{
+		sceneObject.ID = in_gameGraph[i].ID;
+		sceneObject.chunk_ID = in_gameGraph[i].chunk_ID;
+		sceneObject.model_path = in_gameGraph[i].model_path;
+		sceneObject.tex_diffuse_path = in_gameGraph[i].tex_diffuse_path;
+		sceneObject.posX = in_gameGraph[i].posX;
+		sceneObject.posY = in_gameGraph[i].posY;
+		sceneObject.posZ = in_gameGraph[i].posZ;
+		sceneObject.rotX = in_gameGraph[i].rotX;
+		sceneObject.rotY = in_gameGraph[i].rotY;
+		sceneObject.rotZ = in_gameGraph[i].rotZ;
+		sceneObject.scaX = in_gameGraph[i].scaX;
+		sceneObject.scaY = in_gameGraph[i].scaY;
+		sceneObject.scaZ = in_gameGraph[i].scaZ;
+		sceneObject.render = in_gameGraph[i].render;
+		sceneObject.collision = in_gameGraph[i].collision;
+		sceneObject.collision_mesh = in_gameGraph[i].collision_mesh;
+		sceneObject.collectable = in_gameGraph[i].collectable;
+		sceneObject.destructable = in_gameGraph[i].destructable;
+		sceneObject.health_amount = in_gameGraph[i].health_amount;
+		sceneObject.editor_render = in_gameGraph[i].editor_render;
+		sceneObject.editor_texture_vis = in_gameGraph[i].editor_texture_vis;
+		sceneObject.editor_normals_vis = in_gameGraph[i].editor_normals_vis;
+		sceneObject.editor_collision_vis = in_gameGraph[i].editor_collision_vis;
+		sceneObject.editor_pivot_vis = in_gameGraph[i].editor_pivot_vis;
+		sceneObject.pivotX = in_gameGraph[i].pivotX;
+		sceneObject.pivotY = in_gameGraph[i].pivotY;
+		sceneObject.pivotZ = in_gameGraph[i].pivotZ;
+		sceneObject.snapToGround = in_gameGraph[i].snapToGround;
+		sceneObject.AINode = in_gameGraph[i].AINode;
+		sceneObject.audio_path = in_gameGraph[i].audio_path;
+		sceneObject.volume = in_gameGraph[i].volume;
+		sceneObject.pitch = in_gameGraph[i].pitch;
+		sceneObject.pan = in_gameGraph[i].pan;
+		sceneObject.one_shot = in_gameGraph[i].one_shot;
+		sceneObject.play_on_init = in_gameGraph[i].play_on_init;
+		sceneObject.play_in_editor = in_gameGraph[i].play_in_editor;
+		sceneObject.min_dist = in_gameGraph[i].min_dist;
+		sceneObject.max_dist = in_gameGraph[i].max_dist;
+		sceneObject.camera = in_gameGraph[i].camera;
+		sceneObject.path_node = in_gameGraph[i].path_node;
+		sceneObject.path_node_start = in_gameGraph[i].path_node_start;
+		sceneObject.path_node_end = in_gameGraph[i].path_node_end;
+		sceneObject.parent_id = in_gameGraph[i].parent_id;
+		sceneObject.editor_wireframe = in_gameGraph[i].editor_wireframe;
+		sceneObject.name = in_gameGraph[i].name;
+
+		sceneObject.light_type = in_gameGraph[i].light_type;
+		sceneObject.light_diffuse_r = in_gameGraph[i].light_diffuse_r;
+		sceneObject.light_diffuse_g = in_gameGraph[i].light_diffuse_g;
+		sceneObject.light_diffuse_b = in_gameGraph[i].light_diffuse_g;
+		sceneObject.light_specular_r = in_gameGraph[i].light_specular_r;
+		sceneObject.light_specular_g = in_gameGraph[i].light_specular_g;
+		sceneObject.light_specular_b = in_gameGraph[i].light_specular_b;
+		sceneObject.light_spot_cutoff = in_gameGraph[i].light_spot_cutoff;
+		sceneObject.light_constant = in_gameGraph[i].light_constant;
+		sceneObject.light_linear = in_gameGraph[i].light_linear;
+		sceneObject.light_quadratic = in_gameGraph[i].light_quadratic;
+
+		sceneGraph.push_back(sceneObject);
+	}
+
+	return sceneGraph;
+}
+
+bool ToolMain::MouseCollision()
+{
+	bool collision = false;
+
+	// create 2 positions in screenspace using the cursor position
+	Vector3 nearSource = Vector3(mouse_x, mouse_y, 0.0f);
+	Vector3 farSource = Vector3(mouse_x, mouse_y, 1.0f);
+
+	// find the two screen space positions in world space
+	Vector3 nearPoint = DirectX::XMVector3Unproject(nearSource, m_d3dRenderer.GetActiveCameraLocation().x, m_d3dRenderer.GetActiveCameraLocation().y,
+		m_width, m_height, 0.0f, 1.0f,
+		m_d3dRenderer.GetProjMatrix(), m_d3dRenderer.GetViewMatrix(), DirectX::SimpleMath::Matrix::Identity);
+
+	Vector3 farPoint = DirectX::XMVector3Unproject(farSource, m_d3dRenderer.GetActiveCameraLocation().x, m_d3dRenderer.GetActiveCameraLocation().y,
+		m_width, m_height, 0.0f, 1.0f,
+		m_d3dRenderer.GetProjMatrix(), m_d3dRenderer.GetViewMatrix(), DirectX::SimpleMath::Matrix::Identity);
+
+	Vector3 direction = farPoint - nearPoint;
+	direction.Normalize();
+
+	//Create bounding box, set extents and center.
+	const DirectX::XMFLOAT3 f1{ 1, 1, 1 };
+	const DirectX::XMFLOAT3 p1{ m_gameGraph[m_selectedObject].posX,  m_gameGraph[m_selectedObject].posY,  m_gameGraph[m_selectedObject].posZ };
+	const float r1 = 1.0f;
+	const DirectX::BoundingSphere bounding_sphere(p1, r1);
+
+	// create a ray using nearPoint as the source
+	Ray ray;
+	ray.position = nearPoint;
+	ray.direction = direction;
+	
+	float dist = 0;
+	for (int i = 0; i < m_gameGraph.size(); i++)
+	{
+		if (ray.Intersects(m_gameGraph[i].bounding_sphere, dist))
+		{
+			collision = true;
+			m_toolInputCommands.intersects = dist;
+
+			//Set the selected object to be the object collision occurs with
+			m_selectedObject = i;
+			break;
+		}
+		else
+		{
+			m_toolInputCommands.intersects = 0;
+		}
+	}
+
+	std::vector<SceneObject> sceneGraph = GameGraphToSceneGraph(m_gameGraph);
+	m_d3dRenderer.BuildDisplayList(&sceneGraph);
+
+	return collision;
 }
 
 void ToolMain::MouseLDown(MSG* msg)
 {
+	MouseCollision();
 }	
 
 void ToolMain::MouseLUp(MSG* msg)

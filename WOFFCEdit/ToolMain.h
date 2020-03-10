@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "Game.h"
 #include "sqlite3.h"
-#include "SceneObject.h"
+#include "GameObject.h"
 #include "InputCommands.h"
 #include <vector>
 
@@ -26,13 +26,18 @@ public: //methods
 	void	Tick(MSG *msg);
 	void	UpdateInput(MSG *msg);
 
+	inline std::vector<SceneObject> GetSceneGraph() { return GameGraphToSceneGraph(m_gameGraph); }
+
 public:	//variables
-	std::vector<SceneObject>    m_sceneGraph;	//our scenegraph storing all the objects in the current chunk
+	//std::vector<SceneObject>    m_sceneGraph;	//our scenegraph storing all the objects in the current chunk
+	std::vector<GameObject>    m_gameGraph;
 	ChunkObject					m_chunk;		//our landscape chunk
 	int m_selectedObject;						//ID of current Selection
 
 private:	//methods
 	void	onContentAdded();
+
+	std::vector<SceneObject> GameGraphToSceneGraph(std::vector<GameObject> in_gameGraph);
 
 
 		
@@ -44,7 +49,10 @@ private:	//variables
 	char	m_keyArray[256];
 	sqlite3 *m_databaseConnection;	//sqldatabase handle
 
+
 	//Mouse
+	bool MouseCollision();
+
 	void MouseLDown(MSG* msg);
 	void MouseLUp(MSG* msg);
 	void MouseRDown(MSG* msg);

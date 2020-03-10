@@ -52,15 +52,13 @@ public:
 	void SaveDisplayChunk(ChunkObject *SceneChunk);	//saves geometry et al
 	void ClearDisplayList();
 
-	inline DirectX::SimpleMath::Matrix GetViewMatrix()
-	{
-		return m_view;
-	}
+	inline DirectX::SimpleMath::Matrix GetViewMatrix() { return m_view; }
 
-	inline DirectX::SimpleMath::Matrix GetProjMatrix()
-	{
-		return m_projection;
-	}
+	inline DirectX::SimpleMath::Matrix GetProjMatrix() { return m_projection; }
+
+	inline DirectX::SimpleMath::Matrix GetWorldMatrix() { return m_world; }
+
+	inline DirectX::SimpleMath::Vector3 GetActiveCameraLocation() { return m_camera.m_camPosition; }
 
 	int ray_intersect = 0;
 

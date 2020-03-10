@@ -3,8 +3,6 @@
 
 using namespace DirectX::SimpleMath;
 
-
-
 Camera::Camera()
 {
 	//functional
@@ -54,17 +52,17 @@ DirectX::SimpleMath::Matrix Camera::Update(InputCommands _InputCommands)
 {
 	if (_InputCommands.rotRight)
 	{
-		m_camOrientation.y -= m_camRotRate * _InputCommands.camRotate ;
+		m_camOrientation.y -= m_camRotRate * _InputCommands.camRotateX ;
 	}
 	if (_InputCommands.rotLeft)
 	{
-		m_camOrientation.y += m_camRotRate * _InputCommands.camRotate;
+		m_camOrientation.y += m_camRotRate * _InputCommands.camRotateX;
 	}
 	if (_InputCommands.rotUp)
 	{
 		if (m_camOrientation.z < 1.5508)
 		{
-			m_camOrientation.z += m_camRotRate * _InputCommands.camRotate;
+			m_camOrientation.z += m_camRotRate * _InputCommands.camRotateY;
 
 			if (m_camOrientation.z > 1.5508)
 			{
@@ -76,7 +74,7 @@ DirectX::SimpleMath::Matrix Camera::Update(InputCommands _InputCommands)
 	{
 		if (m_camOrientation.z > -1.5508)
 		{
-			m_camOrientation.z -= m_camRotRate * _InputCommands.camRotate;
+			m_camOrientation.z -= m_camRotRate * _InputCommands.camRotateY;
 
 			if (m_camOrientation.z < -1.5508)
 			{
