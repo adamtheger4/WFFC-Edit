@@ -12,10 +12,8 @@ struct InputCommands
 	bool rotRight;
 	bool rotUp;
 	bool rotDown;
-	bool rollLeft;
-	bool rollRight;
 
+	bool mouseRotation;
 	float camRotate = 1;
-	float m_x;
-	float m_y;
+	float camMove = 1;
 };

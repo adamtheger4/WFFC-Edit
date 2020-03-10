@@ -52,11 +52,27 @@ public:
 	void SaveDisplayChunk(ChunkObject *SceneChunk);	//saves geometry et al
 	void ClearDisplayList();
 
+	inline DirectX::SimpleMath::Matrix GetViewMatrix()
+	{
+		return m_view;
+	}
+
+	inline DirectX::SimpleMath::Matrix GetProjMatrix()
+	{
+		return m_projection;
+	}
+
+	int ray_intersect = 0;
+
 #ifdef DXTK_AUDIO
 	void NewAudioDevice();
 #endif
 
 private:
+
+	//Implemented Functions.
+
+	//
 
 	void Update(DX::StepTimer const& timer);
 

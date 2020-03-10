@@ -3,6 +3,8 @@
 #include <vector>
 #include <sstream>
 
+using namespace DirectX::SimpleMath;
+
 //
 //ToolMain Class
 ToolMain::ToolMain()
@@ -22,6 +24,9 @@ ToolMain::ToolMain()
 	m_toolInputCommands.down		= false;
 	m_toolInputCommands.rotRight	= false;
 	m_toolInputCommands.rotLeft		= false;
+	m_toolInputCommands.rotUp = false;
+	m_toolInputCommands.rotDown = false;
+	m_toolInputCommands.mouseRotation = false;
 }
 
 
@@ -43,6 +48,7 @@ void ToolMain::onActionInitialise(HWND handle, int width, int height)
 	m_height	= height;
 	
 	m_d3dRenderer.Initialize(handle, m_width, m_height);
+	m_toolHandle = handle;
 
 	//database connection establish
 	int rc;
@@ -281,27 +287,18 @@ void ToolMain::onActionSaveTerrain()
 
 void ToolMain::Tick(MSG *msg)
 {
-	
-
 	//do we have a selection
+	
 	//do we have a mode
 	//are we clicking / dragging /releasing
+
 	//has something changed
 		//update Scenegraph
 		//add to scenegraph
 		//resend scenegraph to Direct X renderer
 
 	//Renderer Update Call
-	m_d3dRenderer.Tick(&m_toolInputCommands);
-
-	if (mouseMoved == true)
-	{
-		m_toolInputCommands.rotUp = false;
-		m_toolInputCommands.rotDown = false;
-		m_toolInputCommands.rotLeft = false;
-		m_toolInputCommands.rotRight = false;
-	}
-	mouseMoved = false;
+	m_d3dRenderer.Tick(&m_toolInputCommands);	
 }
 
 void ToolMain::UpdateInput(MSG * msg)
@@ -318,18 +315,26 @@ void ToolMain::UpdateInput(MSG * msg)
 		break;
 
 	case WM_MOUSEMOVE:
-		mouseMoved = true;
 		mouse_x = GET_X_LPARAM(msg->lParam);
 		mouse_y = GET_Y_LPARAM(msg->lParam);
 		break;
 
 	case WM_LBUTTONDOWN:	//mouse button down,  you will probably need to check when its up too
 		//set some flag for the mouse button in inputcommands
-
+		MouseLDown(msg);
 		break;
 
 	case WM_LBUTTONUP:	//mouse button up,  you will probably need to check when its up too
 	//set some flag for the mouse button in inputcommands
+		MouseLUp(msg);
+		break;
+
+	case WM_RBUTTONDOWN:	
+		MouseRDown(msg);
+		break;
+
+	case WM_RBUTTONUP:
+		MouseRUp(msg);
 		break;
 
 	}
@@ -372,70 +377,81 @@ void ToolMain::UpdateInput(MSG * msg)
 	}
 	else m_toolInputCommands.down = false;
 
-	//rotation
-	if (m_keyArray['L'])
+	if (m_keyArray[16])
 	{
-		m_toolInputCommands.rollRight = true;
-	}
-	else m_toolInputCommands.rollRight = false;
+		m_toolInputCommands.camMove = 2.0f;
 
-	if (m_keyArray['J'])
-	{
-		m_toolInputCommands.rollLeft = true;
+		/*m_sceneGraph[m_selectedObject].posX = 20;
+		m_d3dRenderer.BuildDisplayList(&m_sceneGraph);*/
 	}
-	else m_toolInputCommands.rollLeft = false;
-
-	if (m_keyArray['I'])
-	{
-		m_toolInputCommands.rotUp = true;
-	}
-	else m_toolInputCommands.rotUp = false;
-
-	if (m_keyArray['K'])
-	{
-		m_toolInputCommands.rotDown = true;
-	}
-	else m_toolInputCommands.rotDown = false;
+	else m_toolInputCommands.camMove = 1.0f;
 
 	//Mouse controls
-	////Minimum input before active
-	if (std::abs(mouse_x - prev_mouse_x) > 0.1 || std::abs(mouse_y - prev_mouse_y) > 0.1)
+	if (m_toolInputCommands.mouseRotation)
 	{
+		//Set cursor position to screen centre whilst mouse controls active.
+		GetWindowRect(m_toolHandle, &WindowRECT);
+		SetCursorPos(WindowRECT.CenterPoint().x, WindowRECT.CenterPoint().y);
 
-		std::vector<int> rotate{ 0, 0 };
-		if (mouse_x - prev_mouse_x > 0)
+		if (m_once)
 		{
-			m_toolInputCommands.rotRight = true;
-			rotate[0] = std::abs(mouse_x - prev_mouse_x);
-		}
-		else m_toolInputCommands.rotRight = false;
+			std::vector<int> rotate{ 0, 0 };
+			if (mouse_x > m_width / 2)
+			{
+				m_toolInputCommands.rotRight = true;
+				rotate[0] = (m_width / 2) - mouse_x;
+			}
+			else m_toolInputCommands.rotRight = false;
 
-		if (mouse_x - prev_mouse_x < 0)
-		{
-			m_toolInputCommands.rotLeft = true;
-			rotate[0] = std::abs(mouse_x - prev_mouse_x);
-		}
-		else  m_toolInputCommands.rotLeft = false;
+			if (mouse_x < m_width / 2)
+			{
+				m_toolInputCommands.rotLeft = true;
+				rotate[0] = (m_width / 2) - mouse_x;
+			}
+			else  m_toolInputCommands.rotLeft = false;
 
-		if (mouse_y - prev_mouse_y < 0)
-		{
-			m_toolInputCommands.rotUp = true;
-			rotate[1] = std::abs(mouse_y - prev_mouse_y);
-		}
-		else m_toolInputCommands.rotUp = false;
+			if (mouse_y < m_height / 2)
+			{
+				m_toolInputCommands.rotUp = true;
+				rotate[1] = (m_height / 2) - mouse_y;
+			}
+			else m_toolInputCommands.rotUp = false;
 
-		if (mouse_y - prev_mouse_y > 0)
-		{
-			m_toolInputCommands.rotDown = true;
-			rotate[1] = std::abs(mouse_y - prev_mouse_y);
-		}
-		else m_toolInputCommands.rotDown = false;
+			if (mouse_y > m_height / 2)
+			{
+				m_toolInputCommands.rotDown = true;
+				rotate[1] = (m_height / 2) - mouse_y;
+			}
+			else m_toolInputCommands.rotDown = false;
 
-		m_toolInputCommands.camRotate = std::sqrt((rotate[0] * rotate[0]) + (rotate[1] * rotate[1]));
-	}	
-	prev_mouse_x = mouse_x;
-	prev_mouse_y = mouse_y;
+			m_toolInputCommands.camRotate = std::sqrt((rotate[0] * rotate[0]) + (rotate[1] * rotate[1]));
+		}	
+		m_once = true;
+	}
+	else
+	{
+		m_toolInputCommands.rotUp = false;
+		m_toolInputCommands.rotDown = false;
+		m_toolInputCommands.rotLeft = false;
+		m_toolInputCommands.rotRight = false;
+	}
+}
 
-	m_toolInputCommands.m_x = mouse_x;
-	m_toolInputCommands.m_y = mouse_y;
+void ToolMain::MouseLDown(MSG* msg)
+{
+}	
+
+void ToolMain::MouseLUp(MSG* msg)
+{
+}
+
+void ToolMain::MouseRDown(MSG* msg)
+{
+	m_toolInputCommands.mouseRotation = true;
+	m_once = false;
+}
+
+void ToolMain::MouseRUp(MSG* msg)
+{
+	m_toolInputCommands.mouseRotation = false;
 }

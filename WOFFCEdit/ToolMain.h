@@ -44,12 +44,15 @@ private:	//variables
 	char	m_keyArray[256];
 	sqlite3 *m_databaseConnection;	//sqldatabase handle
 
-	//Mouse pos
-	bool	mouseMoved = false;
+	//Mouse
+	void MouseLDown(MSG* msg);
+	void MouseLUp(MSG* msg);
+	void MouseRDown(MSG* msg);
+	void MouseRUp(MSG* msg);
+	bool	mouseActive = false;
+	bool	m_once = false;
 	float	mouse_x;
 	float	mouse_y;
-	float	prev_mouse_x;
-	float	prev_mouse_y;
 
 	int m_width;		//dimensions passed to directX
 	int m_height;

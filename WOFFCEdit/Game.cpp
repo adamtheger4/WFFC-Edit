@@ -5,6 +5,7 @@
 #include "pch.h"
 #include "Game.h"
 #include "DisplayObject.h"
+#include "resource.h"
 #include <string>
 
 
@@ -22,7 +23,7 @@ Game::Game()
 	
 	//initial Settings
 	//modes
-	m_grid = false;
+	m_grid = true;
 }
 
 Game::~Game()
@@ -89,6 +90,7 @@ void Game::Tick(InputCommands *Input)
 {
 	//copy over the input commands so we have a local version to use elsewhere.
 	m_InputCommands = *Input;
+
     m_timer.Tick([&]()
     {
         Update(m_timer);
@@ -110,8 +112,6 @@ void Game::Tick(InputCommands *Input)
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer)
 {
-	//TODO  any more complex than this, and the camera should be abstracted out to somewhere else
-	//camera motion is on a plane, so kill the 7 component of the look direction
 	m_view = m_camera.Update(m_InputCommands);
 
     m_batchEffect->SetView(m_view);
@@ -173,9 +173,9 @@ void Game::Render()
 	//CAMERA POSITION ON HUD
 	m_sprites->Begin();
 	WCHAR   Buffer[256];
-	std::wstring var = L"Cam X: " + std::to_wstring(m_camera.m_camPosition.x) + L"Cam Z: " + std::to_wstring(m_camera.m_camPosition.z);
-
-	//m_font->DrawString(m_sprites.get(), var.c_str() , XMFLOAT2(100, 10), Colors::Yellow);
+	//std::wstring var = L"Cam X: " + std::to_wstring(m_camera.m_camPosition.x) + L"Cam Z: " + std::to_wstring(m_camera.m_camPosition.z);
+	std::wstring var = L"Ray intersects : " + std::to_wstring(ray_intersect);
+	m_font->DrawString(m_sprites.get(), var.c_str() , XMFLOAT2(100, 10), Colors::Yellow);
 
 	m_sprites->End();
 
