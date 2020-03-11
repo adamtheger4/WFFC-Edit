@@ -26,5 +26,9 @@ public:
 	float	m_light_constant;
 	float	m_light_linear;
 	float	m_light_quadratic;
+
+	float move_scalar = 22;
+
+	void MoveObject(DirectX::SimpleMath::Vector3 in_vector, float dt); // offsets current position by input vector
 };
 

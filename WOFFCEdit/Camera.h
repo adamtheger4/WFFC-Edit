@@ -10,7 +10,7 @@ public:
 	Camera();
 	~Camera();
 
-	DirectX::SimpleMath::Matrix Update(InputCommands _InputCommands);
+	DirectX::SimpleMath::Matrix Update(float dt, InputCommands _InputCommands);
 
 	//camera
 	DirectX::SimpleMath::Vector3		m_camPosition;

@@ -7,7 +7,7 @@
 #include "Camera.h"
 #include "DeviceResources.h"
 #include "StepTimer.h"
-#include "SceneObject.h"
+#include "GameObject.h"
 #include "DisplayObject.h"
 #include "DisplayChunk.h"
 #include "ChunkObject.h"
@@ -48,19 +48,28 @@ public:
 
 	//tool specific
 	void BuildDisplayList(std::vector<SceneObject> * SceneGraph); //note vector passed by reference 
+	void UpdateSceneList(std::vector<GameObject> * SceneGraph); //Updates input sceneGraph to match the corresponding objects in display list.
 	void BuildDisplayChunk(ChunkObject *SceneChunk);
 	void SaveDisplayChunk(ChunkObject *SceneChunk);	//saves geometry et al
 	void ClearDisplayList();
 
+	DirectX::SimpleMath::Vector3 GetDisplayObjPos(int objID);
+
+	//Object specific
+	void MoveSelectedObject(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector);
+	 
+	bool renderAxisArrows = false;
+	DirectX::SimpleMath::Vector3 x_arrow;
+	DirectX::SimpleMath::Vector3 y_arrow;
+	DirectX::SimpleMath::Vector3 z_arrow;
+
 	inline DirectX::SimpleMath::Matrix GetViewMatrix() { return m_view; }
-
 	inline DirectX::SimpleMath::Matrix GetProjMatrix() { return m_projection; }
-
 	inline DirectX::SimpleMath::Matrix GetWorldMatrix() { return m_world; }
 
 	inline DirectX::SimpleMath::Vector3 GetActiveCameraLocation() { return m_camera.m_camPosition; }
 
-	int ray_intersect = 0;
+	void SetSelectedObj(int selectedID);
 
 #ifdef DXTK_AUDIO
 	void NewAudioDevice();
@@ -78,11 +87,16 @@ private:
 	void CreateWindowSizeDependentResources();
 
 	void XM_CALLCONV DrawGrid(DirectX::FXMVECTOR xAxis, DirectX::FXMVECTOR yAxis, DirectX::FXMVECTOR origin, size_t xdivs, size_t ydivs, DirectX::GXMVECTOR color);
+	void DrawAxisArrows(DirectX::SimpleMath::Vector3 v1, DirectX::SimpleMath::Vector3 v2, DirectX::SimpleMath::Vector3 v3, DirectX::GXMVECTOR color);
 
 	//tool specific
 	std::vector<DisplayObject>			m_displayList;
 	DisplayChunk						m_displayChunk;
 	InputCommands						m_InputCommands;
+
+	int m_selectedObject;						//ID of current Selection
+
+	void HandleInput();
 
 	//camera
 	Camera m_camera;
@@ -94,6 +108,7 @@ private:
 
     // Rendering loop timer.
     DX::StepTimer                           m_timer;
+	float									m_dt;
 
     // Input devices.
     std::unique_ptr<DirectX::GamePad>       m_gamePad;

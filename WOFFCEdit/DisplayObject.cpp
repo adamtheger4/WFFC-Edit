@@ -30,3 +30,10 @@ DisplayObject::~DisplayObject()
 {
 //	delete m_texture_diffuse;
 }
+
+void DisplayObject::MoveObject(DirectX::SimpleMath::Vector3 in_vector, float dt)
+{
+	m_position.x += dt * (move_scalar * in_vector.x);
+	m_position.y += dt * (move_scalar * in_vector.y);
+	m_position.z += dt * (move_scalar * in_vector.z);
+}

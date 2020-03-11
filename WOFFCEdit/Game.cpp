@@ -112,12 +112,14 @@ void Game::Tick(InputCommands *Input)
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer)
 {
-	m_view = m_camera.Update(m_InputCommands);
+	m_view = m_camera.Update(m_dt, m_InputCommands);
 
     m_batchEffect->SetView(m_view);
     m_batchEffect->SetWorld(Matrix::Identity);
 	m_displayChunk.m_terrainEffect->SetView(m_view);
 	m_displayChunk.m_terrainEffect->SetWorld(Matrix::Identity);
+
+	HandleInput();
 
 #ifdef DXTK_AUDIO
     m_audioTimerAcc -= (float)timer.GetElapsedSeconds();
@@ -152,6 +154,7 @@ void Game::Update(DX::StepTimer const& timer)
 // Draws the scene.
 void Game::Render()
 {
+	m_dt = float(m_timer.GetElapsedSeconds());
     // Don't try to render anything before the first Update.
     if (m_timer.GetFrameCount() == 0)
     {
@@ -162,7 +165,6 @@ void Game::Render()
 
     m_deviceResources->PIXBeginEvent(L"Render");
     auto context = m_deviceResources->GetD3DDeviceContext();
-
 
 	if (m_grid)
 	{
@@ -189,6 +191,7 @@ void Game::Render()
 
 		m_displayList[i].m_model->Draw(context, *m_states, local, m_view, m_projection, false);	//last variable in draw,  make TRUE for wireframe
 
+
 		m_deviceResources->PIXEndEvent();
 	}
     m_deviceResources->PIXEndEvent();
@@ -208,7 +211,7 @@ void Game::Render()
 	m_sprites->Begin();
 	WCHAR   Buffer[256];
 	//std::wstring var = L"Cam X: " + std::to_wstring(m_camera.m_camPosition.x) + L"Cam Z: " + std::to_wstring(m_camera.m_camPosition.z);
-	std::wstring var = L"Ray intersects : " + std::to_wstring(m_InputCommands.intersects);
+	std::wstring var = L"Delta Time : " + std::to_wstring(m_dt);
 	m_font->DrawString(m_sprites.get(), var.c_str(), XMFLOAT2(100, 10), Colors::Yellow);
 
 	m_sprites->End();
@@ -283,7 +286,49 @@ void XM_CALLCONV Game::DrawGrid(FXMVECTOR xAxis, FXMVECTOR yAxis, FXMVECTOR orig
 
     m_deviceResources->PIXEndEvent();
 }
+void Game::DrawAxisArrows(DirectX::SimpleMath::Vector3 v1, DirectX::SimpleMath::Vector3 v2, DirectX::SimpleMath::Vector3 v3, DirectX::GXMVECTOR color)
+{
+}
 #pragma endregion
+
+void Game::HandleInput()
+{
+	if (m_InputCommands.moveObjForward)
+	{
+		MoveSelectedObject(m_selectedObject, DirectX::SimpleMath::Vector3(0.0f, 0.0f, 0.1f) * m_InputCommands.objMove);
+	}
+	if (m_InputCommands.moveObjBack)
+	{
+		MoveSelectedObject(m_selectedObject, DirectX::SimpleMath::Vector3(0.0f, 0.0f, -0.1f) * m_InputCommands.objMove);
+	}
+	if (m_InputCommands.moveObjLeft)
+	{
+		MoveSelectedObject(m_selectedObject, DirectX::SimpleMath::Vector3(-0.1f, 0.0f, 0.0f) * m_InputCommands.objMove);
+	}
+	if (m_InputCommands.moveObjRight)
+	{
+		MoveSelectedObject(m_selectedObject, DirectX::SimpleMath::Vector3(0.1f, 0.0f, 0.0f) * m_InputCommands.objMove);
+	}
+	if (m_InputCommands.moveObjUp)
+	{
+		MoveSelectedObject(m_selectedObject, DirectX::SimpleMath::Vector3(0.0f, 0.1f, 0.0f) * m_InputCommands.objMove);
+	}
+	if (m_InputCommands.moveObjDown)
+	{
+		MoveSelectedObject(m_selectedObject, DirectX::SimpleMath::Vector3(0.0f, -0.1f, 0.0f) *  m_InputCommands.objMove);
+	}
+}
+
+void Game::MoveSelectedObject(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector)
+{
+	m_displayList[select_obj_ID].MoveObject(in_vector, m_dt);
+}
+
+void Game::SetSelectedObj(int selectedID)
+{
+	m_selectedObject = selectedID;
+}
+
 
 #pragma region Message Handlers
 // Message handlers
@@ -333,7 +378,6 @@ void Game::BuildDisplayList(std::vector<SceneObject> * SceneGraph)
 	int numObjects = SceneGraph->size();
 	for (int i = 0; i < numObjects; i++)
 	{
-		
 		//create a temp display object that we will populate then append to the display list.
 		DisplayObject newDisplayObject;
 		
@@ -393,12 +437,49 @@ void Game::BuildDisplayList(std::vector<SceneObject> * SceneGraph)
 		newDisplayObject.m_light_linear		= SceneGraph->at(i).light_linear;
 		newDisplayObject.m_light_quadratic	= SceneGraph->at(i).light_quadratic;
 		
-		m_displayList.push_back(newDisplayObject);
-		
+		m_displayList.push_back(newDisplayObject);		
+	}		
+}
+
+void Game::UpdateSceneList(std::vector<GameObject>* SceneGraph)
+{
+	//for every item in the scenegraph
+	int numObjects = SceneGraph->size();
+	for (int i = 0; i < numObjects; i++)
+	{
+		//set position
+		SceneGraph->at(i).posX = m_displayList.at(i).m_position.x;
+		SceneGraph->at(i).posY = m_displayList.at(i).m_position.y;
+		SceneGraph->at(i).posZ = m_displayList.at(i).m_position.z;
+
+		//setorientation
+		SceneGraph->at(i).rotX = m_displayList.at(i).m_orientation.x;
+		SceneGraph->at(i).rotY = m_displayList.at(i).m_orientation.y;
+		SceneGraph->at(i).rotZ = m_displayList.at(i).m_orientation.z;
+
+		//set scale
+		SceneGraph->at(i).scaX = m_displayList.at(i).m_scale.x;
+		SceneGraph->at(i).scaY = m_displayList.at(i).m_scale.y;
+		SceneGraph->at(i).scaZ = m_displayList.at(i).m_scale.z;
+
+		//set wireframe / render flags
+		SceneGraph->at(i).render = m_displayList.at(i).m_render;
+		SceneGraph->at(i).editor_wireframe = m_displayList.at(i).m_wireframe;
+
+		SceneGraph->at(i).light_type = m_displayList.at(i).m_light_type;
+		SceneGraph->at(i).light_diffuse_r = m_displayList.at(i).m_light_diffuse_r;
+		SceneGraph->at(i).light_diffuse_g = m_displayList.at(i).m_light_diffuse_g;
+		SceneGraph->at(i).light_diffuse_b = m_displayList.at(i).m_light_diffuse_b;
+		SceneGraph->at(i).light_specular_r = m_displayList.at(i).m_light_specular_r;
+		SceneGraph->at(i).light_specular_g = m_displayList.at(i).m_light_specular_g;
+		SceneGraph->at(i).light_specular_b = m_displayList.at(i).m_light_specular_b;
+		SceneGraph->at(i).light_spot_cutoff = m_displayList.at(i).m_light_spot_cutoff;
+		SceneGraph->at(i).light_constant = m_displayList.at(i).m_light_constant;
+		SceneGraph->at(i).light_linear = m_displayList.at(i).m_light_linear;
+		SceneGraph->at(i).light_quadratic = m_displayList.at(i).m_light_quadratic;
+
+		SceneGraph->at(i).bounding_sphere.Center = DirectX::XMFLOAT3{ SceneGraph->at(i).posX , SceneGraph->at(i).posY , SceneGraph->at(i).posZ };
 	}
-		
-		
-		
 }
 
 void Game::BuildDisplayChunk(ChunkObject * SceneChunk)
@@ -414,6 +495,12 @@ void Game::BuildDisplayChunk(ChunkObject * SceneChunk)
 void Game::SaveDisplayChunk(ChunkObject * SceneChunk)
 {
 	m_displayChunk.SaveHeightMap();			//save heightmap to file.
+}
+
+DirectX::SimpleMath::Vector3 Game::GetDisplayObjPos(int objID)
+{
+	DirectX::SimpleMath::Vector3 position = m_displayList[objID].m_position;
+	return position;
 }
 
 #ifdef DXTK_AUDIO

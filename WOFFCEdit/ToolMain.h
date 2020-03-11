@@ -8,6 +8,18 @@
 #include "InputCommands.h"
 #include <vector>
 
+struct ScreenPosToWorldSpaceReturn
+{
+	DirectX::SimpleMath::Vector3 pos;
+	DirectX::SimpleMath::Vector3 direction;
+};
+
+enum GrabbedAxis
+{
+	x,
+	y,
+	z
+};
 
 class ToolMain
 {
@@ -26,7 +38,7 @@ public: //methods
 	void	Tick(MSG *msg);
 	void	UpdateInput(MSG *msg);
 
-	inline std::vector<SceneObject> GetSceneGraph() { return GameGraphToSceneGraph(m_gameGraph); }
+	//inline std::vector<SceneObject> GetSceneGraph() { return GameGraphToSceneGraph(m_gameGraph); }
 
 public:	//variables
 	//std::vector<SceneObject>    m_sceneGraph;	//our scenegraph storing all the objects in the current chunk
@@ -39,7 +51,7 @@ private:	//methods
 
 	std::vector<SceneObject> GameGraphToSceneGraph(std::vector<GameObject> in_gameGraph);
 
-
+	ScreenPosToWorldSpaceReturn ScreenPosToWorldSpace(int x, int y);
 		
 private:	//variables
 	HWND	m_toolHandle;		//Handle to the  window
@@ -49,23 +61,26 @@ private:	//variables
 	char	m_keyArray[256];
 	sqlite3 *m_databaseConnection;	//sqldatabase handle
 
-
-	//Mouse
+	//Mouse Variables
 	bool MouseCollision();
-
+	bool MouseClickedObj(DirectX::SimpleMath::Ray ray);
 	void MouseLDown(MSG* msg);
 	void MouseLUp(MSG* msg);
 	void MouseRDown(MSG* msg);
 	void MouseRUp(MSG* msg);
-	bool	mouseActive = false;
+
+	bool	mouseGrabbing = false;
+	GrabbedAxis grabbedAxis;
+	float	mouseGrabbedCoords[2];
 	bool	m_once = false;
 	float	mouse_x;
 	float	mouse_y;
 
 	int m_width;		//dimensions passed to directX
 	int m_height;
-	int m_currentChunk;			//the current chunk of thedatabase that we are operating on.  Dictates loading and saving. 
-	
+	int m_currentChunk;			//the current chunk of thedatabase that we are operating on.  Dictates loading and saving. 	
 
-	
+	DirectX::BoundingSphere m_axisSphereX;
+	DirectX::BoundingSphere m_axisSphereY;
+	DirectX::BoundingSphere m_axisSphereZ;
 };

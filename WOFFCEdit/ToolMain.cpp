@@ -1,6 +1,7 @@
 #include "ToolMain.h"
 #include "resource.h"
 #include <vector>
+#include <iostream>
 #include <sstream>
 
 using namespace DirectX::SimpleMath;
@@ -9,7 +10,7 @@ using namespace DirectX::SimpleMath;
 //ToolMain Class
 ToolMain::ToolMain()
 {
-	
+
 	m_currentChunk = 0;		//default value
 	m_selectedObject = 0;	//initial selection ID
 	//m_sceneGraph.clear();	//clear the vector for the scenegraph
@@ -17,19 +18,28 @@ ToolMain::ToolMain()
 	m_databaseConnection = NULL;
 
 	//zero input commands
-	m_toolInputCommands.forward		= false;
-	m_toolInputCommands.back		= false;
-	m_toolInputCommands.left		= false;
-	m_toolInputCommands.right		= false;
-	m_toolInputCommands.up			= false;
-	m_toolInputCommands.down		= false;
-	m_toolInputCommands.rotRight	= false;
-	m_toolInputCommands.rotLeft		= false;
+	m_toolInputCommands.forward = false;
+	m_toolInputCommands.back = false;
+	m_toolInputCommands.left = false;
+	m_toolInputCommands.right = false;
+	m_toolInputCommands.up = false;
+	m_toolInputCommands.down = false;
+	m_toolInputCommands.rotRight = false;
+	m_toolInputCommands.rotLeft = false;
 	m_toolInputCommands.rotUp = false;
 	m_toolInputCommands.rotDown = false;
-	m_toolInputCommands.mouseRotation = false;
-}
+	m_toolInputCommands.mouseControls = false;
 
+	//collision used for axis alligned arrows when grabbing objects.
+	m_axisSphereX.Center = DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f };
+	m_axisSphereX.Radius = 0.0f;
+
+	m_axisSphereY.Center = DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f };
+	m_axisSphereY.Radius = 0.0f;
+
+	m_axisSphereZ.Center = DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f };
+	m_axisSphereZ.Radius = 0.0f;
+}
 
 ToolMain::~ToolMain()
 {
@@ -160,7 +170,6 @@ void ToolMain::onActionLoad()
 		newSceneObject.bounding_sphere = bounding_sphere;
 
 		//send completed object to scenegraph
-		//m_sceneGraph.push_back(newSceneObject);
 		m_gameGraph.push_back(newSceneObject);
 	}
 
@@ -218,6 +227,10 @@ void ToolMain::onActionSave()
 
 	//Populate with our new objects
 	std::wstring sqlCommand2;
+	
+	//Update the scene list to match the current display list info.
+	m_d3dRenderer.UpdateSceneList(&m_gameGraph);
+
 	int numObjects = m_gameGraph.size();	//Loop thru the scengraph.
 
 	for (int i = 0; i < numObjects; i++)
@@ -310,7 +323,7 @@ void ToolMain::Tick(MSG *msg)
 	//Renderer Update Call
 	m_d3dRenderer.Tick(&m_toolInputCommands);	
 
-	if (m_toolInputCommands.mouseRotation)
+	if (m_toolInputCommands.mouseControls)
 	{
 		//Set cursor position to screen centre whilst mouse controls active.
 		GetWindowRect(m_toolHandle, &WindowRECT);
@@ -359,90 +372,90 @@ void ToolMain::UpdateInput(MSG * msg)
 	}
 
 	//here we update all the actual app functionality that we want.  This information will either be used int toolmain, or sent down to the renderer (Camera movement etc
-	//WASD movement
-	if (m_keyArray['W'])
-	{
-		m_toolInputCommands.forward = true;
-	}
-	else m_toolInputCommands.forward = false;
-
-	if (m_keyArray['S'])
-	{
-		m_toolInputCommands.back = true;
-	}
-	else m_toolInputCommands.back = false;
-
-	if (m_keyArray['A'])
-	{
-		m_toolInputCommands.left = true;
-	}
-	else m_toolInputCommands.left = false;
-
-	if (m_keyArray['D'])
-	{
-		m_toolInputCommands.right = true;
-	}
-	else m_toolInputCommands.right = false;
-
-	if (m_keyArray['E'])
-	{
-		m_toolInputCommands.up = true;
-	}
-	else m_toolInputCommands.up = false;
-
-	if (m_keyArray['Q'])
-	{
-		m_toolInputCommands.down = true;
-	}
-	else m_toolInputCommands.down = false;
-
-	if (m_keyArray[16])
-	{
-		m_toolInputCommands.camMove = 2.0f;
-
-	}
-	else m_toolInputCommands.camMove = 1.0f;
-
 	//Mouse controls
-	if (m_toolInputCommands.mouseRotation)
+	if (m_toolInputCommands.mouseControls)
 	{
-		if (m_once)
+		//WASD movement
+		if (m_keyArray['W'])
 		{
-			std::vector<int> rotate{ 0, 0 };
-			if (mouse_x > m_width / 2)
-			{
-				m_toolInputCommands.rotRight = true;
-				rotate[0] = std::abs((m_width / 2) - mouse_x);
-			}
-			else m_toolInputCommands.rotRight = false;
-
-			if (mouse_x < m_width / 2)
-			{
-				m_toolInputCommands.rotLeft = true;
-				rotate[0] = std::abs((m_width / 2) - mouse_x);
-			}
-			else  m_toolInputCommands.rotLeft = false;
-
-			if (mouse_y < m_height / 2)
-			{
-				m_toolInputCommands.rotUp = true;
-				rotate[1] = std::abs((m_height / 2) - mouse_y);
-			}
-			else m_toolInputCommands.rotUp = false;
-
-			if (mouse_y > m_height / 2)
-			{
-				m_toolInputCommands.rotDown = true;
-				rotate[1] = std::abs((m_height / 2) - mouse_y);
-			}
-			else m_toolInputCommands.rotDown = false;
-
-			//m_toolInputCommands.camRotate = std::sqrt((rotate[0] * rotate[0]) + (rotate[1] * rotate[1]));
-
-			m_toolInputCommands.camRotateX = rotate[0];
-			m_toolInputCommands.camRotateY = rotate[1];
+			m_toolInputCommands.forward = true;
 		}
-		m_once = true;
+		else m_toolInputCommands.forward = false;
+
+		if (m_keyArray['S'])
+		{
+			m_toolInputCommands.back = true;
+		}
+		else m_toolInputCommands.back = false;
+
+		if (m_keyArray['A'])
+		{
+			m_toolInputCommands.left = true;
+		}
+		else m_toolInputCommands.left = false;
+
+		if (m_keyArray['D'])
+		{
+			m_toolInputCommands.right = true;
+		}
+		else m_toolInputCommands.right = false;
+
+		if (m_keyArray['E'])
+		{
+			m_toolInputCommands.up = true;
+		}
+		else m_toolInputCommands.up = false;
+
+		if (m_keyArray['Q'])
+		{
+			m_toolInputCommands.down = true;
+		}
+		else m_toolInputCommands.down = false;
+
+		if (m_keyArray[16])
+		{
+			m_toolInputCommands.camMove = 2.0f;
+
+		}
+		else m_toolInputCommands.camMove = 1.0f;
+
+			if (m_once)
+			{
+				std::vector<int> rotate{ 0, 0 };
+				if (mouse_x > m_width / 2)
+				{
+					m_toolInputCommands.rotRight = true;
+					rotate[0] = std::abs((m_width / 2) - mouse_x);
+				}
+				else m_toolInputCommands.rotRight = false;
+
+				if (mouse_x < m_width / 2)
+				{
+					m_toolInputCommands.rotLeft = true;
+					rotate[0] = std::abs((m_width / 2) - mouse_x);
+				}
+				else  m_toolInputCommands.rotLeft = false;
+
+				if (mouse_y < m_height / 2)
+				{
+					m_toolInputCommands.rotUp = true;
+					rotate[1] = std::abs((m_height / 2) - mouse_y);
+				}
+				else m_toolInputCommands.rotUp = false;
+
+				if (mouse_y > m_height / 2)
+				{
+					m_toolInputCommands.rotDown = true;
+					rotate[1] = std::abs((m_height / 2) - mouse_y);
+				}
+				else m_toolInputCommands.rotDown = false;
+
+				//m_toolInputCommands.camRotateX = std::sqrt((rotate[0] * rotate[0]) + (rotate[1] * rotate[1]));
+
+				m_toolInputCommands.camRotateX = rotate[0];
+				m_toolInputCommands.camRotateY = rotate[1];
+			}
+			m_once = true;
 	}
 	else
 	{
@@ -450,31 +463,89 @@ void ToolMain::UpdateInput(MSG * msg)
 		m_toolInputCommands.rotDown = false;
 		m_toolInputCommands.rotLeft = false;
 		m_toolInputCommands.rotRight = false;
+
+		m_toolInputCommands.forward = false;
+		m_toolInputCommands.back = false;
+		m_toolInputCommands.left = false;
+		m_toolInputCommands.right = false;
+		m_toolInputCommands.up = false;
+		m_toolInputCommands.down = false;
 	}
 
-	//// MOVE SELECTED OBJECTS
-	if (m_keyArray['I'])
+	//Mouse Grab movement
+	if (mouseGrabbing)
 	{
-		m_gameGraph[m_selectedObject].posZ += 0.1;
-		m_gameGraph[m_selectedObject].bounding_sphere.Center = m_gameGraph[m_selectedObject].bounding_sphere.Center + DirectX::XMFLOAT3(0.0f, 0.0f, 0.01f);
-	} 
+		switch (grabbedAxis)
+		{
+		case GrabbedAxis::x :
 
-	if (m_keyArray['K'])
-	{
-		m_gameGraph[m_selectedObject].posZ -= 0.1;
-		m_gameGraph[m_selectedObject].bounding_sphere.Center = m_gameGraph[m_selectedObject].bounding_sphere.Center - DirectX::XMFLOAT3(0.01f, 0.0f, 0.0f);
+			if (mouse_x < mouseGrabbedCoords[0] - 1)
+			{
+				m_toolInputCommands.moveObjRight = true;
+				m_toolInputCommands.objMove = std::abs(mouseGrabbedCoords[0] - mouse_x);
+			}
+			else m_toolInputCommands.moveObjRight = false;
+
+			if (mouse_x > mouseGrabbedCoords[0] + 1)
+			{
+				m_toolInputCommands.moveObjLeft = true;
+				m_toolInputCommands.objMove = std::abs(mouseGrabbedCoords[0] - mouse_x);
+			}
+			else m_toolInputCommands.moveObjLeft = false;
+
+			break;
+
+		case GrabbedAxis::y:
+
+			if (mouse_y < mouseGrabbedCoords[1] - 1)
+			{
+				m_toolInputCommands.moveObjUp = true;
+				m_toolInputCommands.objMove = std::abs(mouseGrabbedCoords[1] - mouse_y);
+			}
+			else m_toolInputCommands.moveObjUp = false;
+
+			if (mouse_y > mouseGrabbedCoords[1] + 1)
+			{
+				m_toolInputCommands.moveObjDown = true;
+				m_toolInputCommands.objMove = std::abs(mouseGrabbedCoords[1] - mouse_y);
+			}
+			else m_toolInputCommands.moveObjDown = false;
+
+			break;
+
+		case GrabbedAxis::z:
+
+			if (mouse_x < mouseGrabbedCoords[0] - 1)
+			{
+				m_toolInputCommands.moveObjForward = true;
+				m_toolInputCommands.objMove = std::abs(mouseGrabbedCoords[0] - mouse_x);
+			}
+			else m_toolInputCommands.moveObjForward = false;
+
+			if (mouse_x > mouseGrabbedCoords[0] + 1)
+			{
+				m_toolInputCommands.moveObjBack = true;
+				m_toolInputCommands.objMove = std::abs(mouseGrabbedCoords[0] - mouse_x);
+			}
+			else m_toolInputCommands.moveObjBack = false;
+
+			break;
+
+		}
+
+		
+
+		mouseGrabbedCoords[0] = mouse_x;
+		mouseGrabbedCoords[1] = mouse_y;		
 	}
-
-	if (m_keyArray['J'])
+	else
 	{
-		m_gameGraph[m_selectedObject].posX -= 0.1;
-		m_gameGraph[m_selectedObject].bounding_sphere.Center = m_gameGraph[m_selectedObject].bounding_sphere.Center - DirectX::XMFLOAT3(0.01f, 0.0f, 0.01f);
-	}
-
-	if (m_keyArray['L'])
-	{
-		m_gameGraph[m_selectedObject].posX += 0.1;
-		m_gameGraph[m_selectedObject].bounding_sphere.Center = m_gameGraph[m_selectedObject].bounding_sphere.Center + DirectX::XMFLOAT3(0.01f, 0.0f, 0.01f);
+		m_toolInputCommands.moveObjRight = false;
+		m_toolInputCommands.moveObjLeft = false;
+		m_toolInputCommands.moveObjUp = false;
+		m_toolInputCommands.moveObjDown = false;
+		m_toolInputCommands.moveObjForward = false;
+		m_toolInputCommands.moveObjBack = false;
 	}
 }
 
@@ -549,9 +620,9 @@ std::vector<SceneObject> ToolMain::GameGraphToSceneGraph(std::vector<GameObject>
 	return sceneGraph;
 }
 
-bool ToolMain::MouseCollision()
+ScreenPosToWorldSpaceReturn ToolMain::ScreenPosToWorldSpace(int x, int y)
 {
-	bool collision = false;
+	ScreenPosToWorldSpaceReturn return_struct;
 
 	// create 2 positions in screenspace using the cursor position
 	Vector3 nearSource = Vector3(mouse_x, mouse_y, 0.0f);
@@ -569,39 +640,93 @@ bool ToolMain::MouseCollision()
 	Vector3 direction = farPoint - nearPoint;
 	direction.Normalize();
 
-	//Create bounding box, set extents and center.
-	const DirectX::XMFLOAT3 f1{ 1, 1, 1 };
-	const DirectX::XMFLOAT3 p1{ m_gameGraph[m_selectedObject].posX,  m_gameGraph[m_selectedObject].posY,  m_gameGraph[m_selectedObject].posZ };
-	const float r1 = 1.0f;
-	const DirectX::BoundingSphere bounding_sphere(p1, r1);
+	return_struct.pos = nearPoint;
+	return_struct.direction = direction;
 
-	// create a ray using nearPoint as the source
+	return return_struct;
+}
+
+bool ToolMain::MouseCollision()
+{
+	//Save mouse pos and direction in world space
+	ScreenPosToWorldSpaceReturn mouse_pos = ScreenPosToWorldSpace(mouse_x, mouse_y);
+
+	// create a ray using mouse pos and direction
 	Ray ray;
-	ray.position = nearPoint;
-	ray.direction = direction;
+	ray.position = mouse_pos.pos;
+	ray.direction = mouse_pos.direction;
 	
+	//has the mouse clicked an obj
+	bool collision = MouseClickedObj(ray);
+
+	//std::vector<SceneObject> sceneGraph = GameGraphToSceneGraph(m_gameGraph);
+	//m_d3dRenderer.BuildDisplayList(&sceneGraph);
+
+	return collision;
+}
+
+bool ToolMain::MouseClickedObj(DirectX::SimpleMath::Ray ray)
+{
 	float dist = 0;
+
+	if (ray.Intersects(m_axisSphereX, dist))
+	{
+		grabbedAxis = GrabbedAxis::x;
+
+		mouseGrabbing = true;
+		mouseGrabbedCoords[0] = mouse_x;
+		mouseGrabbedCoords[1] = mouse_y;
+	}
+	else if (ray.Intersects(m_axisSphereY, dist))
+	{
+		grabbedAxis = GrabbedAxis::y;
+
+		mouseGrabbing = true;
+		mouseGrabbedCoords[0] = mouse_x;
+		mouseGrabbedCoords[1] = mouse_y;
+	}
+	else if (ray.Intersects(m_axisSphereZ, dist))
+	{
+		grabbedAxis = GrabbedAxis::z;
+
+		mouseGrabbing = true;
+		mouseGrabbedCoords[0] = mouse_x;
+		mouseGrabbedCoords[1] = mouse_y;
+	}
+
 	for (int i = 0; i < m_gameGraph.size(); i++)
 	{
 		if (ray.Intersects(m_gameGraph[i].bounding_sphere, dist))
 		{
-			collision = true;
-			m_toolInputCommands.intersects = dist;
-
 			//Set the selected object to be the object collision occurs with
 			m_selectedObject = i;
-			break;
-		}
-		else
-		{
-			m_toolInputCommands.intersects = 0;
-		}
-	}
+			m_d3dRenderer.SetSelectedObj(i);
 
-	std::vector<SceneObject> sceneGraph = GameGraphToSceneGraph(m_gameGraph);
-	m_d3dRenderer.BuildDisplayList(&sceneGraph);
+			DirectX::XMFLOAT3 c1{ m_gameGraph[i].posX + 2.0f, m_gameGraph[i].posY, m_gameGraph[i].posZ };
+			DirectX::XMFLOAT3 c2{ m_gameGraph[i].posX, m_gameGraph[i].posY + 2.0f, m_gameGraph[i].posZ };
+			DirectX::XMFLOAT3 c3{ m_gameGraph[i].posX, m_gameGraph[i].posY, m_gameGraph[i].posZ + 3.0f };
 
-	return collision;
+			m_axisSphereX.Center = c1;
+			m_axisSphereY.Center = c2;
+			m_axisSphereZ.Center = c3;
+		
+			m_axisSphereX.Radius = 2.0f;
+			m_axisSphereY.Radius = 2.0f;
+			m_axisSphereZ.Radius = 2.0f;
+
+			//mouseGrabbing = true;
+			//mouseGrabbedCoords[0] = mouse_x;
+			//mouseGrabbedCoords[1] = mouse_y;
+
+			return true;
+		}
+	}	
+
+	m_axisSphereX.Radius = 0.0f;
+	m_axisSphereY.Radius = 0.0f;
+	m_axisSphereZ.Radius = 0.0f;
+
+	return false;
 }
 
 void ToolMain::MouseLDown(MSG* msg)
@@ -611,15 +736,25 @@ void ToolMain::MouseLDown(MSG* msg)
 
 void ToolMain::MouseLUp(MSG* msg)
 {
+	if (mouseGrabbing)
+	{
+		//Update the scene list to match the current display list info.
+		m_d3dRenderer.UpdateSceneList(&m_gameGraph);
+		mouseGrabbing = false;
+
+		m_axisSphereX.Center = DirectX::XMFLOAT3 { m_gameGraph[m_selectedObject].posX + 2.0f, m_gameGraph[m_selectedObject].posY, m_gameGraph[m_selectedObject].posZ };
+		m_axisSphereY.Center = DirectX::XMFLOAT3 { m_gameGraph[m_selectedObject].posX, m_gameGraph[m_selectedObject].posY + 2.0f, m_gameGraph[m_selectedObject].posZ };
+		m_axisSphereZ.Center = DirectX::XMFLOAT3 { m_gameGraph[m_selectedObject].posX, m_gameGraph[m_selectedObject].posY, m_gameGraph[m_selectedObject].posZ + 2.0f };
+	}
 }
 
 void ToolMain::MouseRDown(MSG* msg)
 {
-	m_toolInputCommands.mouseRotation = true;
+	m_toolInputCommands.mouseControls = true;
 	m_once = false;
 }
 
 void ToolMain::MouseRUp(MSG* msg)
 {
-	m_toolInputCommands.mouseRotation = false;
+	m_toolInputCommands.mouseControls = false;
 }

@@ -6,8 +6,8 @@ using namespace DirectX::SimpleMath;
 Camera::Camera()
 {
 	//functional
-	m_movespeed = 0.30;
-	m_camRotRate = 0.01;
+	m_movespeed = 10.0f;
+	m_camRotRate = 1.0f;
 
 	//camera
 	m_camPosition.x = 0.0f;
@@ -48,21 +48,21 @@ Camera::~Camera()
 {
 }
 
-DirectX::SimpleMath::Matrix Camera::Update(InputCommands _InputCommands)
+DirectX::SimpleMath::Matrix Camera::Update(float dt, InputCommands _InputCommands)
 {
 	if (_InputCommands.rotRight)
 	{
-		m_camOrientation.y -= m_camRotRate * _InputCommands.camRotateX ;
+		m_camOrientation.y -= dt * (m_camRotRate * _InputCommands.camRotateX);
 	}
 	if (_InputCommands.rotLeft)
 	{
-		m_camOrientation.y += m_camRotRate * _InputCommands.camRotateX;
+		m_camOrientation.y += dt * (m_camRotRate * _InputCommands.camRotateX);
 	}
 	if (_InputCommands.rotUp)
 	{
 		if (m_camOrientation.z < 1.5508)
 		{
-			m_camOrientation.z += m_camRotRate * _InputCommands.camRotateY;
+			m_camOrientation.z += dt * (m_camRotRate * _InputCommands.camRotateY);
 
 			if (m_camOrientation.z > 1.5508)
 			{
@@ -74,7 +74,7 @@ DirectX::SimpleMath::Matrix Camera::Update(InputCommands _InputCommands)
 	{
 		if (m_camOrientation.z > -1.5508)
 		{
-			m_camOrientation.z -= m_camRotRate * _InputCommands.camRotateY;
+			m_camOrientation.z -= dt * (m_camRotRate * _InputCommands.camRotateY);
 
 			if (m_camOrientation.z < -1.5508)
 			{
@@ -106,27 +106,27 @@ DirectX::SimpleMath::Matrix Camera::Update(InputCommands _InputCommands)
 	//process input and update stuff
 	if (_InputCommands.forward)
 	{
-		m_camPosition += m_camLookDirection * (m_movespeed * _InputCommands.camMove);
+		m_camPosition += dt * (m_camLookDirection * (m_movespeed * _InputCommands.camMove));
 	}
 	if (_InputCommands.back)
 	{
-		m_camPosition -= m_camLookDirection * (m_movespeed * _InputCommands.camMove);
+		m_camPosition -= dt * (m_camLookDirection * (m_movespeed * _InputCommands.camMove));
 	}
 	if (_InputCommands.right)
 	{
-		m_camPosition += m_camRight * (m_movespeed * _InputCommands.camMove);
+		m_camPosition += dt * (m_camRight * (m_movespeed * _InputCommands.camMove));
 	}
 	if (_InputCommands.left)
 	{
-		m_camPosition -= m_camRight * (m_movespeed * _InputCommands.camMove);
+		m_camPosition -= dt * (m_camRight * (m_movespeed * _InputCommands.camMove));
 	}
 	if (_InputCommands.up)
 	{
-		m_camPosition += m_camUp * (m_movespeed * _InputCommands.camMove);
+		m_camPosition += dt * (m_camUp * (m_movespeed * _InputCommands.camMove));
 	}
 	if (_InputCommands.down)
 	{
-		m_camPosition -= m_camUp * (m_movespeed * _InputCommands.camMove);
+		m_camPosition -= dt * (m_camUp * (m_movespeed * _InputCommands.camMove));
 	}
 
 	//update lookat point
