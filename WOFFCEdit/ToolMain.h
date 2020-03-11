@@ -80,7 +80,7 @@ private:	//variables
 	int m_height;
 	int m_currentChunk;			//the current chunk of thedatabase that we are operating on.  Dictates loading and saving. 	
 
-	DirectX::BoundingSphere m_axisSphereX;
-	DirectX::BoundingSphere m_axisSphereY;
-	DirectX::BoundingSphere m_axisSphereZ;
+	DirectX::BoundingBox m_axisBoxX;
+	DirectX::BoundingBox m_axisBoxY;
+	DirectX::BoundingBox m_axisBoxZ;
 };

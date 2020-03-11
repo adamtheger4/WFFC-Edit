@@ -206,6 +206,11 @@ void Game::Render()
 	//Render the batch,  This is handled in the Display chunk becuase it has the potential to get complex
 	m_displayChunk.RenderBatch(m_deviceResources);
 
+	if (renderAxisArrows)
+	{
+		DrawAxisArrows(x_arrow, y_arrow, z_arrow, Colors::Red);
+	}
+
 	//////////////////////// SPRITES //////////////////////// 
 	//CAMERA POSITION ON HUD
 	m_sprites->Begin();
@@ -286,10 +291,35 @@ void XM_CALLCONV Game::DrawGrid(FXMVECTOR xAxis, FXMVECTOR yAxis, FXMVECTOR orig
 
     m_deviceResources->PIXEndEvent();
 }
+#pragma endregion
+
 void Game::DrawAxisArrows(DirectX::SimpleMath::Vector3 v1, DirectX::SimpleMath::Vector3 v2, DirectX::SimpleMath::Vector3 v3, DirectX::GXMVECTOR color)
 {
+	auto context = m_deviceResources->GetD3DDeviceContext();
+	context->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
+	context->OMSetDepthStencilState(m_states->DepthNone(), 0);
+	context->RSSetState(m_states->CullCounterClockwise());
+
+	m_batchEffect->Apply(context);
+
+	context->IASetInputLayout(m_batchInputLayout.Get());
+
+	m_batch->Begin();
+
+	VertexPositionColor s1(v1, color);
+	VertexPositionColor e1(v1 + DirectX::SimpleMath::Vector3{ 2.0f, 0.0f, 0.0f}, color);
+	m_batch->DrawLine(s1, e1);
+
+	VertexPositionColor s2(v2, color);
+	VertexPositionColor e2(v2 + DirectX::SimpleMath::Vector3{ 0.0f, 2.0f, 0.0f }, color);
+	m_batch->DrawLine(s2, e2);
+
+	VertexPositionColor s3(v3, color);
+	VertexPositionColor e3(v3 + DirectX::SimpleMath::Vector3{ 0.0f, 0.0f, 2.0f }, color);
+	m_batch->DrawLine(s3, e3);
+
+	m_batch->End();
 }
-#pragma endregion
 
 void Game::HandleInput()
 {
@@ -501,6 +531,14 @@ DirectX::SimpleMath::Vector3 Game::GetDisplayObjPos(int objID)
 {
 	DirectX::SimpleMath::Vector3 position = m_displayList[objID].m_position;
 	return position;
+}
+
+DirectX::XMFLOAT4 Game::GetDisplayObjOrientation(int objID)
+{
+	DirectX::SimpleMath::Vector3 orientation = m_displayList[objID].m_orientation;
+	DirectX::XMFLOAT4 f{ orientation.x, orientation.y, orientation.z, 1.0f };
+
+	return f;
 }
 
 #ifdef DXTK_AUDIO

@@ -31,14 +31,23 @@ ToolMain::ToolMain()
 	m_toolInputCommands.mouseControls = false;
 
 	//collision used for axis alligned arrows when grabbing objects.
-	m_axisSphereX.Center = DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f };
-	m_axisSphereX.Radius = 0.0f;
 
-	m_axisSphereY.Center = DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f };
-	m_axisSphereY.Radius = 0.0f;
+	//m_axisBoxX.Center = DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f };
+	//m_axisBoxX.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f };
+	//m_axisBoxX.Orientation = DirectX::XMFLOAT4{ 0.0f, 0.0f, 0.0f, 0.0f };
 
-	m_axisSphereZ.Center = DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f };
-	m_axisSphereZ.Radius = 0.0f;
+	//m_axisBoxY.Center = DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f };
+	//m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f };
+	//m_axisBoxY.Orientation = DirectX::XMFLOAT4{ 0.0f, 0.0f, 0.0f, 0.0f };
+
+	//m_axisBoxZ.Center = DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f };
+	//m_axisBoxZ.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f };
+	//m_axisBoxZ.Orientation = DirectX::XMFLOAT4{ 0.0f, 0.0f, 0.0f, 0.0f };
+
+	m_axisBoxX.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
+	m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
+	m_axisBoxZ.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
+
 }
 
 ToolMain::~ToolMain()
@@ -74,6 +83,13 @@ void ToolMain::onActionInitialise(HWND handle, int width, int height)
 	{
 		TRACE("Opened database successfully");
 	}
+
+
+	mouseGrabbing = false;
+	m_axisBoxX.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
+	m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
+	m_axisBoxZ.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
+
 
 	onActionLoad();
 }
@@ -526,14 +542,17 @@ void ToolMain::UpdateInput(MSG * msg)
 			{
 				m_toolInputCommands.moveObjBack = true;
 				m_toolInputCommands.objMove = std::abs(mouseGrabbedCoords[0] - mouse_x);
+			
 			}
 			else m_toolInputCommands.moveObjBack = false;
 
 			break;
+		}		
 
-		}
-
-		
+		DirectX::SimpleMath::Vector3 pos = m_d3dRenderer.GetDisplayObjPos(m_selectedObject);
+		m_d3dRenderer.x_arrow = DirectX::SimpleMath::Vector3{ pos.x, pos.y, pos.z };
+		m_d3dRenderer.y_arrow = DirectX::SimpleMath::Vector3{ pos.x, pos.y, pos.z };
+		m_d3dRenderer.z_arrow = DirectX::SimpleMath::Vector3{ pos.x, pos.y, pos.z };
 
 		mouseGrabbedCoords[0] = mouse_x;
 		mouseGrabbedCoords[1] = mouse_y;		
@@ -659,9 +678,6 @@ bool ToolMain::MouseCollision()
 	//has the mouse clicked an obj
 	bool collision = MouseClickedObj(ray);
 
-	//std::vector<SceneObject> sceneGraph = GameGraphToSceneGraph(m_gameGraph);
-	//m_d3dRenderer.BuildDisplayList(&sceneGraph);
-
 	return collision;
 }
 
@@ -669,29 +685,35 @@ bool ToolMain::MouseClickedObj(DirectX::SimpleMath::Ray ray)
 {
 	float dist = 0;
 
-	if (ray.Intersects(m_axisSphereX, dist))
+	if (ray.Intersects(m_axisBoxX, dist))
 	{
 		grabbedAxis = GrabbedAxis::x;
 
 		mouseGrabbing = true;
 		mouseGrabbedCoords[0] = mouse_x;
 		mouseGrabbedCoords[1] = mouse_y;
+
+		return true;
 	}
-	else if (ray.Intersects(m_axisSphereY, dist))
+	else if (ray.Intersects(m_axisBoxY, dist))
 	{
 		grabbedAxis = GrabbedAxis::y;
 
 		mouseGrabbing = true;
 		mouseGrabbedCoords[0] = mouse_x;
 		mouseGrabbedCoords[1] = mouse_y;
+
+		return true;
 	}
-	else if (ray.Intersects(m_axisSphereZ, dist))
+	else if (ray.Intersects(m_axisBoxZ, dist))
 	{
 		grabbedAxis = GrabbedAxis::z;
 
 		mouseGrabbing = true;
 		mouseGrabbedCoords[0] = mouse_x;
 		mouseGrabbedCoords[1] = mouse_y;
+
+		return true;
 	}
 
 	for (int i = 0; i < m_gameGraph.size(); i++)
@@ -702,29 +724,31 @@ bool ToolMain::MouseClickedObj(DirectX::SimpleMath::Ray ray)
 			m_selectedObject = i;
 			m_d3dRenderer.SetSelectedObj(i);
 
-			DirectX::XMFLOAT3 c1{ m_gameGraph[i].posX + 2.0f, m_gameGraph[i].posY, m_gameGraph[i].posZ };
-			DirectX::XMFLOAT3 c2{ m_gameGraph[i].posX, m_gameGraph[i].posY + 2.0f, m_gameGraph[i].posZ };
-			DirectX::XMFLOAT3 c3{ m_gameGraph[i].posX, m_gameGraph[i].posY, m_gameGraph[i].posZ + 3.0f };
+			DirectX::XMFLOAT3 c1{ m_gameGraph[i].posX + 1.0f, m_gameGraph[i].posY, m_gameGraph[i].posZ };
+			DirectX::XMFLOAT3 c2{ m_gameGraph[i].posX, m_gameGraph[i].posY + 1.0f, m_gameGraph[i].posZ };
+			DirectX::XMFLOAT3 c3{ m_gameGraph[i].posX, m_gameGraph[i].posY, m_gameGraph[i].posZ + 1.0f };
 
-			m_axisSphereX.Center = c1;
-			m_axisSphereY.Center = c2;
-			m_axisSphereZ.Center = c3;
-		
-			m_axisSphereX.Radius = 2.0f;
-			m_axisSphereY.Radius = 2.0f;
-			m_axisSphereZ.Radius = 2.0f;
+			m_axisBoxX.Center = c1;
+			m_axisBoxY.Center = c2;
+			m_axisBoxZ.Center = c3;
+	
+			m_axisBoxX.Extents = DirectX::XMFLOAT3{ 1.0f, 0.4f,  0.4f };
+			m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.4f, 1.0f,  0.4f };
+			m_axisBoxZ.Extents = DirectX::XMFLOAT3{ 0.2f, 0.4f,  1.0f };
 
-			//mouseGrabbing = true;
-			//mouseGrabbedCoords[0] = mouse_x;
-			//mouseGrabbedCoords[1] = mouse_y;
+			m_d3dRenderer.renderAxisArrows = true;
+			m_d3dRenderer.x_arrow = DirectX::XMFLOAT3{ m_gameGraph[i].posX, m_gameGraph[i].posY, m_gameGraph[i].posZ };
+			m_d3dRenderer.y_arrow = DirectX::XMFLOAT3{ m_gameGraph[i].posX, m_gameGraph[i].posY, m_gameGraph[i].posZ };
+			m_d3dRenderer.z_arrow = DirectX::XMFLOAT3{ m_gameGraph[i].posX, m_gameGraph[i].posY, m_gameGraph[i].posZ };
 
 			return true;
 		}
-	}	
+	}
 
-	m_axisSphereX.Radius = 0.0f;
-	m_axisSphereY.Radius = 0.0f;
-	m_axisSphereZ.Radius = 0.0f;
+	m_d3dRenderer.renderAxisArrows = false;
+	m_axisBoxX.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
+	m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
+	m_axisBoxZ.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
 
 	return false;
 }
@@ -742,9 +766,9 @@ void ToolMain::MouseLUp(MSG* msg)
 		m_d3dRenderer.UpdateSceneList(&m_gameGraph);
 		mouseGrabbing = false;
 
-		m_axisSphereX.Center = DirectX::XMFLOAT3 { m_gameGraph[m_selectedObject].posX + 2.0f, m_gameGraph[m_selectedObject].posY, m_gameGraph[m_selectedObject].posZ };
-		m_axisSphereY.Center = DirectX::XMFLOAT3 { m_gameGraph[m_selectedObject].posX, m_gameGraph[m_selectedObject].posY + 2.0f, m_gameGraph[m_selectedObject].posZ };
-		m_axisSphereZ.Center = DirectX::XMFLOAT3 { m_gameGraph[m_selectedObject].posX, m_gameGraph[m_selectedObject].posY, m_gameGraph[m_selectedObject].posZ + 2.0f };
+		m_axisBoxX.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
+		m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
+		m_axisBoxZ.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
 	}
 }
 

@@ -55,6 +55,8 @@ public:
 
 	DirectX::SimpleMath::Vector3 GetDisplayObjPos(int objID);
 
+	DirectX::XMFLOAT4 GetDisplayObjOrientation(int objID);
+
 	//Object specific
 	void MoveSelectedObject(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector);
 	 
