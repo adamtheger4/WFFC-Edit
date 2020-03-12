@@ -6,6 +6,8 @@
 #include "Game.h"
 #include "DisplayObject.h"
 #include "resource.h"
+#include <sstream>
+#include <iomanip>
 #include <string>
 
 
@@ -208,7 +210,7 @@ void Game::Render()
 
 	if (renderAxisArrows)
 	{
-		DrawAxisArrows(x_arrow, y_arrow, z_arrow, Colors::Red);
+		DrawAxisArrows();
 	}
 
 	//////////////////////// SPRITES //////////////////////// 
@@ -216,8 +218,17 @@ void Game::Render()
 	m_sprites->Begin();
 	WCHAR   Buffer[256];
 	//std::wstring var = L"Cam X: " + std::to_wstring(m_camera.m_camPosition.x) + L"Cam Z: " + std::to_wstring(m_camera.m_camPosition.z);
-	std::wstring var = L"Delta Time : " + std::to_wstring(m_dt);
-	m_font->DrawString(m_sprites.get(), var.c_str(), XMFLOAT2(100, 10), Colors::Yellow);
+	std::wstring var = L"FPS : " + std::to_wstring(m_timer.GetFramesPerSecond());
+	m_font->DrawString(m_sprites.get(), var.c_str(), XMFLOAT2(10, 10), Colors::Yellow);
+	
+	std::wstring objPos = L"Position: " + std::to_wstring(m_displayList[m_selectedObject].m_position.x) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_position.y) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_position.z);
+	m_font->DrawString(m_sprites.get(), objPos.c_str(), XMFLOAT2(580, 10), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+
+	std::wstring objRot = L"Rotation: " + std::to_wstring(m_displayList[m_selectedObject].m_orientation.x) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_orientation.y) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_orientation.z);
+	m_font->DrawString(m_sprites.get(), objRot.c_str(), XMFLOAT2(580, 25), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+
+	std::wstring objSca = L"Scale:      " + std::to_wstring(m_displayList[m_selectedObject].m_scale.x) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_scale.y) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_scale.z);
+	m_font->DrawString(m_sprites.get(), objSca.c_str(), XMFLOAT2(580, 40), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
 
 	m_sprites->End();
 
@@ -285,6 +296,7 @@ void XM_CALLCONV Game::DrawGrid(FXMVECTOR xAxis, FXMVECTOR yAxis, FXMVECTOR orig
         VertexPositionColor v1(XMVectorSubtract(vScale, xAxis), color);
         VertexPositionColor v2(XMVectorAdd(vScale, xAxis), color);
         m_batch->DrawLine(v1, v2);
+
     }
 
     m_batch->End();
@@ -293,7 +305,7 @@ void XM_CALLCONV Game::DrawGrid(FXMVECTOR xAxis, FXMVECTOR yAxis, FXMVECTOR orig
 }
 #pragma endregion
 
-void Game::DrawAxisArrows(DirectX::SimpleMath::Vector3 v1, DirectX::SimpleMath::Vector3 v2, DirectX::SimpleMath::Vector3 v3, DirectX::GXMVECTOR color)
+void Game::DrawAxisArrows()
 {
 	auto context = m_deviceResources->GetD3DDeviceContext();
 	context->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
@@ -305,18 +317,38 @@ void Game::DrawAxisArrows(DirectX::SimpleMath::Vector3 v1, DirectX::SimpleMath::
 	context->IASetInputLayout(m_batchInputLayout.Get());
 
 	m_batch->Begin();
+	
+	for (int i = 0; i < m_axisBoxList.size(); i++)
+	{
+		if (i < 6)
+		{
+			VertexPositionColor v1(m_axisBoxList[i].v1, xAxisColor);
+			VertexPositionColor v2(m_axisBoxList[i].v2, xAxisColor);
+			VertexPositionColor v3(m_axisBoxList[i].v3, xAxisColor);
+			VertexPositionColor v4(m_axisBoxList[i].v4, xAxisColor);
 
-	VertexPositionColor s1(v1, color);
-	VertexPositionColor e1(v1 + DirectX::SimpleMath::Vector3{ 2.0f, 0.0f, 0.0f}, color);
-	m_batch->DrawLine(s1, e1);
+			m_batch->DrawQuad(v1, v2, v3, v4);
+		}
+		else if (i < 12)
+		{
+			VertexPositionColor v1(m_axisBoxList[i].v1, yAxisColor);
+			VertexPositionColor v2(m_axisBoxList[i].v2, yAxisColor);
+			VertexPositionColor v3(m_axisBoxList[i].v3, yAxisColor);
+			VertexPositionColor v4(m_axisBoxList[i].v4, yAxisColor);
 
-	VertexPositionColor s2(v2, color);
-	VertexPositionColor e2(v2 + DirectX::SimpleMath::Vector3{ 0.0f, 2.0f, 0.0f }, color);
-	m_batch->DrawLine(s2, e2);
+			m_batch->DrawQuad(v1, v2, v3, v4);
+		}
+		else
+		{
+			VertexPositionColor v1(m_axisBoxList[i].v1, zAxisColor);
+			VertexPositionColor v2(m_axisBoxList[i].v2, zAxisColor);
+			VertexPositionColor v3(m_axisBoxList[i].v3, zAxisColor);
+			VertexPositionColor v4(m_axisBoxList[i].v4, zAxisColor);
 
-	VertexPositionColor s3(v3, color);
-	VertexPositionColor e3(v3 + DirectX::SimpleMath::Vector3{ 0.0f, 0.0f, 2.0f }, color);
-	m_batch->DrawLine(s3, e3);
+			m_batch->DrawQuad(v1, v2, v3, v4);
+		}
+		
+	}
 
 	m_batch->End();
 }
@@ -352,6 +384,96 @@ void Game::HandleInput()
 void Game::MoveSelectedObject(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector)
 {
 	m_displayList[select_obj_ID].MoveObject(in_vector, m_dt);
+}
+
+std::vector<Quad> Game::BoxToQuads(DirectX::SimpleMath::Vector3 center, DirectX::SimpleMath::Vector3 extents)
+{
+	//Front Face
+	DirectX::SimpleMath::Vector3 v1;
+	DirectX::SimpleMath::Vector3 v2;
+	DirectX::SimpleMath::Vector3 v3;
+	DirectX::SimpleMath::Vector3 v4;
+
+	v1 = center + DirectX::SimpleMath::Vector3{ -extents.x, extents.y, extents.z };
+	v2 = center + DirectX::SimpleMath::Vector3{ -extents.x, -extents.y, extents.z };
+	v3 = center + DirectX::SimpleMath::Vector3{ extents.x, -extents.y, extents.z };
+	v4 = center + DirectX::SimpleMath::Vector3{ extents.x, extents.y, extents.z };
+
+	Quad q1;
+		 q1.v1 = v1;
+		 q1.v2 = v2;
+		 q1.v3 = v3;
+		 q1.v4 = v4;
+
+	//Back Face
+	v1 = center + DirectX::SimpleMath::Vector3{ -extents.x, extents.y, -extents.z };
+	v2 = center + DirectX::SimpleMath::Vector3{ -extents.x, -extents.y, -extents.z };
+	v3 = center + DirectX::SimpleMath::Vector3{ extents.x, -extents.y, -extents.z };
+	v4 = center + DirectX::SimpleMath::Vector3{ extents.x, extents.y, -extents.z };
+
+	Quad q2;
+		 q2.v1 = v1;
+		 q2.v2 = v2;
+		 q2.v3 = v3;
+		 q2.v4 = v4;
+
+	//Left Face
+	v1 = center + DirectX::SimpleMath::Vector3{ -extents.x, -extents.y, extents.z };
+	v2 = center + DirectX::SimpleMath::Vector3{ -extents.x, -extents.y, -extents.z };
+	v3 = center + DirectX::SimpleMath::Vector3{ -extents.x, extents.y, -extents.z };
+	v4 = center + DirectX::SimpleMath::Vector3{ -extents.x, extents.y, extents.z };
+
+	Quad q3;
+		 q3.v1 = v1;
+		 q3.v2 = v2;
+		 q3.v3 = v3;
+		 q3.v4 = v4;
+
+	//Right Face
+	v1 = center + DirectX::SimpleMath::Vector3{ extents.x, -extents.y, extents.z };
+	v2 = center + DirectX::SimpleMath::Vector3{ extents.x, -extents.y, -extents.z };
+	v3 = center + DirectX::SimpleMath::Vector3{ extents.x, extents.y, -extents.z };
+	v4 = center + DirectX::SimpleMath::Vector3{ extents.x, extents.y, extents.z };
+
+	Quad q4;
+		 q4.v1 = v1;
+		 q4.v2 = v2;
+		 q4.v3 = v3;
+		 q4.v4 = v4;
+
+	//Top Face
+	v1 = center + DirectX::SimpleMath::Vector3{ -extents.x, extents.y, extents.z };
+	v2 = center + DirectX::SimpleMath::Vector3{ -extents.x, extents.y, -extents.z };
+	v3 = center + DirectX::SimpleMath::Vector3{ extents.x, extents.y, -extents.z };
+	v4 = center + DirectX::SimpleMath::Vector3{ extents.x, extents.y, extents.z };
+
+	Quad q5;
+	q5.v1 = v1;
+	q5.v2 = v2;
+	q5.v3 = v3;
+	q5.v4 = v4;
+
+	//Bottom Face
+	v1 = center + DirectX::SimpleMath::Vector3{ -extents.x, -extents.y, extents.z };
+	v2 = center + DirectX::SimpleMath::Vector3{ -extents.x, -extents.y, -extents.z };
+	v3 = center + DirectX::SimpleMath::Vector3{ extents.x, -extents.y, -extents.z };
+	v4 = center + DirectX::SimpleMath::Vector3{ extents.x, -extents.y, extents.z };
+
+	Quad q6;
+	q6.v1 = v1;
+	q6.v2 = v2;
+	q6.v3 = v3;
+	q6.v4 = v4;
+
+	std::vector<Quad> quads;
+	quads.push_back(q1);
+	quads.push_back(q2);
+	quads.push_back(q3);
+	quads.push_back(q4);
+	quads.push_back(q5);
+	quads.push_back(q6);
+
+	return quads;
 }
 
 void Game::SetSelectedObj(int selectedID)

@@ -21,6 +21,13 @@ enum GrabbedAxis
 	z
 };
 
+enum ManipulationType
+{
+	Position,
+	Rotation,
+	Scale
+};
+
 class ToolMain
 {
 public: //methods
@@ -37,8 +44,11 @@ public: //methods
 
 	void	Tick(MSG *msg);
 	void	UpdateInput(MSG *msg);
+	void	MouseUpdate();
 
-	//inline std::vector<SceneObject> GetSceneGraph() { return GameGraphToSceneGraph(m_gameGraph); }
+	inline std::vector<SceneObject> GetSceneGraph() { return GameGraphToSceneGraph(m_gameGraph); }
+
+	inline void SetManipType(ManipulationType in_type) { m_manipType = in_type; }
 
 public:	//variables
 	//std::vector<SceneObject>    m_sceneGraph;	//our scenegraph storing all the objects in the current chunk
@@ -51,7 +61,7 @@ private:	//methods
 
 	std::vector<SceneObject> GameGraphToSceneGraph(std::vector<GameObject> in_gameGraph);
 
-	ScreenPosToWorldSpaceReturn ScreenPosToWorldSpace(int x, int y);
+	ScreenPosToWorldSpaceReturn ScreenPosToWorldSpace(float x, float y);
 		
 private:	//variables
 	HWND	m_toolHandle;		//Handle to the  window
@@ -62,6 +72,7 @@ private:	//variables
 	sqlite3 *m_databaseConnection;	//sqldatabase handle
 
 	//Mouse Variables
+	void MouseGrabbing();
 	bool MouseCollision();
 	bool MouseClickedObj(DirectX::SimpleMath::Ray ray);
 	void MouseLDown(MSG* msg);
@@ -83,4 +94,6 @@ private:	//variables
 	DirectX::BoundingBox m_axisBoxX;
 	DirectX::BoundingBox m_axisBoxY;
 	DirectX::BoundingBox m_axisBoxZ;
+
+	ManipulationType m_manipType = ManipulationType::Position;
 };

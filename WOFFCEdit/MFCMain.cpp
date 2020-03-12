@@ -7,6 +7,9 @@ BEGIN_MESSAGE_MAP(MFCMain, CWinApp)
 	ON_COMMAND(ID_FILE_SAVETERRAIN, &MFCMain::MenuFileSaveTerrain)
 	ON_COMMAND(ID_EDIT_SELECT, &MFCMain::MenuEditSelect)
 	ON_COMMAND(ID_BUTTON40001,	&MFCMain::ToolBarButton1)
+	ON_COMMAND(ID_BUTTON40014, &MFCMain::SetToolManipTypePos)
+	ON_COMMAND(ID_BUTTON40015, &MFCMain::SetToolManipTypeRot)
+	ON_COMMAND(ID_BUTTON40016, &MFCMain::SetToolManipTypeSca)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_TOOL, &CMyFrame::OnUpdatePage)
 END_MESSAGE_MAP()
 
@@ -105,10 +108,8 @@ void MFCMain::MenuEditSelect()
 
 void MFCMain::ToolBarButton1()
 {
-	
 	m_ToolSystem.onActionSave();
 }
-
 
 MFCMain::MFCMain()
 {

@@ -35,6 +35,9 @@ private:
 	afx_msg void MenuFileSaveTerrain();
 	afx_msg void MenuEditSelect();
 	afx_msg	void ToolBarButton1();
+	afx_msg	inline void SetToolManipTypePos() { m_ToolSystem.SetManipType(ManipulationType::Position); }
+	afx_msg	inline void SetToolManipTypeRot() { m_ToolSystem.SetManipType(ManipulationType::Rotation); }
+	afx_msg	inline void SetToolManipTypeSca() { m_ToolSystem.SetManipType(ManipulationType::Scale); }
 
 
 	DECLARE_MESSAGE_MAP()	// required macro for message map functionality  One per class

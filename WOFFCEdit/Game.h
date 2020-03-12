@@ -14,6 +14,13 @@
 #include "InputCommands.h"
 #include <vector>
 
+struct Quad
+{
+	DirectX::SimpleMath::Vector3 v1;
+	DirectX::SimpleMath::Vector3 v2;
+	DirectX::SimpleMath::Vector3 v3;
+	DirectX::SimpleMath::Vector3 v4;
+};
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -71,7 +78,17 @@ public:
 
 	inline DirectX::SimpleMath::Vector3 GetActiveCameraLocation() { return m_camera.m_camPosition; }
 
+	inline DirectX::Mouse::State GetMouseState() { return m_mouse->GetState(); }
+
+	std::vector<Quad> BoxToQuads(DirectX::SimpleMath::Vector3 center, DirectX::SimpleMath::Vector3 extents);
+
 	void SetSelectedObj(int selectedID);
+
+	//Used to draw axis arrows.
+	std::vector<Quad> m_axisBoxList; 
+	DirectX::XMFLOAT4 xAxisColor { 1.0f, 0.0f, 0.0f, 1.0f };
+	DirectX::XMFLOAT4 yAxisColor { 0.0f, 0.0f, 1.0f, 1.0f };
+	DirectX::XMFLOAT4 zAxisColor { 1.0f, 0.0f, 0.0f, 1.0f };
 
 #ifdef DXTK_AUDIO
 	void NewAudioDevice();
@@ -89,7 +106,7 @@ private:
 	void CreateWindowSizeDependentResources();
 
 	void XM_CALLCONV DrawGrid(DirectX::FXMVECTOR xAxis, DirectX::FXMVECTOR yAxis, DirectX::FXMVECTOR origin, size_t xdivs, size_t ydivs, DirectX::GXMVECTOR color);
-	void DrawAxisArrows(DirectX::SimpleMath::Vector3 v1, DirectX::SimpleMath::Vector3 v2, DirectX::SimpleMath::Vector3 v3, DirectX::GXMVECTOR color);
+	void DrawAxisArrows();
 
 	//tool specific
 	std::vector<DisplayObject>			m_displayList;
