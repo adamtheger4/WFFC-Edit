@@ -628,25 +628,15 @@ void ToolMain::MouseGrabbing()
 			switch (m_manipType)
 			{
 			case ManipulationType::Position:
-				if (mouse_x < mouseGrabbedCoords[0] - 1)
-				{
-					m_toolInputCommands.moveObjRight = true;
-					m_toolInputCommands.objMove = std::abs(mouseGrabbedCoords[0] - mouse_x);
-				}
-				else m_toolInputCommands.moveObjRight = false;
-
-				if (mouse_x > mouseGrabbedCoords[0] + 1)
-				{
-					m_toolInputCommands.moveObjLeft = true;
-					m_toolInputCommands.objMove = std::abs(mouseGrabbedCoords[0] - mouse_x);
-				}
-				else m_toolInputCommands.moveObjLeft = false;
+				m_d3dRenderer.MoveSelectedObject(m_selectedObject, Vector3{ mouseGrabbedCoords[0] - mouse_x , 0.0f, 0.0f });
 				break;
 
 			case ManipulationType::Rotation:
+				m_d3dRenderer.RotateSelectedObject(m_selectedObject, Vector3{ mouseGrabbedCoords[0] - mouse_x , 0.0f, 0.0f });
 				break;
 
 			case ManipulationType::Scale:
+				m_d3dRenderer.ScaleSelectedObject(m_selectedObject, Vector3{ mouseGrabbedCoords[0] - mouse_x, 0.0f, 0.0f });
 				break;
 
 			}
@@ -658,19 +648,15 @@ void ToolMain::MouseGrabbing()
 			switch (m_manipType)
 			{
 			case ManipulationType::Position:
-				if (mouse_y < mouseGrabbedCoords[1] - 1)
-				{
-					m_toolInputCommands.moveObjUp = true;
-					m_toolInputCommands.objMove = std::abs(mouseGrabbedCoords[1] - mouse_y);
-				}
-				else m_toolInputCommands.moveObjUp = false;
+				m_d3dRenderer.MoveSelectedObject(m_selectedObject, Vector3{ 0.0f, mouseGrabbedCoords[1] - mouse_y, 0.0f });
+				break;
 
-				if (mouse_y > mouseGrabbedCoords[1] + 1)
-				{
-					m_toolInputCommands.moveObjDown = true;
-					m_toolInputCommands.objMove = std::abs(mouseGrabbedCoords[1] - mouse_y);
-				}
-				else m_toolInputCommands.moveObjDown = false;
+			case ManipulationType::Rotation:
+				m_d3dRenderer.RotateSelectedObject(m_selectedObject, Vector3{ 0.0f, mouseGrabbedCoords[1] - mouse_y, 0.0f });
+				break;
+
+			case ManipulationType::Scale:
+				m_d3dRenderer.ScaleSelectedObject(m_selectedObject, Vector3{ 0.0f, mouseGrabbedCoords[1] - mouse_y, 0.0f });
 				break;
 			}
 			break;
@@ -680,20 +666,16 @@ void ToolMain::MouseGrabbing()
 			switch (m_manipType)
 			{
 			case ManipulationType::Position:
-				if (mouse_x < mouseGrabbedCoords[0] - 1)
-				{
-					m_toolInputCommands.moveObjForward = true;
-					m_toolInputCommands.objMove = std::abs(mouseGrabbedCoords[0] - mouse_x);
-				}
-				else m_toolInputCommands.moveObjForward = false;
+				m_d3dRenderer.MoveSelectedObject(m_selectedObject, Vector3{ 0.0f, 0.0f, mouseGrabbedCoords[0] - mouse_x });
+		
+				break;
 
-				if (mouse_x > mouseGrabbedCoords[0] + 1)
-				{
-					m_toolInputCommands.moveObjBack = true;
-					m_toolInputCommands.objMove = std::abs(mouseGrabbedCoords[0] - mouse_x);
+			case ManipulationType::Rotation:
+				m_d3dRenderer.RotateSelectedObject(m_selectedObject, Vector3{ 0.0f, 0.0f, mouseGrabbedCoords[0] - mouse_x });
+				break;
 
-				}
-				else m_toolInputCommands.moveObjBack = false;
+			case ManipulationType::Scale:
+				m_d3dRenderer.ScaleSelectedObject(m_selectedObject, Vector3{ 0.0f, 0.0f, mouseGrabbedCoords[0] - mouse_x });
 				break;
 			}
 			break;
@@ -704,13 +686,15 @@ void ToolMain::MouseGrabbing()
 
 		//update axis arrows and collsion box position.
 		DirectX::SimpleMath::Vector3 pos = m_d3dRenderer.GetDisplayObjPos(m_selectedObject);
-		m_d3dRenderer.x_arrow = DirectX::SimpleMath::Vector3{ pos.x, pos.y, pos.z };
-		m_d3dRenderer.y_arrow = DirectX::SimpleMath::Vector3{ pos.x, pos.y, pos.z };
-		m_d3dRenderer.z_arrow = DirectX::SimpleMath::Vector3{ pos.x, pos.y, pos.z };
+	
 
-		m_axisBoxX.Center = pos + DirectX::SimpleMath::Vector3{ 1.0f, 0.0f, 0.0f };
-		m_axisBoxY.Center = pos + DirectX::SimpleMath::Vector3{ 0.0f, 1.0f, 0.0f };
-		m_axisBoxZ.Center = pos + DirectX::SimpleMath::Vector3{ 0.0f, 0.0f, 1.0f };
+		m_axisBoxX.Center = DirectX::SimpleMath::Vector3{ pos.x + 1.1f, pos.y, pos.z };
+		m_axisBoxY.Center = DirectX::SimpleMath::Vector3{ pos.x, pos.y + 1.1f, pos.z };
+		m_axisBoxZ.Center = DirectX::SimpleMath::Vector3{ pos.x, pos.y, pos.z + 1.1f };
+
+		m_d3dRenderer.x_arrow = m_axisBoxX.Center;
+		m_d3dRenderer.y_arrow = m_axisBoxY.Center;
+		m_d3dRenderer.z_arrow = m_axisBoxZ.Center;
 
 		std::vector<Quad> quads1 = m_d3dRenderer.BoxToQuads(m_axisBoxX.Center, m_axisBoxX.Extents);
 		std::vector<Quad> quads2 = m_d3dRenderer.BoxToQuads(m_axisBoxY.Center, m_axisBoxY.Extents);
@@ -801,18 +785,18 @@ bool ToolMain::MouseClickedObj(DirectX::SimpleMath::Ray ray)
 			m_d3dRenderer.SetSelectedObj(i);
 
 			//Axis arrows bounding box.
-			m_axisBoxX.Center = DirectX::XMFLOAT3{ m_gameGraph[i].posX + 1.0f, m_gameGraph[i].posY, m_gameGraph[i].posZ };;
-			m_axisBoxY.Center = DirectX::XMFLOAT3{ m_gameGraph[i].posX, m_gameGraph[i].posY + 1.0f, m_gameGraph[i].posZ };;
-			m_axisBoxZ.Center = DirectX::XMFLOAT3{ m_gameGraph[i].posX, m_gameGraph[i].posY, m_gameGraph[i].posZ + 1.0f };;
+			m_axisBoxX.Center = DirectX::XMFLOAT3{ m_gameGraph[i].posX + 1.1f, m_gameGraph[i].posY, m_gameGraph[i].posZ };;
+			m_axisBoxY.Center = DirectX::XMFLOAT3{ m_gameGraph[i].posX, m_gameGraph[i].posY + 1.1f, m_gameGraph[i].posZ };;
+			m_axisBoxZ.Center = DirectX::XMFLOAT3{ m_gameGraph[i].posX, m_gameGraph[i].posY, m_gameGraph[i].posZ + 1.1f };;
 	
 			m_axisBoxX.Extents = DirectX::XMFLOAT3{ 1.0f, 0.1f,  0.1f };
 			m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.1f, 1.0f,  0.1f };
 			m_axisBoxZ.Extents = DirectX::XMFLOAT3{ 0.1f, 0.1f,  1.0f };
 
 			m_d3dRenderer.renderAxisArrows = true;
-			m_d3dRenderer.x_arrow = DirectX::XMFLOAT3{ m_gameGraph[i].posX, m_gameGraph[i].posY, m_gameGraph[i].posZ };
-			m_d3dRenderer.y_arrow = DirectX::XMFLOAT3{ m_gameGraph[i].posX, m_gameGraph[i].posY, m_gameGraph[i].posZ };
-			m_d3dRenderer.z_arrow = DirectX::XMFLOAT3{ m_gameGraph[i].posX, m_gameGraph[i].posY, m_gameGraph[i].posZ };
+			m_d3dRenderer.x_arrow = m_axisBoxX.Center;
+			m_d3dRenderer.y_arrow = m_axisBoxY.Center;
+			m_d3dRenderer.z_arrow = m_axisBoxZ.Center;
 
 			std::vector<Quad> quads1 = m_d3dRenderer.BoxToQuads(m_axisBoxX.Center, m_axisBoxX.Extents);
 			std::vector<Quad> quads2 = m_d3dRenderer.BoxToQuads(m_axisBoxY.Center, m_axisBoxY.Extents);

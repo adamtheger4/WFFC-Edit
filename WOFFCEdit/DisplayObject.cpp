@@ -37,3 +37,17 @@ void DisplayObject::MoveObject(DirectX::SimpleMath::Vector3 in_vector, float dt)
 	m_position.y += dt * (move_scalar * in_vector.y);
 	m_position.z += dt * (move_scalar * in_vector.z);
 }
+
+void DisplayObject::RotateObject(DirectX::SimpleMath::Vector3 in_vector, float dt)
+{
+	m_orientation.x += dt * (move_scalar * in_vector.x);
+	m_orientation.y += dt * (move_scalar * in_vector.y);
+	m_orientation.z += dt * (move_scalar * in_vector.z);
+}
+
+void DisplayObject::ScaleObject(DirectX::SimpleMath::Vector3 in_vector, float dt)
+{
+	m_scale.x += dt * (move_scalar * in_vector.x);
+	m_scale.y += dt * (move_scalar * in_vector.y);
+	m_scale.z += dt * (move_scalar * in_vector.z);
+}

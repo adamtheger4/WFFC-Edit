@@ -310,8 +310,8 @@ void Game::DrawAxisArrows()
 	auto context = m_deviceResources->GetD3DDeviceContext();
 	context->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(m_states->DepthNone(), 0);
-	context->RSSetState(m_states->CullCounterClockwise());
-
+	context->RSSetState(m_states->CullNone());
+	
 	m_batchEffect->Apply(context);
 
 	context->IASetInputLayout(m_batchInputLayout.Get());
@@ -329,6 +329,7 @@ void Game::DrawAxisArrows()
 
 			m_batch->DrawQuad(v1, v2, v3, v4);
 		}
+		
 		else if (i < 12)
 		{
 			VertexPositionColor v1(m_axisBoxList[i].v1, yAxisColor);
