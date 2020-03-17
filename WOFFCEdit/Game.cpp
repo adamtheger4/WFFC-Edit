@@ -25,7 +25,7 @@ Game::Game()
 	
 	//initial Settings
 	//modes
-	m_grid = false;
+	m_grid = true;
 }
 
 Game::~Game()
@@ -230,6 +230,9 @@ void Game::Render()
 	std::wstring objSca = L"Scale:      " + std::to_wstring(m_displayList[m_selectedObject].m_scale.x) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_scale.y) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_scale.z);
 	m_font->DrawString(m_sprites.get(), objSca.c_str(), XMFLOAT2(580, 40), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
 
+	std::wstring Mouse = L"Debug:      " + std::to_wstring(debug1) + L", " + std::to_wstring(debug2);
+	m_font->DrawString(m_sprites.get(), Mouse.c_str(), XMFLOAT2(580, 65), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+
 	m_sprites->End();
 
     m_deviceResources->Present();
@@ -356,30 +359,6 @@ void Game::DrawAxisArrows()
 
 void Game::HandleInput()
 {
-	if (m_InputCommands.moveObjForward)
-	{
-		MoveSelectedObject(m_selectedObject, DirectX::SimpleMath::Vector3(0.0f, 0.0f, 0.1f) * m_InputCommands.objMove);
-	}
-	if (m_InputCommands.moveObjBack)
-	{
-		MoveSelectedObject(m_selectedObject, DirectX::SimpleMath::Vector3(0.0f, 0.0f, -0.1f) * m_InputCommands.objMove);
-	}
-	if (m_InputCommands.moveObjLeft)
-	{
-		MoveSelectedObject(m_selectedObject, DirectX::SimpleMath::Vector3(-0.1f, 0.0f, 0.0f) * m_InputCommands.objMove);
-	}
-	if (m_InputCommands.moveObjRight)
-	{
-		MoveSelectedObject(m_selectedObject, DirectX::SimpleMath::Vector3(0.1f, 0.0f, 0.0f) * m_InputCommands.objMove);
-	}
-	if (m_InputCommands.moveObjUp)
-	{
-		MoveSelectedObject(m_selectedObject, DirectX::SimpleMath::Vector3(0.0f, 0.1f, 0.0f) * m_InputCommands.objMove);
-	}
-	if (m_InputCommands.moveObjDown)
-	{
-		MoveSelectedObject(m_selectedObject, DirectX::SimpleMath::Vector3(0.0f, -0.1f, 0.0f) *  m_InputCommands.objMove);
-	}
 }
 
 void Game::MoveSelectedObject(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector)
@@ -648,20 +627,6 @@ void Game::BuildDisplayChunk(ChunkObject * SceneChunk)
 void Game::SaveDisplayChunk(ChunkObject * SceneChunk)
 {
 	m_displayChunk.SaveHeightMap();			//save heightmap to file.
-}
-
-DirectX::SimpleMath::Vector3 Game::GetDisplayObjPos(int objID)
-{
-	DirectX::SimpleMath::Vector3 position = m_displayList[objID].m_position;
-	return position;
-}
-
-DirectX::XMFLOAT4 Game::GetDisplayObjOrientation(int objID)
-{
-	DirectX::SimpleMath::Vector3 orientation = m_displayList[objID].m_orientation;
-	DirectX::XMFLOAT4 f{ orientation.x, orientation.y, orientation.z, 1.0f };
-
-	return f;
 }
 
 #ifdef DXTK_AUDIO

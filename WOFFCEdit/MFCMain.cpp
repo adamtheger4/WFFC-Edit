@@ -6,10 +6,11 @@ BEGIN_MESSAGE_MAP(MFCMain, CWinApp)
 	ON_COMMAND(ID_FILE_QUIT,	&MFCMain::MenuFileQuit)
 	ON_COMMAND(ID_FILE_SAVETERRAIN, &MFCMain::MenuFileSaveTerrain)
 	ON_COMMAND(ID_EDIT_SELECT, &MFCMain::MenuEditSelect)
-	ON_COMMAND(ID_BUTTON40001,	&MFCMain::ToolBarButton1)
-	ON_COMMAND(ID_BUTTON40014, &MFCMain::SetToolManipTypePos)
-	ON_COMMAND(ID_BUTTON40015, &MFCMain::SetToolManipTypeRot)
-	ON_COMMAND(ID_BUTTON40016, &MFCMain::SetToolManipTypeSca)
+	ON_COMMAND(ID_EDIT_SETSNAPVALUES, &MFCMain::SetAxisSnapValues)
+	ON_COMMAND(ID_BUTTON40006,	&MFCMain::ToolBarButton1)
+	ON_COMMAND(ID_BUTTONM, &MFCMain::SetToolManipTypePos)
+	ON_COMMAND(ID_BUTTONR, &MFCMain::SetToolManipTypeRot)
+	ON_COMMAND(ID_BUTTONS, &MFCMain::SetToolManipTypeSca)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_TOOL, &CMyFrame::OnUpdatePage)
 END_MESSAGE_MAP()
 
@@ -42,6 +43,7 @@ BOOL MFCMain::InitInstance()
 
 	m_ToolSystem.onActionInitialise(m_toolHandle, m_width, m_height);
 
+	m_ToolAxisSnapDialogue.m_toolMain = &m_ToolSystem;
 	return TRUE;
 }
 
@@ -104,6 +106,14 @@ void MFCMain::MenuEditSelect()
 	m_ToolSelectDialogue.Create(IDD_DIALOG1);	//Start up modeless
 	m_ToolSelectDialogue.ShowWindow(SW_SHOW);	//show modeless
 	m_ToolSelectDialogue.SetObjectData(&m_ToolSystem.GetSceneGraph(), &m_ToolSystem.m_selectedObject);
+}
+
+void MFCMain::SetAxisSnapValues()
+{
+	//m_ToolAxisSnapDialogue.m_toolMain = m_ToolSystem;
+	m_ToolAxisSnapDialogue.Create(IDD_DIALOG2);	//Start up modeless
+	m_ToolAxisSnapDialogue.SetText();
+	m_ToolAxisSnapDialogue.ShowWindow(SW_SHOW);	//show modeless
 }
 
 void MFCMain::ToolBarButton1()

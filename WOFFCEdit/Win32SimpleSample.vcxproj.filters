@@ -59,6 +59,15 @@
     <ClCompile Include="SelectDialogue.cpp">
       <Filter>MFC</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>Tool</Filter>
+    </ClCompile>
+    <ClCompile Include="AxisSnapDialogue.cpp">
+      <Filter>MFC</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DeviceResources.h">
@@ -106,6 +115,15 @@
     </ClInclude>
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SelectDialogue.h">
+      <Filter>MFC</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>Tool</Filter>
+    </ClInclude>
+    <ClInclude Include="AxisSnapDialogue.h">
       <Filter>MFC</Filter>
     </ClInclude>
   </ItemGroup>

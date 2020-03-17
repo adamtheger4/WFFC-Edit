@@ -60,14 +60,18 @@ public:
 	void SaveDisplayChunk(ChunkObject *SceneChunk);	//saves geometry et al
 	void ClearDisplayList();
 
-	DirectX::SimpleMath::Vector3 GetDisplayObjPos(int objID);
-
-	DirectX::XMFLOAT4 GetDisplayObjOrientation(int objID);
+	inline DirectX::SimpleMath::Vector3 GetDisplayObjPos(int objID) { return m_displayList[objID].m_position; };
+	inline DirectX::SimpleMath::Vector3 GetDisplayObjRotation(int objID) {return  m_displayList[objID].m_orientation;}
+	inline DirectX::SimpleMath::Vector3 GetDisplayObjScale(int objID) { return  m_displayList[objID].m_scale; }
 
 	//Object specific
 	void MoveSelectedObject(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector);
 	inline void RotateSelectedObject(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector) { m_displayList[select_obj_ID].RotateObject(in_vector, m_dt); };
 	inline void ScaleSelectedObject(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector) { m_displayList[select_obj_ID].ScaleObject(in_vector, m_dt); };
+
+	inline void SetSelectedObjectPosition(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector) { m_displayList[select_obj_ID].m_position = in_vector; }
+	inline void SetSelectedObjectRotation(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector) { m_displayList[select_obj_ID].m_orientation = in_vector; }
+	inline void SetSelectedObjectScale(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector) { m_displayList[select_obj_ID].m_scale = in_vector; }
 	 
 	bool renderAxisArrows = false;
 	DirectX::SimpleMath::Vector3 x_arrow;
@@ -89,8 +93,11 @@ public:
 	//Used to draw axis arrows.
 	std::vector<Quad> m_axisBoxList; 
 	DirectX::XMFLOAT4 xAxisColor { 1.0f, 0.0f, 0.0f, 1.0f };
-	DirectX::XMFLOAT4 yAxisColor { 0.0f, 0.0f, 1.0f, 1.0f };
-	DirectX::XMFLOAT4 zAxisColor { 1.0f, 0.0f, 0.0f, 1.0f };
+	DirectX::XMFLOAT4 yAxisColor { 0.0f, 1.0f, 0.0f, 1.0f };
+	DirectX::XMFLOAT4 zAxisColor { 0.0f, 0.0f, 1.0f, 1.0f };
+
+	int debug1; 
+	int debug2;
 
 #ifdef DXTK_AUDIO
 	void NewAudioDevice();

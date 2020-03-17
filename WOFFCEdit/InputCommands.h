@@ -20,13 +20,5 @@ struct InputCommands
 	float camRotateY = 1;
 	float camMove = 1;
 
-	//Obj movement
-	bool moveObjForward;
-	bool moveObjBack;
-	bool moveObjRight;
-	bool moveObjLeft;
-	bool moveObjUp;
-	bool moveObjDown;
-
 	float objMove = 1.0f;
 };

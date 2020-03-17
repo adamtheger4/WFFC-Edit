@@ -29,10 +29,12 @@ public:
 
 	float move_scalar = 30;
 
+	void SetPosition(DirectX::SimpleMath::Vector3 in_vector); // offsets current position by input vector
+	void SetRotation(DirectX::SimpleMath::Vector3 in_vector); // offsets current position by input vector
+	void SetScale(DirectX::SimpleMath::Vector3 in_vector); // offsets current position by input vector
+
 	void MoveObject(DirectX::SimpleMath::Vector3 in_vector, float dt); // offsets current position by input vector
-
 	void RotateObject(DirectX::SimpleMath::Vector3 in_vector, float dt); // offsets current rotation by input vector
-
 	void ScaleObject(DirectX::SimpleMath::Vector3 in_vector, float dt); // offsets current scale by input vector
 };
 

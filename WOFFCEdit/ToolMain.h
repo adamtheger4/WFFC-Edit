@@ -50,6 +50,11 @@ public: //methods
 
 	inline void SetManipType(ManipulationType in_type) { m_manipType = in_type; }
 
+	//Axis snap values.
+	float m_positionSnap = 1.0f;
+	float m_rotationSnap = 1.0f;
+	float m_scaleSnap = 1.0f;
+
 public:	//variables
 	//std::vector<SceneObject>    m_sceneGraph;	//our scenegraph storing all the objects in the current chunk
 	std::vector<GameObject>    m_gameGraph;
@@ -80,20 +85,20 @@ private:	//variables
 	void MouseRDown(MSG* msg);
 	void MouseRUp(MSG* msg);
 
-	bool	mouseGrabbing = false;
 	GrabbedAxis grabbedAxis;
+	bool	mouseGrabbing = false;
 	float	mouseGrabbedCoords[2];
-	bool	m_once = false;
 	float	mouse_x;
 	float	mouse_y;
+	bool	m_once = false;
 
 	int m_width;		//dimensions passed to directX
 	int m_height;
 	int m_currentChunk;			//the current chunk of thedatabase that we are operating on.  Dictates loading and saving. 	
 
-	DirectX::BoundingBox m_axisBoxX;
-	DirectX::BoundingBox m_axisBoxY;
-	DirectX::BoundingBox m_axisBoxZ;
+	DirectX::BoundingOrientedBox m_axisBoxX;
+	DirectX::BoundingOrientedBox m_axisBoxY;
+	DirectX::BoundingOrientedBox m_axisBoxZ;
 
 	ManipulationType m_manipType = ManipulationType::Position;
 };

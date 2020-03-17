@@ -165,11 +165,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AxisSnapDialogue.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ChunkObject.cpp" />
     <ClCompile Include="DeviceResources.cpp" />
     <ClCompile Include="DisplayChunk.cpp" />
     <ClCompile Include="DisplayObject.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MFCFrame.cpp" />
     <ClCompile Include="MFCRenderFrame.cpp" />
@@ -181,11 +184,14 @@
     <ClCompile Include="ToolMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AxisSnapDialogue.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="ChunkObject.h" />
     <ClInclude Include="DeviceResources.h" />
     <ClInclude Include="DisplayChunk.h" />
     <ClInclude Include="DisplayObject.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="GameObject.h" />
     <ClInclude Include="InputCommands.h" />
     <ClInclude Include="MFCFrame.h" />
     <ClInclude Include="MFCRenderFrame.h" />

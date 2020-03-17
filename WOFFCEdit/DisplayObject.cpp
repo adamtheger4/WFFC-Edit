@@ -31,6 +31,21 @@ DisplayObject::~DisplayObject()
 //	delete m_texture_diffuse;
 }
 
+void DisplayObject::SetPosition(DirectX::SimpleMath::Vector3 in_vector)
+{
+	m_position =  in_vector;
+}
+
+void DisplayObject::SetRotation(DirectX::SimpleMath::Vector3 in_vector)
+{
+	m_orientation = in_vector;
+}
+
+void DisplayObject::SetScale(DirectX::SimpleMath::Vector3 in_vector)
+{
+	m_scale = in_vector;
+}
+
 void DisplayObject::MoveObject(DirectX::SimpleMath::Vector3 in_vector, float dt)
 {
 	m_position.x += dt * (move_scalar * in_vector.x);

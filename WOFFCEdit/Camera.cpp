@@ -62,7 +62,7 @@ DirectX::SimpleMath::Matrix Camera::Update(float dt, InputCommands _InputCommand
 	{
 		if (m_camOrientation.z < 1.5508)
 		{
-			m_camOrientation.z += dt * (m_camRotRate * _InputCommands.camRotateY);
+			m_camOrientation.z += dt * (m_camRotRate *_InputCommands.camRotateY);
 
 			if (m_camOrientation.z > 1.5508)
 			{
