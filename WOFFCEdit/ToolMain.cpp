@@ -38,6 +38,8 @@ ToolMain::ToolMain()
 	m_axisBoxX.Orientation = DirectX::XMFLOAT4{ 0.0f, 0.0f,  0.0f, 1.0f };
 	m_axisBoxY.Orientation = DirectX::XMFLOAT4{ 0.0f, 0.0f,  0.0f, 1.0f };
 	m_axisBoxZ.Orientation = DirectX::XMFLOAT4{ 0.0f, 0.0f,  0.0f, 1.0f };
+
+	terrainManipulationOffset = DirectX::XMFLOAT3{ 0.0f, 10.0f, 0.0f };
 }
 
 ToolMain::~ToolMain()
@@ -339,6 +341,7 @@ void ToolMain::UpdateInput(MSG * msg)
 		//Global inputs,  mouse position and keys etc
 	case WM_KEYDOWN:
 		m_keyArray[msg->wParam] = true;
+		m_Tonce = true;
 		break;
 
 	case WM_KEYUP:
@@ -369,9 +372,6 @@ void ToolMain::UpdateInput(MSG * msg)
 		break;
 
 	}
-
-	m_d3dRenderer.debug1 = m_d3dRenderer.GetActiveCameraLocation().z;
-	m_d3dRenderer.debug2 = m_gameGraph[m_selectedObject].posZ;
 
 	//here we update all the actual app functionality that we want.  This information will either be used int toolmain, or sent down to the renderer (Camera movement etc
 	//Mouse controls
@@ -474,28 +474,45 @@ void ToolMain::UpdateInput(MSG * msg)
 		m_toolInputCommands.down = false;
 	}
 
+	if (mouseTerrainTool)
+	{
+		if (m_keyArray['T'])
+		{
+			if (m_Tonce)
+			{
+				if (mouseTerrainToolDig)
+				{
+					mouseTerrainToolDig = false;
+				}
+				else mouseTerrainToolDig = true;
+				m_Tonce = false;
+			}
+
+			UpdateTerrainHeightText();
+		}
+	}
+
 	MouseGrabbing();
 }
 
 void ToolMain::MouseUpdate()
 {
+	//Save mouse pos and direction in world space
+	ScreenPosToWorldSpaceReturn mouse_pos = ScreenPosToWorldSpace(mouse_x, mouse_y);
+
+	// create a ray using mouse pos and direction
+	Ray ray;
+	ray.position = mouse_pos.pos;
+	ray.direction = mouse_pos.direction;
+
 	//Set cursor position to screen centre whilst mouse controls active.
 	if (m_toolInputCommands.mouseControls)
 	{		
 		SetCursorPos(WindowRECT.CenterPoint().x, WindowRECT.CenterPoint().y);
 	}
 
-
 	if (mouseGrabbing != true)
 	{
-		//Save mouse pos and direction in world space
-		ScreenPosToWorldSpaceReturn mouse_pos = ScreenPosToWorldSpace(mouse_x, mouse_y);
-
-		// create a ray using mouse pos and direction
-		Ray ray;
-		ray.position = mouse_pos.pos;
-		ray.direction = mouse_pos.direction;
-
 		//If mouse is overlapping an axis grab arrow then highlight the arrow.
 		float dist = 0;
 		if (m_axisBoxX.Intersects(ray.position, ray.direction, dist))
@@ -523,9 +540,27 @@ void ToolMain::MouseUpdate()
 			m_d3dRenderer.zAxisColor = DirectX::XMFLOAT4{ 0.0f, 0.0f, 1.0f, 0.5f };
 		}
 	}
+
+	if (mouseTerrainToolActive == true)
+	{
+		//Clicking Terrain
+		if (mouse_x != prevMouse_x || mouse_y != prevMouse_y)	mouseTerrainManipReturn = m_d3dRenderer.RayToDisplayChunkCollision(ray);
+		if (mouseTerrainManipReturn.did_hit)
+		{
+			if (mouseTerrainToolDig)
+			{
+				m_d3dRenderer.SculptTerrain(mouseTerrainManipReturn.row, mouseTerrainManipReturn.column, DirectX::XMFLOAT3{ -terrainManipulationOffset.x, -terrainManipulationOffset.y, -terrainManipulationOffset.z }, true);
+			}
+			else
+			{
+				m_d3dRenderer.SculptTerrain(mouseTerrainManipReturn.row, mouseTerrainManipReturn.column, terrainManipulationOffset, true);
+			}
+		}
+	}
+
+	prevMouse_x = mouse_x;
+	prevMouse_y = mouse_y;
 }
-
-
 
 void ToolMain::MouseGrabbing()
 {
@@ -820,11 +855,13 @@ bool ToolMain::MouseClickedObj(DirectX::SimpleMath::Ray ray)
 			{
 				m_d3dRenderer.m_axisBoxList.push_back(quads3[j]);
 			}
-			
+
+			m_d3dRenderer.showObjText = true;
 			return true;
 		}
 	}
 
+	m_d3dRenderer.showObjText = false;
 	m_d3dRenderer.renderAxisArrows = false;
 	m_axisBoxX.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
 	m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
@@ -835,7 +872,15 @@ bool ToolMain::MouseClickedObj(DirectX::SimpleMath::Ray ray)
 
 void ToolMain::MouseLDown(MSG* msg)
 {
-	MouseCollision();
+	if (windowOpen == false)
+	{
+		if (mouseTerrainTool)
+		{
+			mouseTerrainToolActive = true;
+		}
+		else MouseCollision();
+			
+	}
 }	
 
 void ToolMain::MouseLUp(MSG* msg)
@@ -846,12 +891,17 @@ void ToolMain::MouseLUp(MSG* msg)
 		m_d3dRenderer.UpdateSceneList(&m_gameGraph);
 		mouseGrabbing = false;
 	}
+
+	if (mouseTerrainToolActive) mouseTerrainToolActive = false;
 }
 
 void ToolMain::MouseRDown(MSG* msg)
 {
-	m_toolInputCommands.mouseControls = true;
-	m_once = false;
+	if (windowOpen == false)
+	{
+		m_toolInputCommands.mouseControls = true;
+		m_once = false;
+	}
 }
 
 void ToolMain::MouseRUp(MSG* msg)
@@ -881,6 +931,24 @@ ScreenPosToWorldSpaceReturn ToolMain::ScreenPosToWorldSpace(float x, float y)
 	return_struct.direction = direction;
 
 	return return_struct;
+}
+
+void ToolMain::EnableTerrainText(bool enable)
+{
+	if (enable)
+	{
+		m_d3dRenderer.showTerrainText = true;
+	}
+	else
+	{
+		m_d3dRenderer.showTerrainText = false;
+	}
+}
+
+void ToolMain::UpdateTerrainHeightText()
+{
+	m_d3dRenderer.debug1 = mouseTerrainToolDig;
+	m_d3dRenderer.debug2 = terrainManipulationOffset.y;
 }
 
 std::vector<SceneObject> ToolMain::GameGraphToSceneGraph(std::vector<GameObject> in_gameGraph)

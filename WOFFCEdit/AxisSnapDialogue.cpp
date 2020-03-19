@@ -41,7 +41,8 @@ void AxisSnapDialogue::DoDataExchange(CDataExchange* pDX)
 
 void AxisSnapDialogue::End()
 {
-	DestroyWindow();	//destory the window properly.  INcluding the links and pointers created.  THis is so the dialogue can start again. 
+	m_toolMain->windowOpen = false;
+	DestroyWindow();	//destory the window properly.  INcluding the links and pointers created.  THis is so the dialogue can start again. 	
 }
 
 BOOL AxisSnapDialogue::OnInitDialog()

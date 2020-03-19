@@ -202,8 +202,7 @@ void Game::Render()
 	context->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(m_states->DepthDefault(),0);
 	context->RSSetState(m_states->CullNone());
-//	context->RSSetState(m_states->Wireframe());		//uncomment for wireframe
-
+	//context->RSSetState(m_states->Wireframe());		//uncomment for wireframe
 
 	//Render the batch,  This is handled in the Display chunk becuase it has the potential to get complex
 	m_displayChunk.RenderBatch(m_deviceResources);
@@ -221,17 +220,26 @@ void Game::Render()
 	std::wstring var = L"FPS : " + std::to_wstring(m_timer.GetFramesPerSecond());
 	m_font->DrawString(m_sprites.get(), var.c_str(), XMFLOAT2(10, 10), Colors::Yellow);
 	
-	std::wstring objPos = L"Position: " + std::to_wstring(m_displayList[m_selectedObject].m_position.x) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_position.y) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_position.z);
-	m_font->DrawString(m_sprites.get(), objPos.c_str(), XMFLOAT2(580, 10), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+	if (showObjText)
+	{
+		std::wstring objPos = L"Position: " + std::to_wstring(m_displayList[m_selectedObject].m_position.x) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_position.y) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_position.z);
+		m_font->DrawString(m_sprites.get(), objPos.c_str(), XMFLOAT2(580, 10), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+		std::wstring objRot = L"Rotation: " + std::to_wstring(m_displayList[m_selectedObject].m_orientation.x) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_orientation.y) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_orientation.z);
+		m_font->DrawString(m_sprites.get(), objRot.c_str(), XMFLOAT2(580, 25), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+		std::wstring objSca = L"Scale:      " + std::to_wstring(m_displayList[m_selectedObject].m_scale.x) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_scale.y) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_scale.z);
+		m_font->DrawString(m_sprites.get(), objSca.c_str(), XMFLOAT2(580, 40), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+	}
+	else if (showTerrainText)
+	{
+		std::wstring digEnabled = L"Terrain Editor Dig (T = Toggle): ";
+		if(debug1 == 1) digEnabled += L"ENABLED";
+		else if (debug1 == 0) digEnabled += L"DISABLED";
+		m_font->DrawString(m_sprites.get(), digEnabled.c_str(), XMFLOAT2(580, 10), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
 
-	std::wstring objRot = L"Rotation: " + std::to_wstring(m_displayList[m_selectedObject].m_orientation.x) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_orientation.y) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_orientation.z);
-	m_font->DrawString(m_sprites.get(), objRot.c_str(), XMFLOAT2(580, 25), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+		std::wstring terrainEditor = L"Terrain Editor Height Offset: " + std::to_wstring(debug2);
+		m_font->DrawString(m_sprites.get(), terrainEditor.c_str(), XMFLOAT2(580, 40), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+	}
 
-	std::wstring objSca = L"Scale:      " + std::to_wstring(m_displayList[m_selectedObject].m_scale.x) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_scale.y) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_scale.z);
-	m_font->DrawString(m_sprites.get(), objSca.c_str(), XMFLOAT2(580, 40), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
-
-	std::wstring Mouse = L"Debug:      " + std::to_wstring(debug1) + L", " + std::to_wstring(debug2);
-	m_font->DrawString(m_sprites.get(), Mouse.c_str(), XMFLOAT2(580, 65), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
 
 	m_sprites->End();
 
@@ -359,6 +367,10 @@ void Game::DrawAxisArrows()
 
 void Game::HandleInput()
 {
+	if (m_InputCommands.forward)
+	{
+		//m_displayChunk.GenerateHeightmap();
+	}
 }
 
 void Game::MoveSelectedObject(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector)
@@ -629,6 +641,96 @@ void Game::SaveDisplayChunk(ChunkObject * SceneChunk)
 	m_displayChunk.SaveHeightMap();			//save heightmap to file.
 }
 
+RayToDisplayChunkReturn Game::RayToDisplayChunkCollision(DirectX::SimpleMath::Ray ray)
+{
+	RayToDisplayChunkReturn return_values;
+
+	float dist = 10000;
+	DirectX::SimpleMath::Vector3 v1 = ray.position;
+	DirectX::SimpleMath::Vector3 v2 = ray.position + (ray.direction * dist);
+	DirectX::SimpleMath::Vector3 midpoint = (v1 + v2) / 2;
+
+	bool do_once = false;
+	for (size_t i = 0; i < 127; i++)
+	{
+		for (size_t j = 0; j < 127; j++)
+		{
+			DirectX::SimpleMath::Vector3 vector1 = m_displayChunk.GetTerrainGeometry(i, j).position;
+			DirectX::SimpleMath::Vector3 vector2 = m_displayChunk.GetTerrainGeometry(i, j + 1).position;
+			DirectX::SimpleMath::Vector3 vector3 = m_displayChunk.GetTerrainGeometry(i + 1, j + 1).position;
+			DirectX::SimpleMath::Vector3 vector4 = m_displayChunk.GetTerrainGeometry(i + 1, j).position;
+
+			if (ray.Intersects(vector1, vector2, vector3, dist) || ray.Intersects(vector1, vector4, vector3, dist))
+			{
+				if (m_displayChunk.GetTerrainGeometry(i, j).position.y < v1.y && m_displayChunk.GetTerrainGeometry(i, j).position.y > v2.y)
+				{
+		
+					return_values.row = i;
+					return_values.column = j;
+					return_values.did_hit = true;
+
+					return return_values;
+				}
+			}
+		}
+	}
+
+	return return_values;
+}
+
+void Game::SculptTerrain(int row, int column, DirectX::XMFLOAT3 offset, bool smooth_sculpt)
+{
+	if (smooth_sculpt)
+	{
+		SmoothSculptTerrain(row, column, offset);
+	}
+	else
+	{
+		m_displayChunk.SetTerrainGeometryPosition(row, column, m_displayChunk.GetTerrainGeometryPosition(row, column) + (m_dt * offset));
+	}
+}
+
+void Game::SmoothSculptTerrain(int row, int column, DirectX::XMFLOAT3 offset)
+{
+	m_displayChunk.SetTerrainGeometryPosition(row, column, m_displayChunk.GetTerrainGeometryPosition(row, column) + (m_dt * offset));
+
+	m_displayChunk.SetTerrainGeometryPosition(row + 1, column, m_displayChunk.GetTerrainGeometryPosition(row + 1, column) + (m_dt * (offset * 0.75)));
+	m_displayChunk.SetTerrainGeometryPosition(row + 1, column + 1, m_displayChunk.GetTerrainGeometryPosition(row + 1, column + 1) + (m_dt * (offset * 0.75)));
+	m_displayChunk.SetTerrainGeometryPosition(row, column + 1, m_displayChunk.GetTerrainGeometryPosition(row, column + 1) + (m_dt * (offset * 0.75)));
+	m_displayChunk.SetTerrainGeometryPosition(row - 1, column, m_displayChunk.GetTerrainGeometryPosition(row - 1, column) + (m_dt * (offset * 0.75)));
+	m_displayChunk.SetTerrainGeometryPosition(row - 1, column - 1, m_displayChunk.GetTerrainGeometryPosition(row - 1, column - 1) + (m_dt * (offset * 0.75)));
+	m_displayChunk.SetTerrainGeometryPosition(row, column - 1, m_displayChunk.GetTerrainGeometryPosition(row, column - 1) + (m_dt * (offset * 0.75)));
+
+	//m_displayChunk.SetTerrainGeometryPosition(row + 2, column, m_displayChunk.GetTerrainGeometryPosition(row + 2, column) + (m_dt * (offset * 0.5)));
+	//m_displayChunk.SetTerrainGeometryPosition(row + 2, column + 2, m_displayChunk.GetTerrainGeometryPosition(row + 2, column + 2) + (m_dt * (offset * 0.5)));
+	//m_displayChunk.SetTerrainGeometryPosition(row, column + 2, m_displayChunk.GetTerrainGeometryPosition(row, column + 2) + (m_dt * (offset * 0.5)));
+	//m_displayChunk.SetTerrainGeometryPosition(row - 2, column, m_displayChunk.GetTerrainGeometryPosition(row - 2, column) + (m_dt * (offset * 0.5)));
+	//m_displayChunk.SetTerrainGeometryPosition(row - 2, column - 2, m_displayChunk.GetTerrainGeometryPosition(row - 2, column - 2) + (m_dt * (offset * 0.5)));
+	//m_displayChunk.SetTerrainGeometryPosition(row, column - 2, m_displayChunk.GetTerrainGeometryPosition(row, column - 2) + (m_dt * (offset * 0.5)));
+
+}
+
+std::vector<DirectX::SimpleMath::Vector3> Game::HalfRay(DirectX::SimpleMath::Vector3 v1, DirectX::SimpleMath::Vector3 v2, bool top)
+{
+	DirectX::SimpleMath::Vector3 new_v1;
+	DirectX::SimpleMath::Vector3 new_v2;
+
+	if (top)
+	{
+		new_v1 = v1;
+		new_v2 = (v1 + v2) / 2;
+	}
+	else
+	{
+		new_v1 = (v1 + v2) / 2;
+		new_v2 = v2;
+	}
+
+	std::vector<DirectX::SimpleMath::Vector3> return_vectors{ new_v1 , new_v2};
+
+	return return_vectors;
+}
+
 #ifdef DXTK_AUDIO
 void Game::NewAudioDevice()
 {
@@ -680,7 +782,7 @@ void Game::CreateDeviceDependentResources()
 
     m_font = std::make_unique<SpriteFont>(device, L"SegoeUI_18.spritefont");
 
-//    m_shape = GeometricPrimitive::CreateTeapot(context, 4.f, 8);
+    //m_shape = GeometricPrimitive::CreateTeapot(context, 4.f, 8);
 
     // SDKMESH has to use clockwise winding with right-handed coordinates, so textures are flipped in U
     m_model = Model::CreateFromSDKMESH(device, L"tiny.sdkmesh", *m_fxFactory);

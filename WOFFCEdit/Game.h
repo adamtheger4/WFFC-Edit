@@ -60,6 +60,12 @@ public:
 	void SaveDisplayChunk(ChunkObject *SceneChunk);	//saves geometry et al
 	void ClearDisplayList();
 
+	RayToDisplayChunkReturn RayToDisplayChunkCollision(DirectX::SimpleMath::Ray ray);
+	RayToDisplayChunkReturn GetCurrentTerrainPoint();
+	void SculptTerrain(int row, int column, DirectX::XMFLOAT3 offset, bool smooth_sculpt);
+	void SmoothSculptTerrain(int row, int column, DirectX::XMFLOAT3 offset);
+	std::vector<DirectX::SimpleMath::Vector3> HalfRay(DirectX::SimpleMath::Vector3 v1, DirectX::SimpleMath::Vector3 v2, bool top);
+
 	inline DirectX::SimpleMath::Vector3 GetDisplayObjPos(int objID) { return m_displayList[objID].m_position; };
 	inline DirectX::SimpleMath::Vector3 GetDisplayObjRotation(int objID) {return  m_displayList[objID].m_orientation;}
 	inline DirectX::SimpleMath::Vector3 GetDisplayObjScale(int objID) { return  m_displayList[objID].m_scale; }
@@ -96,9 +102,12 @@ public:
 	DirectX::XMFLOAT4 yAxisColor { 0.0f, 1.0f, 0.0f, 1.0f };
 	DirectX::XMFLOAT4 zAxisColor { 0.0f, 0.0f, 1.0f, 1.0f };
 
-	int debug1; 
-	int debug2;
+	float debug1; 
+	float debug2;
+	float debug3;
 
+	bool showObjText = false;
+	bool showTerrainText = false;
 #ifdef DXTK_AUDIO
 	void NewAudioDevice();
 #endif

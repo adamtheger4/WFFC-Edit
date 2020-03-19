@@ -10,6 +10,7 @@
 #include "MFCFrame.h"
 #include "SelectDialogue.h"
 #include "AxisSnapDialogue.h"
+#include "TerrainEditorDialogue.h"
 
 
 class MFCMain : public CWinApp 
@@ -28,6 +29,7 @@ private:
 	CRect WindowRECT;	//Window area rectangle. 
 	SelectDialogue m_ToolSelectDialogue;			//for modeless dialogue, declare it here
 	AxisSnapDialogue m_ToolAxisSnapDialogue;
+	TerrainEditorDialogue m_TerrainEditorDialogue;
 
 	int m_width;		
 	int m_height;
@@ -37,6 +39,7 @@ private:
 	afx_msg void MenuFileSaveTerrain();
 	afx_msg void MenuEditSelect();
 	afx_msg void SetAxisSnapValues();
+	afx_msg void OpenTerrainDialogue();
 	afx_msg	void ToolBarButton1();
 	afx_msg	inline void SetToolManipTypePos() { m_ToolSystem.SetManipType(ManipulationType::Position); }
 	afx_msg	inline void SetToolManipTypeRot() { m_ToolSystem.SetManipType(ManipulationType::Rotation); }

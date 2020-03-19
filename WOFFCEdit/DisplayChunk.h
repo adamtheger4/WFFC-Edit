@@ -6,6 +6,13 @@
 //geometric resoltuion - note,  hard coded.
 #define TERRAINRESOLUTION 128
 
+struct RayToDisplayChunkReturn
+{
+	int row;
+	int column;
+	bool did_hit = false;
+};
+
 class DisplayChunk
 {
 public:
@@ -23,6 +30,10 @@ public:
 
 	ID3D11ShaderResourceView *					m_texture_diffuse;				//diffuse texture
 	Microsoft::WRL::ComPtr<ID3D11InputLayout>   m_terrainInputLayout;
+
+	inline DirectX::VertexPositionNormalTexture GetTerrainGeometry(int row, int column) { return m_terrainGeometry[row][column]; }
+	inline void SetTerrainGeometryPosition(int row, int column, DirectX::SimpleMath::Vector3 p) {m_terrainGeometry[row][column].position = p; }
+	inline DirectX::XMFLOAT3 GetTerrainGeometryPosition(int row, int column) { return m_terrainGeometry[row][column].position; }
 
 private:
 	

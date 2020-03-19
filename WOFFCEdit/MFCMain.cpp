@@ -11,6 +11,7 @@ BEGIN_MESSAGE_MAP(MFCMain, CWinApp)
 	ON_COMMAND(ID_BUTTONM, &MFCMain::SetToolManipTypePos)
 	ON_COMMAND(ID_BUTTONR, &MFCMain::SetToolManipTypeRot)
 	ON_COMMAND(ID_BUTTONS, &MFCMain::SetToolManipTypeSca)
+	ON_COMMAND(ID_BUTTONTE, &MFCMain::OpenTerrainDialogue)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_TOOL, &CMyFrame::OnUpdatePage)
 END_MESSAGE_MAP()
 
@@ -44,6 +45,7 @@ BOOL MFCMain::InitInstance()
 	m_ToolSystem.onActionInitialise(m_toolHandle, m_width, m_height);
 
 	m_ToolAxisSnapDialogue.m_toolMain = &m_ToolSystem;
+	m_TerrainEditorDialogue.m_toolMain = &m_ToolSystem;
 	return TRUE;
 }
 
@@ -106,6 +108,8 @@ void MFCMain::MenuEditSelect()
 	m_ToolSelectDialogue.Create(IDD_DIALOG1);	//Start up modeless
 	m_ToolSelectDialogue.ShowWindow(SW_SHOW);	//show modeless
 	m_ToolSelectDialogue.SetObjectData(&m_ToolSystem.GetSceneGraph(), &m_ToolSystem.m_selectedObject);
+
+	m_ToolSystem.windowOpen = true;
 }
 
 void MFCMain::SetAxisSnapValues()
@@ -114,6 +118,19 @@ void MFCMain::SetAxisSnapValues()
 	m_ToolAxisSnapDialogue.Create(IDD_DIALOG2);	//Start up modeless
 	m_ToolAxisSnapDialogue.SetText();
 	m_ToolAxisSnapDialogue.ShowWindow(SW_SHOW);	//show modeless
+
+	m_ToolSystem.windowOpen = true;
+}
+
+void MFCMain::OpenTerrainDialogue()
+{
+	//m_ToolAxisSnapDialogue.m_toolMain = m_ToolSystem;
+	m_TerrainEditorDialogue.Create(IDD_DIALOG3);	//Start up modeless
+	m_TerrainEditorDialogue.SetText();
+	m_TerrainEditorDialogue.ShowWindow(SW_SHOW);	//show modeless
+	m_TerrainEditorDialogue.SetData();
+
+	m_ToolSystem.windowOpen = true;
 }
 
 void MFCMain::ToolBarButton1()

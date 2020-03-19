@@ -55,6 +55,14 @@ public: //methods
 	float m_rotationSnap = 1.0f;
 	float m_scaleSnap = 1.0f;
 
+	DirectX::XMFLOAT3 terrainManipulationOffset;
+	bool	mouseTerrainTool = false;
+	bool	mouseTerrainToolDig = false;
+	void	EnableTerrainText(bool enable);
+	void	UpdateTerrainHeightText();
+
+	bool	windowOpen = false;
+
 public:	//variables
 	//std::vector<SceneObject>    m_sceneGraph;	//our scenegraph storing all the objects in the current chunk
 	std::vector<GameObject>    m_gameGraph;
@@ -86,11 +94,18 @@ private:	//variables
 	void MouseRUp(MSG* msg);
 
 	GrabbedAxis grabbedAxis;
+	RayToDisplayChunkReturn mouseTerrainManipReturn;
 	bool	mouseGrabbing = false;
+	bool	mouseTerrainToolActive = false;
 	float	mouseGrabbedCoords[2];
 	float	mouse_x;
 	float	mouse_y;
+	float	prevMouse_x;
+	float	prevMouse_y;
 	bool	m_once = false;
+
+	//Terrain tool toggle dig do once.
+	bool	m_Tonce = false;
 
 	int m_width;		//dimensions passed to directX
 	int m_height;
