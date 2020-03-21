@@ -6,6 +6,7 @@
 #include "sqlite3.h"
 #include "GameObject.h"
 #include "InputCommands.h"
+#include "TerrainTool.h"
 #include <vector>
 
 struct ScreenPosToWorldSpaceReturn
@@ -49,17 +50,15 @@ public: //methods
 	inline std::vector<SceneObject> GetSceneGraph() { return GameGraphToSceneGraph(m_gameGraph); }
 
 	inline void SetManipType(ManipulationType in_type) { m_manipType = in_type; }
+	TerrainTool m_terrainTool;
 
 	//Axis snap values.
 	float m_positionSnap = 1.0f;
 	float m_rotationSnap = 1.0f;
 	float m_scaleSnap = 1.0f;
 
-	DirectX::XMFLOAT3 terrainManipulationOffset;
-	bool	mouseTerrainTool = false;
-	bool	mouseTerrainToolDig = false;
 	void	EnableTerrainText(bool enable);
-	void	UpdateTerrainHeightText();
+	void	UpdateTerrainText();
 
 	bool	windowOpen = false;
 
@@ -73,7 +72,6 @@ private:	//methods
 	void	onContentAdded();
 
 	std::vector<SceneObject> GameGraphToSceneGraph(std::vector<GameObject> in_gameGraph);
-
 	ScreenPosToWorldSpaceReturn ScreenPosToWorldSpace(float x, float y);
 		
 private:	//variables
@@ -94,9 +92,7 @@ private:	//variables
 	void MouseRUp(MSG* msg);
 
 	GrabbedAxis grabbedAxis;
-	RayToDisplayChunkReturn mouseTerrainManipReturn;
 	bool	mouseGrabbing = false;
-	bool	mouseTerrainToolActive = false;
 	float	mouseGrabbedCoords[2];
 	float	mouse_x;
 	float	mouse_y;
@@ -104,16 +100,16 @@ private:	//variables
 	float	prevMouse_y;
 	bool	m_once = false;
 
-	//Terrain tool toggle dig do once.
+	//Terrain tool toggle do once.
 	bool	m_Tonce = false;
 
 	int m_width;		//dimensions passed to directX
 	int m_height;
 	int m_currentChunk;			//the current chunk of thedatabase that we are operating on.  Dictates loading and saving. 	
 
-	DirectX::BoundingOrientedBox m_axisBoxX;
-	DirectX::BoundingOrientedBox m_axisBoxY;
-	DirectX::BoundingOrientedBox m_axisBoxZ;
+	DirectX::BoundingBox m_axisBoxX;
+	DirectX::BoundingBox m_axisBoxY;
+	DirectX::BoundingBox m_axisBoxZ;
 
 	ManipulationType m_manipType = ManipulationType::Position;
 };

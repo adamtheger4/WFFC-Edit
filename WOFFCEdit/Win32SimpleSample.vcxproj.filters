@@ -71,6 +71,9 @@
     <ClCompile Include="TerrainEditorDialogue.cpp">
       <Filter>MFC</Filter>
     </ClCompile>
+    <ClCompile Include="TerrainTool.cpp">
+      <Filter>Tool</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DeviceResources.h">
@@ -131,6 +134,9 @@
     </ClInclude>
     <ClInclude Include="TerrainEditorDialogue.h">
       <Filter>MFC</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainTool.h">
+      <Filter>Tool</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

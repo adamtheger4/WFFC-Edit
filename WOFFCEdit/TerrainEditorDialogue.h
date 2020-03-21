@@ -4,6 +4,7 @@
 #include "afxwin.h"
 #include "SceneObject.h"
 #include "ToolMain.h"
+#include "TerrainTool.h"
 #include <vector>
 
 class TerrainEditorDialogue : public CDialogEx
@@ -46,6 +47,8 @@ public:
 
 	afx_msg void OnBnClickedButton40001();
 	afx_msg void OnBnClickedButton40002();
+	afx_msg void OnBnClickedButton40003();
+	afx_msg void OnBnClickedButton40004();
 	afx_msg void OnDeltaSpin1(NMHDR *pNMHDR, LRESULT *pResult);
 };
 

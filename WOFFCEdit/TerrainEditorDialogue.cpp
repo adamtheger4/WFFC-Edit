@@ -11,7 +11,8 @@ BEGIN_MESSAGE_MAP(TerrainEditorDialogue, CDialogEx)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_HEIGHTSPIN, &TerrainEditorDialogue::OnDeltaSpin1)
 	ON_BN_CLICKED(ID_BUTTON40001, &TerrainEditorDialogue::OnBnClickedButton40001)
 	ON_BN_CLICKED(ID_BUTTON40002, &TerrainEditorDialogue::OnBnClickedButton40002)
-
+	ON_BN_CLICKED(ID_BUTTON40003, &TerrainEditorDialogue::OnBnClickedButton40003)
+	ON_BN_CLICKED(ID_BUTTON40004, &TerrainEditorDialogue::OnBnClickedButton40004)
 END_MESSAGE_MAP()
 
 TerrainEditorDialogue::TerrainEditorDialogue(CWnd * pParent, ToolMain in_toolSystem)
@@ -144,7 +145,7 @@ void TerrainEditorDialogue::SetText()
 void TerrainEditorDialogue::SetData()
 {
 	CButton *m_ctlCheck1 = (CButton*)GetDlgItem(ID_BUTTON40001);
-	if (m_toolMain->mouseTerrainTool) 
+	if (m_toolMain->m_terrainTool.GetEnable())
 	{
 		m_ctlCheck1->SetCheck(1);
 	}
@@ -154,7 +155,7 @@ void TerrainEditorDialogue::SetData()
 	}
 
 	CButton *m_ctlCheck2 = (CButton*)GetDlgItem(ID_BUTTON40002);
-	if (m_toolMain->mouseTerrainToolDig)
+	if (m_toolMain->m_terrainTool.smoothSculpt)
 	{
 		m_ctlCheck2->SetCheck(1);
 	}
@@ -163,13 +164,26 @@ void TerrainEditorDialogue::SetData()
 		m_ctlCheck2->SetCheck(0);
 	}
 
+	CButton *m_ctlCheck3 = (CButton*)GetDlgItem(ID_BUTTON40003);
+	CButton *m_ctlCheck4 = (CButton*)GetDlgItem(ID_BUTTON40004);
+	if (m_toolMain->m_terrainTool.m_terrainSculptMode == TerrainSculptMode::Hill)
+	{
+		m_ctlCheck3->SetCheck(1);
+		m_ctlCheck4->SetCheck(0);
+	}
+	else
+	{
+		m_ctlCheck3->SetCheck(0);
+		m_ctlCheck4->SetCheck(1);
+	}
+
 	CString t;
-	t.Format(_T("%d"), (int)m_toolMain->terrainManipulationOffset.y);
+	t.Format(_T("%d"), (int)m_toolMain->m_terrainTool.GetManipulationOffset().y);
 
 	CWnd* pWnd = GetDlgItem(HEIGHTTEXT);
 	pWnd->SetWindowText(t);
 
-	m_toolMain->UpdateTerrainHeightText();
+	m_toolMain->UpdateTerrainText();
 }
 
 void TerrainEditorDialogue::OnBnClickedButton40001()
@@ -180,16 +194,16 @@ void TerrainEditorDialogue::OnBnClickedButton40001()
 
 	if (ChkBox == BST_CHECKED)
 	{
-		m_toolMain->mouseTerrainTool = true;
+		m_toolMain->m_terrainTool.SetEnable(true);
 		m_toolMain->EnableTerrainText(true);
 	}
 	else if (ChkBox == BST_UNCHECKED)
 	{
-		m_toolMain->mouseTerrainTool = false;
+		m_toolMain->m_terrainTool.SetEnable(false);
 		m_toolMain->EnableTerrainText(false);
 	}
 
-	m_toolMain->UpdateTerrainHeightText();
+	m_toolMain->UpdateTerrainText();
 	// TODO: Add your control notification handler code here
 }
 
@@ -201,14 +215,36 @@ void TerrainEditorDialogue::OnBnClickedButton40002()
 
 	if (ChkBox == BST_CHECKED)
 	{
-		m_toolMain->mouseTerrainToolDig = true;
+		m_toolMain->m_terrainTool.smoothSculpt = true;
 	}
 	else if (ChkBox == BST_UNCHECKED)
 	{
-		m_toolMain->mouseTerrainToolDig = false;
+		m_toolMain->m_terrainTool.smoothSculpt = false;
 	}
 
-	m_toolMain->UpdateTerrainHeightText();
+	m_toolMain->UpdateTerrainText();
+}
+
+void TerrainEditorDialogue::OnBnClickedButton40003()
+{
+	CButton *m_ctlCheck3 = (CButton*)GetDlgItem(ID_BUTTON40003);
+	CButton *m_ctlCheck4 = (CButton*)GetDlgItem(ID_BUTTON40004);
+
+	m_ctlCheck3->SetCheck(1);
+	m_ctlCheck4->SetCheck(0);
+
+	m_toolMain->m_terrainTool.m_terrainSculptMode = TerrainSculptMode::Hill;
+}
+
+void TerrainEditorDialogue::OnBnClickedButton40004()
+{
+	CButton *m_ctlCheck3 = (CButton*)GetDlgItem(ID_BUTTON40003);
+	CButton *m_ctlCheck4 = (CButton*)GetDlgItem(ID_BUTTON40004);
+
+	m_ctlCheck3->SetCheck(0);
+	m_ctlCheck4->SetCheck(1);
+
+	m_toolMain->m_terrainTool.m_terrainSculptMode = TerrainSculptMode::Plateau;
 }
 
 void TerrainEditorDialogue::OnDeltaSpin1(NMHDR *pNMHDR, LRESULT *pResult)
@@ -217,13 +253,13 @@ void TerrainEditorDialogue::OnDeltaSpin1(NMHDR *pNMHDR, LRESULT *pResult)
 	// TODO: Add your control notification handler code here
 	*pResult = 0;
 
-	m_toolMain->terrainManipulationOffset.y -= pNMUpDown->iDelta;
+	m_toolMain->m_terrainTool.SetManipulationOffset(DirectX::XMFLOAT3{ m_toolMain->m_terrainTool.GetManipulationOffset().x, m_toolMain->m_terrainTool.GetManipulationOffset().y - pNMUpDown->iDelta, m_toolMain->m_terrainTool.GetManipulationOffset().z });
 
 	CString t;
-	t.Format(_T("%d"), (int)m_toolMain->terrainManipulationOffset.y);
+	t.Format(_T("%d"), (int)m_toolMain->m_terrainTool.GetManipulationOffset().y);
 
 	CWnd* pWnd = GetDlgItem(HEIGHTTEXT);
 	pWnd->SetWindowText(t);
 
-	m_toolMain->UpdateTerrainHeightText();
+	m_toolMain->UpdateTerrainText();
 }

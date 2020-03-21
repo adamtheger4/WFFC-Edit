@@ -62,8 +62,9 @@ public:
 
 	RayToDisplayChunkReturn RayToDisplayChunkCollision(DirectX::SimpleMath::Ray ray);
 	RayToDisplayChunkReturn GetCurrentTerrainPoint();
-	void SculptTerrain(int row, int column, DirectX::XMFLOAT3 offset, bool smooth_sculpt);
-	void SmoothSculptTerrain(int row, int column, DirectX::XMFLOAT3 offset);
+	void SculptTerrain(int row, int column, DirectX::XMFLOAT3 offset, bool smooth_sculpt, int sculptMode);
+	void FlattenTerrain(int row, int column, DirectX::XMFLOAT3 offset, float targetHeight, bool smooth_sculpt);
+	void SmoothSculptTerrain(int row, int column, DirectX::XMFLOAT3 offset, int sculptMode);
 	std::vector<DirectX::SimpleMath::Vector3> HalfRay(DirectX::SimpleMath::Vector3 v1, DirectX::SimpleMath::Vector3 v2, bool top);
 
 	inline DirectX::SimpleMath::Vector3 GetDisplayObjPos(int objID) { return m_displayList[objID].m_position; };
@@ -106,8 +107,11 @@ public:
 	float debug2;
 	float debug3;
 
+	
 	bool showObjText = false;
 	bool showTerrainText = false;
+	std::vector<Quad> m_terrainToolCursor;
+	
 #ifdef DXTK_AUDIO
 	void NewAudioDevice();
 #endif
@@ -125,6 +129,7 @@ private:
 
 	void XM_CALLCONV DrawGrid(DirectX::FXMVECTOR xAxis, DirectX::FXMVECTOR yAxis, DirectX::FXMVECTOR origin, size_t xdivs, size_t ydivs, DirectX::GXMVECTOR color);
 	void DrawAxisArrows();
+	void DrawTerrainToolCursor();
 
 	//tool specific
 	std::vector<DisplayObject>			m_displayList;

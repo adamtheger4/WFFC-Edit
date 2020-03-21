@@ -22,7 +22,5 @@ public:
 	DirectX::SimpleMath::Vector3		m_camUp;
 	float m_camRotRate;
 	float m_movespeed;
-
-
 };
 

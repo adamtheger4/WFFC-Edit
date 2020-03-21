@@ -10,6 +10,7 @@ struct RayToDisplayChunkReturn
 {
 	int row;
 	int column;
+	DirectX::SimpleMath::Vector3 hit_location;
 	bool did_hit = false;
 };
 

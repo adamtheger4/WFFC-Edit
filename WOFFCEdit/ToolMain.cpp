@@ -34,12 +34,6 @@ ToolMain::ToolMain()
 	m_axisBoxX.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
 	m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
 	m_axisBoxZ.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
-
-	m_axisBoxX.Orientation = DirectX::XMFLOAT4{ 0.0f, 0.0f,  0.0f, 1.0f };
-	m_axisBoxY.Orientation = DirectX::XMFLOAT4{ 0.0f, 0.0f,  0.0f, 1.0f };
-	m_axisBoxZ.Orientation = DirectX::XMFLOAT4{ 0.0f, 0.0f,  0.0f, 1.0f };
-
-	terrainManipulationOffset = DirectX::XMFLOAT3{ 0.0f, 10.0f, 0.0f };
 }
 
 ToolMain::~ToolMain()
@@ -82,6 +76,8 @@ void ToolMain::onActionInitialise(HWND handle, int width, int height)
 	m_axisBoxX.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
 	m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
 	m_axisBoxZ.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
+
+	UpdateTerrainText();
 
 	onActionLoad();
 }
@@ -327,7 +323,9 @@ void ToolMain::Tick(MSG *msg)
 		//update Scenegraph
 		//add to scenegraph
 		//resend scenegraph to Direct X renderer
+
 	MouseUpdate();
+
 	//Renderer Update Call
 	m_d3dRenderer.Tick(&m_toolInputCommands);	
 
@@ -336,6 +334,8 @@ void ToolMain::Tick(MSG *msg)
 
 void ToolMain::UpdateInput(MSG * msg)
 {
+	float wheelDelta = 0;
+
 	switch (msg->message)
 	{
 		//Global inputs,  mouse position and keys etc
@@ -352,6 +352,10 @@ void ToolMain::UpdateInput(MSG * msg)
 		mouse_x = GET_X_LPARAM(msg->lParam);
 		mouse_y = GET_Y_LPARAM(msg->lParam);
 		break;
+		
+	case WM_MOUSEWHEEL:
+		wheelDelta = GET_WHEEL_DELTA_WPARAM(msg->wParam);
+		break; 
 
 	case WM_LBUTTONDOWN:	//mouse button down,  you will probably need to check when its up too
 		//set some flag for the mouse button in inputcommands
@@ -452,12 +456,15 @@ void ToolMain::UpdateInput(MSG * msg)
 		}
 		else m_toolInputCommands.down = false;
 
+		if (wheelDelta > 0) m_toolInputCommands.camMovementScalar += 0.1f;
+		else if (wheelDelta < 0 && m_toolInputCommands.camMovementScalar > 0.1f) m_toolInputCommands.camMovementScalar -= 0.1f;
+
 		if (m_keyArray[16])
 		{
-			m_toolInputCommands.camMove = 2.0f;
+			m_toolInputCommands.camMove = m_toolInputCommands.camMovementScalar * 2;
 
 		}
-		else m_toolInputCommands.camMove = 1.0f;
+		else m_toolInputCommands.camMove = m_toolInputCommands.camMovementScalar;
 	}
 	else
 	{
@@ -474,23 +481,41 @@ void ToolMain::UpdateInput(MSG * msg)
 		m_toolInputCommands.down = false;
 	}
 
-	if (mouseTerrainTool)
+
+	if (m_keyArray['T'])
 	{
-		if (m_keyArray['T'])
+		if (m_Tonce)
 		{
-			if (m_Tonce)
+			if (m_terrainTool.GetEnable() == false)
 			{
-				if (mouseTerrainToolDig)
-				{
-					mouseTerrainToolDig = false;
-				}
-				else mouseTerrainToolDig = true;
-				m_Tonce = false;
+				m_terrainTool.SetEnable(true);
+				EnableTerrainText(true);
+			}
+			else
+			{
+				m_terrainTool.SetEnable(false);
+				EnableTerrainText(false);
 			}
 
-			UpdateTerrainHeightText();
+			m_Tonce = false;
 		}
 	}
+
+	if (m_terrainTool.GetEnable())
+	{
+	
+		if (m_keyArray[16])
+		{
+			m_terrainTool.SetSculptType(TerrainSculptType::Flatten);
+		}
+		else if (m_keyArray[17])
+		{
+			m_terrainTool.SetSculptType(TerrainSculptType::Dig);
+		}
+		else  m_terrainTool.SetSculptType(TerrainSculptType::Add);
+	}
+	
+	UpdateTerrainText();
 
 	MouseGrabbing();
 }
@@ -541,21 +566,40 @@ void ToolMain::MouseUpdate()
 		}
 	}
 
-	if (mouseTerrainToolActive == true)
+	if (m_terrainTool.Active == true)
 	{
 		//Clicking Terrain
-		if (mouse_x != prevMouse_x || mouse_y != prevMouse_y)	mouseTerrainManipReturn = m_d3dRenderer.RayToDisplayChunkCollision(ray);
-		if (mouseTerrainManipReturn.did_hit)
+		if (mouse_x != prevMouse_x || mouse_y != prevMouse_y)	m_terrainTool.mouseTerrainManipReturn = m_d3dRenderer.RayToDisplayChunkCollision(ray);
+
+		if (m_terrainTool.mouseTerrainManipReturn.did_hit)
 		{
-			if (mouseTerrainToolDig)
+			std::vector<Quad> quads1 = m_d3dRenderer.BoxToQuads(m_terrainTool.mouseTerrainManipReturn.hit_location, DirectX::XMFLOAT3{0.1f, 0.1f, 0.1f});
+			m_d3dRenderer.m_terrainToolCursor = quads1;
+
+			if (m_terrainTool.updateTargetHeight)
 			{
-				m_d3dRenderer.SculptTerrain(mouseTerrainManipReturn.row, mouseTerrainManipReturn.column, DirectX::XMFLOAT3{ -terrainManipulationOffset.x, -terrainManipulationOffset.y, -terrainManipulationOffset.z }, true);
+				m_terrainTool.targetHeight = m_terrainTool.mouseTerrainManipReturn.hit_location.y;
+				m_terrainTool.updateTargetHeight = false;
+			}
+
+			if (m_terrainTool.GetSculptType() == TerrainSculptType::Flatten)
+			{
+				m_d3dRenderer.FlattenTerrain(m_terrainTool.mouseTerrainManipReturn.row, m_terrainTool.mouseTerrainManipReturn.column, DirectX::XMFLOAT3{ m_terrainTool.GetManipulationOffset().x, m_terrainTool.GetManipulationOffset().y, m_terrainTool.GetManipulationOffset().z }, m_terrainTool.targetHeight, m_terrainTool.smoothSculpt);
+			}
+			else if (m_terrainTool.GetSculptType() == TerrainSculptType::Dig)
+			{
+				m_d3dRenderer.SculptTerrain(m_terrainTool.mouseTerrainManipReturn.row, m_terrainTool.mouseTerrainManipReturn.column, DirectX::XMFLOAT3{ -m_terrainTool.GetManipulationOffset().x, -m_terrainTool.GetManipulationOffset().y, -m_terrainTool.GetManipulationOffset().z }, m_terrainTool.smoothSculpt, m_terrainTool.m_terrainSculptMode);
 			}
 			else
 			{
-				m_d3dRenderer.SculptTerrain(mouseTerrainManipReturn.row, mouseTerrainManipReturn.column, terrainManipulationOffset, true);
+				m_d3dRenderer.SculptTerrain(m_terrainTool.mouseTerrainManipReturn.row, m_terrainTool.mouseTerrainManipReturn.column, m_terrainTool.GetManipulationOffset(), m_terrainTool.smoothSculpt, m_terrainTool.m_terrainSculptMode);
 			}
 		}
+	}
+	else
+	{
+		std::vector<Quad> quads1 = m_d3dRenderer.BoxToQuads(m_terrainTool.mouseTerrainManipReturn.hit_location, DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f });
+		m_d3dRenderer.m_terrainToolCursor = quads1;
 	}
 
 	prevMouse_x = mouse_x;
@@ -733,11 +777,6 @@ void ToolMain::MouseGrabbing()
 		m_axisBoxX.Extents = DirectX::XMFLOAT3{ 1.0f, 0.1f,  0.1f };
 		m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.1f, 1.0f,  0.1f };
 		m_axisBoxZ.Extents = DirectX::XMFLOAT3{ 0.1f, 0.1f,  1.0f };
-
-		////Set the new orientation for the bounding box.
-		//DirectX::XMFLOAT4* f = new DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-		//DirectX::XMStoreFloat4(f, DirectX::XMQuaternionRotationRollPitchYawFromVector(m_d3dRenderer.GetDisplayObjRotation(m_selectedObject)));
-		//m_axisBoxX.Orientation = *f;
 	
 		m_d3dRenderer.x_arrow = m_axisBoxX.Center;
 		m_d3dRenderer.y_arrow = m_axisBoxY.Center;
@@ -874,9 +913,9 @@ void ToolMain::MouseLDown(MSG* msg)
 {
 	if (windowOpen == false)
 	{
-		if (mouseTerrainTool)
+		if (m_terrainTool.GetEnable())
 		{
-			mouseTerrainToolActive = true;
+			m_terrainTool.Active = true;
 		}
 		else MouseCollision();
 			
@@ -892,7 +931,9 @@ void ToolMain::MouseLUp(MSG* msg)
 		mouseGrabbing = false;
 	}
 
-	if (mouseTerrainToolActive) mouseTerrainToolActive = false;
+	if (m_terrainTool.Active) m_terrainTool.Active = false; 
+
+	m_terrainTool.updateTargetHeight = true;
 }
 
 void ToolMain::MouseRDown(MSG* msg)
@@ -945,10 +986,10 @@ void ToolMain::EnableTerrainText(bool enable)
 	}
 }
 
-void ToolMain::UpdateTerrainHeightText()
+void ToolMain::UpdateTerrainText()
 {
-	m_d3dRenderer.debug1 = mouseTerrainToolDig;
-	m_d3dRenderer.debug2 = terrainManipulationOffset.y;
+	m_d3dRenderer.debug1 = m_terrainTool.GetSculptType();
+	m_d3dRenderer.debug2 = m_terrainTool.GetManipulationOffset().y;
 }
 
 std::vector<SceneObject> ToolMain::GameGraphToSceneGraph(std::vector<GameObject> in_gameGraph)

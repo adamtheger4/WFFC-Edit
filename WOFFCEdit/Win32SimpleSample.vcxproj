@@ -182,6 +182,7 @@
     <ClCompile Include="SelectDialogue.cpp" />
     <ClCompile Include="sqlite3.c" />
     <ClCompile Include="TerrainEditorDialogue.cpp" />
+    <ClCompile Include="TerrainTool.cpp" />
     <ClCompile Include="ToolMain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -205,6 +206,7 @@
     <ClInclude Include="StepTimer.h" />
     <ClInclude Include="MFCMain.h" />
     <ClInclude Include="TerrainEditorDialogue.h" />
+    <ClInclude Include="TerrainTool.h" />
     <ClInclude Include="ToolMain.h" />
   </ItemGroup>
   <ItemGroup>

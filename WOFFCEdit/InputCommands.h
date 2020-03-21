@@ -19,6 +19,6 @@ struct InputCommands
 	float camRotateX = 1;
 	float camRotateY = 1;
 	float camMove = 1;
-
+	float camMovementScalar = 1.0;
 	float objMove = 1.0f;
 };

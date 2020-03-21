@@ -25,7 +25,7 @@ Game::Game()
 	
 	//initial Settings
 	//modes
-	m_grid = true;
+	//m_grid = true;
 }
 
 Game::~Game()
@@ -212,13 +212,27 @@ void Game::Render()
 		DrawAxisArrows();
 	}
 
+	if (showTerrainText)
+	{
+		DrawTerrainToolCursor();
+	}
+
 	//////////////////////// SPRITES //////////////////////// 
 	//CAMERA POSITION ON HUD
 	m_sprites->Begin();
 	WCHAR   Buffer[256];
 	//std::wstring var = L"Cam X: " + std::to_wstring(m_camera.m_camPosition.x) + L"Cam Z: " + std::to_wstring(m_camera.m_camPosition.z);
 	std::wstring var = L"FPS : " + std::to_wstring(m_timer.GetFramesPerSecond());
-	m_font->DrawString(m_sprites.get(), var.c_str(), XMFLOAT2(10, 10), Colors::Yellow);
+	m_font->DrawString(m_sprites.get(), var.c_str(), XMFLOAT2(5, 1), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+
+
+	std::wstring camScalar = L"Camera Scalar : " + std::to_wstring(m_InputCommands.camMovementScalar);
+	camScalar.pop_back(); 
+	camScalar.pop_back();
+	camScalar.pop_back();
+	camScalar.pop_back();
+	camScalar.pop_back();
+	m_font->DrawString(m_sprites.get(), camScalar.c_str(), XMFLOAT2(5, 20), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
 	
 	if (showObjText)
 	{
@@ -231,13 +245,22 @@ void Game::Render()
 	}
 	else if (showTerrainText)
 	{
-		std::wstring digEnabled = L"Terrain Editor Dig (T = Toggle): ";
-		if(debug1 == 1) digEnabled += L"ENABLED";
-		else if (debug1 == 0) digEnabled += L"DISABLED";
-		m_font->DrawString(m_sprites.get(), digEnabled.c_str(), XMFLOAT2(580, 10), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+		std::wstring controls = L"Dig: (Hold CTRL), Flatten: (Hold SHIFT)";
+		m_font->DrawString(m_sprites.get(), controls.c_str(), XMFLOAT2(580, 40), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+
+		std::wstring flattenEnabled = L"Sculpt Type: ";
+		if (debug1 == 1) flattenEnabled += L"Dig";
+		else if (debug1 == 2) flattenEnabled += L"Flatten";
+		else flattenEnabled += L"Add";
+		m_font->DrawString(m_sprites.get(), flattenEnabled.c_str(), XMFLOAT2(580, 70), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
 
 		std::wstring terrainEditor = L"Terrain Editor Height Offset: " + std::to_wstring(debug2);
-		m_font->DrawString(m_sprites.get(), terrainEditor.c_str(), XMFLOAT2(580, 40), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+		terrainEditor.pop_back();
+		terrainEditor.pop_back();
+		terrainEditor.pop_back();
+		terrainEditor.pop_back();
+		terrainEditor.pop_back();
+		m_font->DrawString(m_sprites.get(), terrainEditor.c_str(), XMFLOAT2(580, 10), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
 	}
 
 
@@ -360,6 +383,32 @@ void Game::DrawAxisArrows()
 			m_batch->DrawQuad(v1, v2, v3, v4);
 		}
 		
+	}
+
+	m_batch->End();
+}
+
+void Game::DrawTerrainToolCursor()
+{
+	auto context = m_deviceResources->GetD3DDeviceContext();
+	context->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
+	context->OMSetDepthStencilState(m_states->DepthNone(), 0);
+	context->RSSetState(m_states->CullNone());
+
+	m_batchEffect->Apply(context);
+
+	context->IASetInputLayout(m_batchInputLayout.Get());
+
+	m_batch->Begin();
+
+	for (int i = 0; i < m_terrainToolCursor.size(); i++)
+	{
+		VertexPositionColor v1(m_terrainToolCursor[i].v1, xAxisColor);
+		VertexPositionColor v2(m_terrainToolCursor[i].v2, xAxisColor);
+		VertexPositionColor v3(m_terrainToolCursor[i].v3, xAxisColor);
+		VertexPositionColor v4(m_terrainToolCursor[i].v4, xAxisColor);
+
+		m_batch->DrawQuad(v1, v2, v3, v4);
 	}
 
 	m_batch->End();
@@ -664,10 +713,10 @@ RayToDisplayChunkReturn Game::RayToDisplayChunkCollision(DirectX::SimpleMath::Ra
 			{
 				if (m_displayChunk.GetTerrainGeometry(i, j).position.y < v1.y && m_displayChunk.GetTerrainGeometry(i, j).position.y > v2.y)
 				{
-		
 					return_values.row = i;
 					return_values.column = j;
 					return_values.did_hit = true;
+					return_values.hit_location = m_displayChunk.GetTerrainGeometry(i, j).position;
 
 					return return_values;
 				}
@@ -678,11 +727,11 @@ RayToDisplayChunkReturn Game::RayToDisplayChunkCollision(DirectX::SimpleMath::Ra
 	return return_values;
 }
 
-void Game::SculptTerrain(int row, int column, DirectX::XMFLOAT3 offset, bool smooth_sculpt)
+void Game::SculptTerrain(int row, int column, DirectX::XMFLOAT3 offset, bool smooth_sculpt, int sculptMode)
 {
 	if (smooth_sculpt)
 	{
-		SmoothSculptTerrain(row, column, offset);
+		SmoothSculptTerrain(row, column, m_dt * offset, sculptMode);
 	}
 	else
 	{
@@ -690,23 +739,104 @@ void Game::SculptTerrain(int row, int column, DirectX::XMFLOAT3 offset, bool smo
 	}
 }
 
-void Game::SmoothSculptTerrain(int row, int column, DirectX::XMFLOAT3 offset)
+void Game::FlattenTerrain(int row, int column, DirectX::XMFLOAT3 offset, float targetHeight, bool smooth_sculpt)
 {
-	m_displayChunk.SetTerrainGeometryPosition(row, column, m_displayChunk.GetTerrainGeometryPosition(row, column) + (m_dt * offset));
+	float currentHeight = m_displayChunk.GetTerrainGeometryPosition(row, column).y;
+	float delta = targetHeight - currentHeight;
 
-	m_displayChunk.SetTerrainGeometryPosition(row + 1, column, m_displayChunk.GetTerrainGeometryPosition(row + 1, column) + (m_dt * (offset * 0.75)));
-	m_displayChunk.SetTerrainGeometryPosition(row + 1, column + 1, m_displayChunk.GetTerrainGeometryPosition(row + 1, column + 1) + (m_dt * (offset * 0.75)));
-	m_displayChunk.SetTerrainGeometryPosition(row, column + 1, m_displayChunk.GetTerrainGeometryPosition(row, column + 1) + (m_dt * (offset * 0.75)));
-	m_displayChunk.SetTerrainGeometryPosition(row - 1, column, m_displayChunk.GetTerrainGeometryPosition(row - 1, column) + (m_dt * (offset * 0.75)));
-	m_displayChunk.SetTerrainGeometryPosition(row - 1, column - 1, m_displayChunk.GetTerrainGeometryPosition(row - 1, column - 1) + (m_dt * (offset * 0.75)));
-	m_displayChunk.SetTerrainGeometryPosition(row, column - 1, m_displayChunk.GetTerrainGeometryPosition(row, column - 1) + (m_dt * (offset * 0.75)));
+	DirectX::SimpleMath::Vector3 vOffset{ 0.0f, delta, 0.0f };
+	vOffset.Normalize();
+	vOffset *= offset.y;
 
-	//m_displayChunk.SetTerrainGeometryPosition(row + 2, column, m_displayChunk.GetTerrainGeometryPosition(row + 2, column) + (m_dt * (offset * 0.5)));
-	//m_displayChunk.SetTerrainGeometryPosition(row + 2, column + 2, m_displayChunk.GetTerrainGeometryPosition(row + 2, column + 2) + (m_dt * (offset * 0.5)));
-	//m_displayChunk.SetTerrainGeometryPosition(row, column + 2, m_displayChunk.GetTerrainGeometryPosition(row, column + 2) + (m_dt * (offset * 0.5)));
-	//m_displayChunk.SetTerrainGeometryPosition(row - 2, column, m_displayChunk.GetTerrainGeometryPosition(row - 2, column) + (m_dt * (offset * 0.5)));
-	//m_displayChunk.SetTerrainGeometryPosition(row - 2, column - 2, m_displayChunk.GetTerrainGeometryPosition(row - 2, column - 2) + (m_dt * (offset * 0.5)));
-	//m_displayChunk.SetTerrainGeometryPosition(row, column - 2, m_displayChunk.GetTerrainGeometryPosition(row, column - 2) + (m_dt * (offset * 0.5)));
+	DirectX::XMFLOAT3 fOffset = vOffset;
+	if (smooth_sculpt)
+	{
+		if (std::abs(delta) > 0.5f)
+		{
+			//SculptTerrain(row, column, fOffset, true);
+
+			m_displayChunk.SetTerrainGeometryPosition(row, column, m_displayChunk.GetTerrainGeometryPosition(row, column) + (m_dt *fOffset));
+
+			DirectX::SimpleMath::Vector3 pos = m_displayChunk.GetTerrainGeometryPosition(row, column);
+
+			m_displayChunk.SetTerrainGeometryPosition(row + 1, column, DirectX::SimpleMath::Vector3{ m_displayChunk.GetTerrainGeometryPosition(row + 1, column).x, pos.y, m_displayChunk.GetTerrainGeometryPosition(row + 1, column).z } +(m_dt * fOffset));
+			m_displayChunk.SetTerrainGeometryPosition(row + 1, column + 1, DirectX::SimpleMath::Vector3{ m_displayChunk.GetTerrainGeometryPosition(row + 1, column + 1).x, pos.y, m_displayChunk.GetTerrainGeometryPosition(row + 1, column + 1).z } +(m_dt * fOffset));
+			m_displayChunk.SetTerrainGeometryPosition(row, column + 1, DirectX::SimpleMath::Vector3{ m_displayChunk.GetTerrainGeometryPosition(row, column + 1).x, pos.y, m_displayChunk.GetTerrainGeometryPosition(row, column + 1).z } +(m_dt * fOffset));
+
+			m_displayChunk.SetTerrainGeometryPosition(row - 1, column, DirectX::SimpleMath::Vector3{ m_displayChunk.GetTerrainGeometryPosition(row - 1, column).x, pos.y, m_displayChunk.GetTerrainGeometryPosition(row - 1, column).z } +(m_dt * fOffset));
+			m_displayChunk.SetTerrainGeometryPosition(row - 1, column - 1, DirectX::SimpleMath::Vector3{ m_displayChunk.GetTerrainGeometryPosition(row - 1, column - 1).x, pos.y, m_displayChunk.GetTerrainGeometryPosition(row - 1, column - 1).z } +(m_dt * fOffset));
+			m_displayChunk.SetTerrainGeometryPosition(row, column - 1, DirectX::SimpleMath::Vector3{ m_displayChunk.GetTerrainGeometryPosition(row, column - 1).x, pos.y, m_displayChunk.GetTerrainGeometryPosition(row, column - 1).z } +(m_dt * fOffset));
+
+			m_displayChunk.SetTerrainGeometryPosition(row - 1, column + 1, DirectX::SimpleMath::Vector3{ m_displayChunk.GetTerrainGeometryPosition(row - 1, column + 1).x, pos.y, m_displayChunk.GetTerrainGeometryPosition(row - 1, column - 1).z } +(m_dt * fOffset));
+			m_displayChunk.SetTerrainGeometryPosition(row + 1, column - 1, DirectX::SimpleMath::Vector3{ m_displayChunk.GetTerrainGeometryPosition(row + 1, column - 1).x, pos.y, m_displayChunk.GetTerrainGeometryPosition(row + 1, column - 1).z } +(m_dt * fOffset));
+		}
+		else
+		{
+			m_displayChunk.SetTerrainGeometryPosition(row, column, DirectX::XMFLOAT3{ m_displayChunk.GetTerrainGeometryPosition(row, column).x, targetHeight, m_displayChunk.GetTerrainGeometryPosition(row , column).z });
+			m_displayChunk.SetTerrainGeometryPosition(row + 1, column + 1, DirectX::XMFLOAT3{ m_displayChunk.GetTerrainGeometryPosition(row + 1, column + 1).x, targetHeight, m_displayChunk.GetTerrainGeometryPosition(row + 1, column + 1).z });
+			m_displayChunk.SetTerrainGeometryPosition(row + 1, column, DirectX::XMFLOAT3{ m_displayChunk.GetTerrainGeometryPosition(row + 1, column).x, targetHeight, m_displayChunk.GetTerrainGeometryPosition(row + 1, column).z });
+			m_displayChunk.SetTerrainGeometryPosition(row, column + 1, DirectX::XMFLOAT3{ m_displayChunk.GetTerrainGeometryPosition(row, column + 1).x, targetHeight, m_displayChunk.GetTerrainGeometryPosition(row, column + 1).z });
+
+			m_displayChunk.SetTerrainGeometryPosition(row - 1, column - 1, DirectX::XMFLOAT3{ m_displayChunk.GetTerrainGeometryPosition(row - 1, column - 1).x, targetHeight, m_displayChunk.GetTerrainGeometryPosition(row - 1, column - 1).z });
+			m_displayChunk.SetTerrainGeometryPosition(row - 1, column, DirectX::XMFLOAT3{ m_displayChunk.GetTerrainGeometryPosition(row - 1, column).x, targetHeight, m_displayChunk.GetTerrainGeometryPosition(row - 1, column).z });
+			m_displayChunk.SetTerrainGeometryPosition(row, column - 1, DirectX::XMFLOAT3{ m_displayChunk.GetTerrainGeometryPosition(row, column - 1).x, targetHeight, m_displayChunk.GetTerrainGeometryPosition(row, column - 1).z });
+
+			m_displayChunk.SetTerrainGeometryPosition(row - 1, column + 1, DirectX::XMFLOAT3{ m_displayChunk.GetTerrainGeometryPosition(row - 1, column + 1).x, targetHeight, m_displayChunk.GetTerrainGeometryPosition(row - 1, column + 1).z });
+			m_displayChunk.SetTerrainGeometryPosition(row + 1, column - 1, DirectX::XMFLOAT3{ m_displayChunk.GetTerrainGeometryPosition(row + 1, column - 1).x, targetHeight, m_displayChunk.GetTerrainGeometryPosition(row + 1, column - 1).z });
+		}
+	}
+	else
+	{
+		if (std::abs(delta) > 0.5f)
+		{
+			m_displayChunk.SetTerrainGeometryPosition(row, column, m_displayChunk.GetTerrainGeometryPosition(row, column) + (m_dt *fOffset));
+		}
+		else
+		{
+			m_displayChunk.SetTerrainGeometryPosition(row, column, DirectX::XMFLOAT3{ m_displayChunk.GetTerrainGeometryPosition(row, column).x, targetHeight, m_displayChunk.GetTerrainGeometryPosition(row , column).z });
+		}
+	}
+}
+
+void Game::SmoothSculptTerrain(int row, int column, DirectX::XMFLOAT3 offset, int sculptMode)
+{
+	if (sculptMode == 0) // Hill Sculpt
+	{
+		m_displayChunk.SetTerrainGeometryPosition(row, column, m_displayChunk.GetTerrainGeometryPosition(row, column) + (offset));
+
+
+		m_displayChunk.SetTerrainGeometryPosition(row + 1, column, m_displayChunk.GetTerrainGeometryPosition(row + 1, column) + ((offset * 0.75)));
+		m_displayChunk.SetTerrainGeometryPosition(row + 1, column + 1, m_displayChunk.GetTerrainGeometryPosition(row + 1, column + 1) + ((offset * 0.75)));
+		m_displayChunk.SetTerrainGeometryPosition(row, column + 1, m_displayChunk.GetTerrainGeometryPosition(row, column + 1) + ((offset * 0.75)));
+
+		m_displayChunk.SetTerrainGeometryPosition(row - 1, column, m_displayChunk.GetTerrainGeometryPosition(row - 1, column) + ((offset * 0.75)));
+		m_displayChunk.SetTerrainGeometryPosition(row - 1, column - 1, m_displayChunk.GetTerrainGeometryPosition(row - 1, column - 1) + ((offset * 0.75)));
+		m_displayChunk.SetTerrainGeometryPosition(row, column - 1, m_displayChunk.GetTerrainGeometryPosition(row, column - 1) + ((offset * 0.75)));
+
+		m_displayChunk.SetTerrainGeometryPosition(row - 1, column + 1, m_displayChunk.GetTerrainGeometryPosition(row - 1, column + 1) + ((offset * 0.75)));
+		m_displayChunk.SetTerrainGeometryPosition(row + 1, column - 1, m_displayChunk.GetTerrainGeometryPosition(row + 1, column - 1) + ((offset * 0.75)));
+
+	}
+	else if (sculptMode == 1)
+	{
+		m_displayChunk.SetTerrainGeometryPosition(row, column, m_displayChunk.GetTerrainGeometryPosition(row, column) + (offset));
+
+		DirectX::SimpleMath::Vector3 pos = m_displayChunk.GetTerrainGeometryPosition(row, column);
+
+		m_displayChunk.SetTerrainGeometryPosition(row + 1, column, DirectX::SimpleMath::Vector3{ m_displayChunk.GetTerrainGeometryPosition(row + 1, column).x, pos.y, m_displayChunk.GetTerrainGeometryPosition(row + 1, column).z } + offset);
+		m_displayChunk.SetTerrainGeometryPosition(row + 1, column + 1, DirectX::SimpleMath::Vector3{ m_displayChunk.GetTerrainGeometryPosition(row + 1, column + 1).x, pos.y, m_displayChunk.GetTerrainGeometryPosition(row + 1, column + 1).z } + offset);
+		m_displayChunk.SetTerrainGeometryPosition(row, column + 1, DirectX::SimpleMath::Vector3{ m_displayChunk.GetTerrainGeometryPosition(row, column + 1).x, pos.y, m_displayChunk.GetTerrainGeometryPosition(row, column + 1).z } + offset);
+
+		m_displayChunk.SetTerrainGeometryPosition(row - 1, column, DirectX::SimpleMath::Vector3{ m_displayChunk.GetTerrainGeometryPosition(row - 1, column).x, pos.y, m_displayChunk.GetTerrainGeometryPosition(row - 1, column).z } + offset);
+		m_displayChunk.SetTerrainGeometryPosition(row - 1, column - 1, DirectX::SimpleMath::Vector3{ m_displayChunk.GetTerrainGeometryPosition(row - 1, column - 1).x, pos.y, m_displayChunk.GetTerrainGeometryPosition(row - 1, column - 1).z } + offset);
+		m_displayChunk.SetTerrainGeometryPosition(row, column - 1, DirectX::SimpleMath::Vector3{ m_displayChunk.GetTerrainGeometryPosition(row, column - 1).x, pos.y, m_displayChunk.GetTerrainGeometryPosition(row, column - 1).z } + offset);
+
+		m_displayChunk.SetTerrainGeometryPosition(row - 1, column + 1, DirectX::SimpleMath::Vector3{ m_displayChunk.GetTerrainGeometryPosition(row - 1, column + 1).x, pos.y, m_displayChunk.GetTerrainGeometryPosition(row - 1, column + 1).z } + offset);
+		m_displayChunk.SetTerrainGeometryPosition(row + 1, column - 1, DirectX::SimpleMath::Vector3{ m_displayChunk.GetTerrainGeometryPosition(row + 1, column - 1).x, pos.y, m_displayChunk.GetTerrainGeometryPosition(row + 1, column - 1).z } + offset);
+																																																												  
+
+	}
+
 
 }
 
