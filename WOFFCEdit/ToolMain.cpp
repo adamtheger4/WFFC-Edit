@@ -10,7 +10,6 @@ using namespace DirectX::SimpleMath;
 //ToolMain Class
 ToolMain::ToolMain()
 {
-
 	m_currentChunk = 0;		//default value
 	m_selectedObject = 0;	//initial selection ID
 	//m_sceneGraph.clear();	//clear the vector for the scenegraph
@@ -34,6 +33,8 @@ ToolMain::ToolMain()
 	m_axisBoxX.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
 	m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
 	m_axisBoxZ.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
+
+	m_mouseTool = new MouseTool(&m_d3dRenderer, &m_terrainTool);
 }
 
 ToolMain::~ToolMain()
@@ -72,7 +73,7 @@ void ToolMain::onActionInitialise(HWND handle, int width, int height)
 	}
 
 
-	mouseGrabbing = false;
+	m_mouseTool->m_grabbing = false;
 	m_axisBoxX.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
 	m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
 	m_axisBoxZ.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
@@ -324,6 +325,13 @@ void ToolMain::Tick(MSG *msg)
 		//add to scenegraph
 		//resend scenegraph to Direct X renderer
 
+
+	//Set cursor position to screen centre whilst mouse controls active.
+	if (m_toolInputCommands.mouseControls)
+	{
+		SetCursorPos(WindowRECT.CenterPoint().x, WindowRECT.CenterPoint().y);
+	}
+
 	MouseUpdate();
 
 	//Renderer Update Call
@@ -349,8 +357,8 @@ void ToolMain::UpdateInput(MSG * msg)
 		break;
 
 	case WM_MOUSEMOVE:
-		mouse_x = GET_X_LPARAM(msg->lParam);
-		mouse_y = GET_Y_LPARAM(msg->lParam);
+		m_mouseTool->x = GET_X_LPARAM(msg->lParam);
+		m_mouseTool->y = GET_Y_LPARAM(msg->lParam);
 		break;
 		
 	case WM_MOUSEWHEEL:
@@ -381,42 +389,42 @@ void ToolMain::UpdateInput(MSG * msg)
 	//Mouse controls
 	if (m_toolInputCommands.mouseControls)
 	{
-		if (m_once)
+		if (m_mouseTool->m_once)
 		{
 			std::vector<int> rotate{ 0, 0 };
 
-			if (mouse_x + 113> WindowRECT.CenterPoint().x)
+			if (m_mouseTool->x + 113> WindowRECT.CenterPoint().x)
 			{
 				m_toolInputCommands.rotRight = true;
-				rotate[0] = std::abs(WindowRECT.CenterPoint().x - (mouse_x + 113));
+				rotate[0] = std::abs(WindowRECT.CenterPoint().x - (m_mouseTool->x + 113));
 			}
 			else m_toolInputCommands.rotRight = false;
 
-			if (mouse_x + 113 < WindowRECT.CenterPoint().x)
+			if (m_mouseTool->x + 113 < WindowRECT.CenterPoint().x)
 			{
 				m_toolInputCommands.rotLeft = true;
-				rotate[0] = std::abs(WindowRECT.CenterPoint().x - (mouse_x + 113));
+				rotate[0] = std::abs(WindowRECT.CenterPoint().x - (m_mouseTool->x + 113));
 			}
 			else  m_toolInputCommands.rotLeft = false;
 
-			if (mouse_y + 191 < WindowRECT.CenterPoint().y)
+			if (m_mouseTool->y + 191 < WindowRECT.CenterPoint().y)
 			{
 				m_toolInputCommands.rotUp = true;
-				rotate[1] = std::abs(WindowRECT.CenterPoint().y - (mouse_y + 191));
+				rotate[1] = std::abs(WindowRECT.CenterPoint().y - (m_mouseTool->y + 191));
 			}
 			else m_toolInputCommands.rotUp = false;
 
-			if (mouse_y + 191 > WindowRECT.CenterPoint().y)
+			if (m_mouseTool->y + 191 > WindowRECT.CenterPoint().y)
 			{
 				m_toolInputCommands.rotDown = true;
-				rotate[1] = std::abs(WindowRECT.CenterPoint().y - (mouse_y + 191));
+				rotate[1] = std::abs(WindowRECT.CenterPoint().y - (m_mouseTool->y + 191));
 			}
 			else m_toolInputCommands.rotDown = false;
 
 			m_toolInputCommands.camRotateX = rotate[0];
 			m_toolInputCommands.camRotateY = rotate[1];
 		}
-		m_once = true;
+		m_mouseTool->m_once = true;
 
 
 		//WASD movement
@@ -522,118 +530,122 @@ void ToolMain::UpdateInput(MSG * msg)
 
 void ToolMain::MouseUpdate()
 {
-	//Save mouse pos and direction in world space
-	ScreenPosToWorldSpaceReturn mouse_pos = ScreenPosToWorldSpace(mouse_x, mouse_y);
-
-	// create a ray using mouse pos and direction
-	Ray ray;
-	ray.position = mouse_pos.pos;
-	ray.direction = mouse_pos.direction;
-
-	//Set cursor position to screen centre whilst mouse controls active.
-	if (m_toolInputCommands.mouseControls)
-	{		
-		SetCursorPos(WindowRECT.CenterPoint().x, WindowRECT.CenterPoint().y);
-	}
-
-	if (mouseGrabbing != true)
+	if (windowOpen == false)
 	{
-		//If mouse is overlapping an axis grab arrow then highlight the arrow.
-		float dist = 0;
-		if (m_axisBoxX.Intersects(ray.position, ray.direction, dist))
-		{
-			m_d3dRenderer.xAxisColor = DirectX::XMFLOAT4{ 0.5f, 0.0f, 0.0f, 1.0f };
-			m_d3dRenderer.yAxisColor = DirectX::XMFLOAT4{ 0.0f, 1.0f, 0.0f, 1.0f };
-			m_d3dRenderer.zAxisColor = DirectX::XMFLOAT4{ 0.0f, 0.0f, 1.0f, 1.0f };
-		}
-		else if (m_axisBoxY.Intersects(ray.position, ray.direction, dist))
-		{
-			m_d3dRenderer.xAxisColor = DirectX::XMFLOAT4{ 1.0f, 0.0f, 0.0f, 1.0f };
-			m_d3dRenderer.yAxisColor = DirectX::XMFLOAT4{ 0.0f, 0.5f, 0.0f, 1.0f };
-			m_d3dRenderer.zAxisColor = DirectX::XMFLOAT4{ 0.0f, 0.0f, 1.0f, 1.0f };
-		}
-		else if (m_axisBoxZ.Intersects(ray.position, ray.direction, dist))
-		{
-			m_d3dRenderer.xAxisColor = DirectX::XMFLOAT4{ 1.0f, 0.0f, 0.0f, 1.0f };
-			m_d3dRenderer.yAxisColor = DirectX::XMFLOAT4{ 0.0f, 1.0f, 0.0f, 1.0f };
-			m_d3dRenderer.zAxisColor = DirectX::XMFLOAT4{ 0.0f, 0.0f, 0.5f, 1.0f };
-		}
-		else
-		{
-			m_d3dRenderer.xAxisColor = DirectX::XMFLOAT4{ 1.0f, 0.0f, 0.0f, 0.5f };
-			m_d3dRenderer.yAxisColor = DirectX::XMFLOAT4{ 0.0f, 1.0f, 0.0f, 0.5f };
-			m_d3dRenderer.zAxisColor = DirectX::XMFLOAT4{ 0.0f, 0.0f, 1.0f, 0.5f };
-		}
-	}
+		//Save mouse pos and direction in world space
+		ScreenPosToWorldSpaceReturn mouse_pos = ScreenPosToWorldSpace(m_mouseTool->x, m_mouseTool->y);
 
-	if (m_terrainTool.Active == true)
-	{
-		//Clicking Terrain
-		if (mouse_x != prevMouse_x || mouse_y != prevMouse_y)	m_terrainTool.mouseTerrainManipReturn = m_d3dRenderer.RayToDisplayChunkCollision(ray);
+		// create a ray using mouse pos and direction
+		Ray ray;
+		ray.position = mouse_pos.pos;
+		ray.direction = mouse_pos.direction;
 
-		if (m_terrainTool.mouseTerrainManipReturn.did_hit)
+		//Set cursor position to screen centre whilst mouse controls active.
+		if (m_toolInputCommands.mouseControls)
 		{
-			std::vector<Quad> quads1 = m_d3dRenderer.BoxToQuads(m_terrainTool.mouseTerrainManipReturn.hit_location, DirectX::XMFLOAT3{0.1f, 0.1f, 0.1f});
-			m_d3dRenderer.m_terrainToolCursor = quads1;
+			SetCursorPos(WindowRECT.CenterPoint().x, WindowRECT.CenterPoint().y);
+		}
 
-			if (m_terrainTool.updateTargetHeight)
+		if (m_mouseTool->m_grabbing != true)
+		{
+			//If mouse is overlapping an axis grab arrow then highlight the arrow.
+			float dist = 0;
+			if (m_axisBoxX.Intersects(ray.position, ray.direction, dist))
 			{
-				m_terrainTool.targetHeight = m_terrainTool.mouseTerrainManipReturn.hit_location.y;
-				m_terrainTool.updateTargetHeight = false;
+				m_d3dRenderer.xAxisColor = DirectX::XMFLOAT4{ 0.5f, 0.0f, 0.0f, 1.0f };
+				m_d3dRenderer.yAxisColor = DirectX::XMFLOAT4{ 0.0f, 1.0f, 0.0f, 1.0f };
+				m_d3dRenderer.zAxisColor = DirectX::XMFLOAT4{ 0.0f, 0.0f, 1.0f, 1.0f };
 			}
-
-			if (m_terrainTool.GetSculptType() == TerrainSculptType::Flatten)
+			else if (m_axisBoxY.Intersects(ray.position, ray.direction, dist))
 			{
-				m_d3dRenderer.FlattenTerrain(m_terrainTool.mouseTerrainManipReturn.row, m_terrainTool.mouseTerrainManipReturn.column, DirectX::XMFLOAT3{ m_terrainTool.GetManipulationOffset().x, m_terrainTool.GetManipulationOffset().y, m_terrainTool.GetManipulationOffset().z }, m_terrainTool.targetHeight, m_terrainTool.smoothSculpt);
+				m_d3dRenderer.xAxisColor = DirectX::XMFLOAT4{ 1.0f, 0.0f, 0.0f, 1.0f };
+				m_d3dRenderer.yAxisColor = DirectX::XMFLOAT4{ 0.0f, 0.5f, 0.0f, 1.0f };
+				m_d3dRenderer.zAxisColor = DirectX::XMFLOAT4{ 0.0f, 0.0f, 1.0f, 1.0f };
 			}
-			else if (m_terrainTool.GetSculptType() == TerrainSculptType::Dig)
+			else if (m_axisBoxZ.Intersects(ray.position, ray.direction, dist))
 			{
-				m_d3dRenderer.SculptTerrain(m_terrainTool.mouseTerrainManipReturn.row, m_terrainTool.mouseTerrainManipReturn.column, DirectX::XMFLOAT3{ -m_terrainTool.GetManipulationOffset().x, -m_terrainTool.GetManipulationOffset().y, -m_terrainTool.GetManipulationOffset().z }, m_terrainTool.smoothSculpt, m_terrainTool.m_terrainSculptMode);
+				m_d3dRenderer.xAxisColor = DirectX::XMFLOAT4{ 1.0f, 0.0f, 0.0f, 1.0f };
+				m_d3dRenderer.yAxisColor = DirectX::XMFLOAT4{ 0.0f, 1.0f, 0.0f, 1.0f };
+				m_d3dRenderer.zAxisColor = DirectX::XMFLOAT4{ 0.0f, 0.0f, 0.5f, 1.0f };
 			}
 			else
 			{
-				m_d3dRenderer.SculptTerrain(m_terrainTool.mouseTerrainManipReturn.row, m_terrainTool.mouseTerrainManipReturn.column, m_terrainTool.GetManipulationOffset(), m_terrainTool.smoothSculpt, m_terrainTool.m_terrainSculptMode);
+				m_d3dRenderer.xAxisColor = DirectX::XMFLOAT4{ 1.0f, 0.0f, 0.0f, 0.5f };
+				m_d3dRenderer.yAxisColor = DirectX::XMFLOAT4{ 0.0f, 1.0f, 0.0f, 0.5f };
+				m_d3dRenderer.zAxisColor = DirectX::XMFLOAT4{ 0.0f, 0.0f, 1.0f, 0.5f };
 			}
 		}
-	}
-	else
-	{
-		std::vector<Quad> quads1 = m_d3dRenderer.BoxToQuads(m_terrainTool.mouseTerrainManipReturn.hit_location, DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f });
-		m_d3dRenderer.m_terrainToolCursor = quads1;
+
+		if (m_terrainTool.Active == true)
+		{
+			//Clicking Terrain
+			if (m_mouseTool->x != m_mouseTool->m_prevX || m_mouseTool->y != m_mouseTool->m_prevY)	m_terrainTool.mouseTerrainManipReturn = m_d3dRenderer.RayToDisplayChunkCollision(ray);
+
+			if (m_terrainTool.mouseTerrainManipReturn.did_hit)
+			{
+				std::vector<Quad> quads1 = m_d3dRenderer.BoxToQuads(m_terrainTool.mouseTerrainManipReturn.hit_location, DirectX::XMFLOAT3{ 0.1f, 0.1f, 0.1f });
+				m_d3dRenderer.m_terrainToolCursor = quads1;
+
+				if (m_terrainTool.updateTargetHeight)
+				{
+					m_terrainTool.targetHeight = m_terrainTool.mouseTerrainManipReturn.hit_location.y;
+					m_terrainTool.updateTargetHeight = false;
+				}
+
+				if (m_terrainTool.GetSculptType() == TerrainSculptType::Flatten)
+				{
+					m_d3dRenderer.FlattenTerrain(m_terrainTool.mouseTerrainManipReturn.row, m_terrainTool.mouseTerrainManipReturn.column, DirectX::XMFLOAT3{ m_terrainTool.GetManipulationOffset().x, m_terrainTool.GetManipulationOffset().y, m_terrainTool.GetManipulationOffset().z }, m_terrainTool.targetHeight, m_terrainTool.smoothSculpt);
+				}
+				else if (m_terrainTool.GetSculptType() == TerrainSculptType::Dig)
+				{
+					m_d3dRenderer.SculptTerrain(m_terrainTool.mouseTerrainManipReturn.row, m_terrainTool.mouseTerrainManipReturn.column, DirectX::XMFLOAT3{ -m_terrainTool.GetManipulationOffset().x, -m_terrainTool.GetManipulationOffset().y, -m_terrainTool.GetManipulationOffset().z }, m_terrainTool.smoothSculpt, m_terrainTool.m_terrainSculptMode);
+				}
+				else
+				{
+					m_d3dRenderer.SculptTerrain(m_terrainTool.mouseTerrainManipReturn.row, m_terrainTool.mouseTerrainManipReturn.column, m_terrainTool.GetManipulationOffset(), m_terrainTool.smoothSculpt, m_terrainTool.m_terrainSculptMode);
+				}
+			}
+		}
+		else
+		{
+			std::vector<Quad> quads1 = m_d3dRenderer.BoxToQuads(m_terrainTool.mouseTerrainManipReturn.hit_location, DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f });
+			m_d3dRenderer.m_terrainToolCursor = quads1;
+		}
+
 	}
 
-	prevMouse_x = mouse_x;
-	prevMouse_y = mouse_y;
+	m_mouseTool->m_prevX = m_mouseTool->x;
+	m_mouseTool->m_prevY = m_mouseTool->y;
 }
 
 void ToolMain::MouseGrabbing()
 {
 	//Mouse Grabbing objects
-	if (mouseGrabbing)
+	if (m_mouseTool->m_grabbing)
 	{
 		float min_input = 1.0f;
 
-		switch (grabbedAxis)
+		switch (m_mouseTool->m_grabbedAxis)
 		{
 		case GrabbedAxis::x:
-			switch (m_manipType)
-			{
 
+			switch (m_mouseTool->m_manipType)
+			{
 			case ManipulationType::Position:
-				
+				m_d3dRenderer.debug3 = 10;
 				if (m_d3dRenderer.GetActiveCameraLocation().z >= m_gameGraph[m_selectedObject].posZ) //Invert input based on which side the camera is on from the object.
 				{
-					if (mouse_x - mouseGrabbedCoords[0] > min_input)
-						m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) + Vector3{ m_positionSnap , 0.0f, 0.0f });
-					else if (mouse_x - mouseGrabbedCoords[0] < -min_input)
-						m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) - Vector3{ m_positionSnap , 0.0f, 0.0f });
+					if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] > min_input)
+						m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) + Vector3{ m_mouseTool->m_positionSnap , 0.0f, 0.0f });
+					else if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] < -min_input)
+						m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) - Vector3{ m_mouseTool->m_positionSnap , 0.0f, 0.0f });
 				}
 				else
 				{
-					if (mouse_x - mouseGrabbedCoords[0] < -min_input)
-						m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) + Vector3{ m_positionSnap , 0.0f, 0.0f });
-					else if (mouse_x - mouseGrabbedCoords[0] > min_input)
-						m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) - Vector3{ m_positionSnap , 0.0f, 0.0f });
+					if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] < -min_input)
+						m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) + Vector3{ m_mouseTool->m_positionSnap , 0.0f, 0.0f });
+					else if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] > min_input)
+						m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) - Vector3{ m_mouseTool->m_positionSnap , 0.0f, 0.0f });
 				}
 
 				break;
@@ -641,39 +653,39 @@ void ToolMain::MouseGrabbing()
 			case ManipulationType::Rotation:
 				if (m_d3dRenderer.GetActiveCameraLocation().z >= m_gameGraph[m_selectedObject].posZ) //Invert input based on which side the camera is on from the object.
 				{
-					if (mouse_x - mouseGrabbedCoords[0] > min_input)
+					if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] > min_input)
 					{
-						m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) + Vector3{ m_rotationSnap , 0.0f, 0.0f });
+						m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) + Vector3{ m_mouseTool->m_rotationSnap , 0.0f, 0.0f });
 					}
-					else if (mouse_x - mouseGrabbedCoords[0] < -min_input)
-						m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) - Vector3{ m_rotationSnap , 0.0f, 0.0f });
+					else if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] < -min_input)
+						m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) - Vector3{ m_mouseTool->m_rotationSnap , 0.0f, 0.0f });
 				}
 				else
 				{
-					if (mouse_x - mouseGrabbedCoords[0] < -min_input)
+					if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] < -min_input)
 					{
-						m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) + Vector3{ m_rotationSnap , 0.0f, 0.0f });
+						m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) + Vector3{ m_mouseTool->m_rotationSnap , 0.0f, 0.0f });
 
 					}
-					else if (mouse_x - mouseGrabbedCoords[0] > min_input)
-						m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) - Vector3{ m_rotationSnap , 0.0f, 0.0f });
+					else if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] > min_input)
+						m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) - Vector3{ m_mouseTool->m_rotationSnap , 0.0f, 0.0f });
 				}
 				break;
 
 			case ManipulationType::Scale:
 				if (m_d3dRenderer.GetActiveCameraLocation().z >= m_gameGraph[m_selectedObject].posZ) //Invert input based on which side the camera is on from the object.
 				{
-					if (mouse_x - mouseGrabbedCoords[0] > min_input)
-						m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) + Vector3{ m_scaleSnap , 0.0f, 0.0f });
-					else if (mouse_x - mouseGrabbedCoords[0] < -min_input)
-						m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) - Vector3{ m_scaleSnap , 0.0f, 0.0f });
+					if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] > min_input)
+						m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) + Vector3{ m_mouseTool->m_scaleSnap , 0.0f, 0.0f });
+					else if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] < -min_input)
+						m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) - Vector3{ m_mouseTool->m_scaleSnap , 0.0f, 0.0f });
 				}
 				else
 				{
-					if (mouse_x - mouseGrabbedCoords[0] < -min_input)
-						m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) + Vector3{ m_scaleSnap , 0.0f, 0.0f });
-					else if (mouse_x - mouseGrabbedCoords[0] > min_input)
-						m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) - Vector3{ m_scaleSnap , 0.0f, 0.0f });
+					if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] < -min_input)
+						m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) + Vector3{ m_mouseTool->m_scaleSnap , 0.0f, 0.0f });
+					else if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] > min_input)
+						m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) - Vector3{ m_mouseTool->m_scaleSnap , 0.0f, 0.0f });
 				}
 				break;
 
@@ -682,83 +694,83 @@ void ToolMain::MouseGrabbing()
 
 		case GrabbedAxis::y:
 
-			switch (m_manipType)
+			switch (m_mouseTool->m_manipType)
 			{
 			case ManipulationType::Position:
-				if (mouse_y - mouseGrabbedCoords[1] < -min_input)
-					m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) + Vector3{ 0.0f, m_positionSnap, 0.0f });
-				else if (mouse_y - mouseGrabbedCoords[1] > min_input)
-					m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) - Vector3{ 0.0f, m_positionSnap, 0.0f });
+				if (m_mouseTool->y - m_mouseTool->m_grabbedCoords[1] < -min_input)
+					m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) + Vector3{ 0.0f, m_mouseTool->m_positionSnap, 0.0f });
+				else if (m_mouseTool->y - m_mouseTool->m_grabbedCoords[1] > min_input)
+					m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) - Vector3{ 0.0f, m_mouseTool->m_positionSnap, 0.0f });
 				break;
 
 			case ManipulationType::Rotation:
-				if (mouse_y - mouseGrabbedCoords[1] > min_input)
-					m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) + Vector3{ 0.0f, m_rotationSnap, 0.0f });
-				else if (mouse_y - mouseGrabbedCoords[1] < -min_input)
-					m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) - Vector3{ 0.0f, m_rotationSnap, 0.0f });
+				if (m_mouseTool->y - m_mouseTool->m_grabbedCoords[1] > min_input)
+					m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) + Vector3{ 0.0f, m_mouseTool->m_rotationSnap, 0.0f });
+				else if (m_mouseTool->y - m_mouseTool->m_grabbedCoords[1] < -min_input)
+					m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) - Vector3{ 0.0f, m_mouseTool->m_rotationSnap, 0.0f });
 				break;
 
 			case ManipulationType::Scale:
-				if (mouse_y - mouseGrabbedCoords[1] < -min_input)
-					m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) + Vector3{ 0.0f, m_scaleSnap, 0.0f });
-				else if (mouse_y - mouseGrabbedCoords[1] > min_input)
-					m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) - Vector3{ 0.0f, m_scaleSnap, 0.0f });
+				if (m_mouseTool->y - m_mouseTool->m_grabbedCoords[1] < -min_input)
+					m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) + Vector3{ 0.0f, m_mouseTool->m_scaleSnap, 0.0f });
+				else if (m_mouseTool->y - m_mouseTool->m_grabbedCoords[1] > min_input)
+					m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) - Vector3{ 0.0f, m_mouseTool->m_scaleSnap, 0.0f });
 				break;
 			}
 			break;
 
 		case GrabbedAxis::z:
 
-			switch (m_manipType)
+			switch (m_mouseTool->m_manipType)
 			{
 			case ManipulationType::Position:
 				if (m_d3dRenderer.GetActiveCameraLocation().x <= m_gameGraph[m_selectedObject].posX) //Invert input based on which side the camera is on from the object.
 				{
-					if (mouse_x - mouseGrabbedCoords[0] > min_input)
-						m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) + Vector3{ 0.0f, 0.0f, m_positionSnap });
-					else if (mouse_x - mouseGrabbedCoords[0] < -min_input)
-						m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) - Vector3{ 0.0f, 0.0f, m_positionSnap });
+					if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] > min_input)
+						m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) + Vector3{ 0.0f, 0.0f, m_mouseTool->m_positionSnap });
+					else if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] < -min_input)
+						m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) - Vector3{ 0.0f, 0.0f, m_mouseTool->m_positionSnap });
 				}
 				else
 				{
-					if (mouse_x - mouseGrabbedCoords[0] < -min_input)
-						m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) + Vector3{ 0.0f, 0.0f, m_positionSnap });
-					else if (mouse_x - mouseGrabbedCoords[0] > min_input)
-						m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) - Vector3{ 0.0f, 0.0f, m_positionSnap });
+					if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] < -min_input)
+						m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) + Vector3{ 0.0f, 0.0f, m_mouseTool->m_positionSnap });
+					else if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] > min_input)
+						m_d3dRenderer.SetSelectedObjectPosition(m_selectedObject, m_d3dRenderer.GetDisplayObjPos(m_selectedObject) - Vector3{ 0.0f, 0.0f, m_mouseTool->m_positionSnap });
 				}
 				break;
 
 			case ManipulationType::Rotation:
 				if (m_d3dRenderer.GetActiveCameraLocation().x >= m_gameGraph[m_selectedObject].posX) //Invert input based on which side the camera is on from the object.
 				{
-					if (mouse_x - mouseGrabbedCoords[0] > min_input)
-						m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) + Vector3{ 0.0f, 0.0f, m_rotationSnap }); 
-					else if (mouse_x - mouseGrabbedCoords[0] < -min_input)
-						m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) - Vector3{ 0.0f, 0.0f, m_rotationSnap });
+					if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] > min_input)
+						m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) + Vector3{ 0.0f, 0.0f, m_mouseTool->m_rotationSnap }); 
+					else if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] < -min_input)
+						m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) - Vector3{ 0.0f, 0.0f, m_mouseTool->m_rotationSnap });
 				}
 				else
 				{
-					if (mouse_x - mouseGrabbedCoords[0] < -min_input)
-						m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) + Vector3{ 0.0f, 0.0f, m_rotationSnap });
-					else if (mouse_x - mouseGrabbedCoords[0] > min_input)
-						m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) - Vector3{ 0.0f, 0.0f, m_rotationSnap });
+					if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] < -min_input)
+						m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) + Vector3{ 0.0f, 0.0f, m_mouseTool->m_rotationSnap });
+					else if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] > min_input)
+						m_d3dRenderer.SetSelectedObjectRotation(m_selectedObject, m_d3dRenderer.GetDisplayObjRotation(m_selectedObject) - Vector3{ 0.0f, 0.0f, m_mouseTool->m_rotationSnap });
 				}
 				break;
 
 			case ManipulationType::Scale:
 				if (m_d3dRenderer.GetActiveCameraLocation().x >= m_gameGraph[m_selectedObject].posX) //Invert input based on which side the camera is on from the object.
 				{
-					if (mouse_x - mouseGrabbedCoords[0] > min_input)
-						m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) + Vector3{ 0.0f, 0.0f, m_scaleSnap });
-					else if (mouse_x - mouseGrabbedCoords[0] < -min_input)
-						m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) - Vector3{ 0.0f, 0.0f, m_scaleSnap });
+					if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] > min_input)
+						m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) + Vector3{ 0.0f, 0.0f, m_mouseTool->m_scaleSnap });
+					else if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] < -min_input)
+						m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) - Vector3{ 0.0f, 0.0f, m_mouseTool->m_scaleSnap });
 				}
 				else
 				{
-					if (mouse_x - mouseGrabbedCoords[0] < -min_input)
-						m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) + Vector3{ 0.0f, 0.0f, m_scaleSnap });
-					else if (mouse_x - mouseGrabbedCoords[0] > min_input)
-						m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) - Vector3{ 0.0f, 0.0f, m_scaleSnap });
+					if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] < -min_input)
+						m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) + Vector3{ 0.0f, 0.0f, m_mouseTool->m_scaleSnap });
+					else if (m_mouseTool->x - m_mouseTool->m_grabbedCoords[0] > min_input)
+						m_d3dRenderer.SetSelectedObjectScale(m_selectedObject, m_d3dRenderer.GetDisplayObjScale(m_selectedObject) - Vector3{ 0.0f, 0.0f, m_mouseTool->m_scaleSnap });
 				}
 				break;
 
@@ -766,8 +778,8 @@ void ToolMain::MouseGrabbing()
 			break;
 		}
 
-		mouseGrabbedCoords[0] = mouse_x;
-		mouseGrabbedCoords[1] = mouse_y;
+		m_mouseTool->m_grabbedCoords[0] = m_mouseTool->x;
+		m_mouseTool->m_grabbedCoords[1] = m_mouseTool->y;
 
 		//update axis arrows and collsion box position.
 		DirectX::SimpleMath::Vector3 pos = m_d3dRenderer.GetDisplayObjPos(m_selectedObject);
@@ -805,7 +817,7 @@ void ToolMain::MouseGrabbing()
 bool ToolMain::MouseCollision()
 {
 	//Save mouse pos and direction in world space
-	ScreenPosToWorldSpaceReturn mouse_pos = ScreenPosToWorldSpace(mouse_x, mouse_y);
+	ScreenPosToWorldSpaceReturn mouse_pos = ScreenPosToWorldSpace(m_mouseTool->x, m_mouseTool->y);
 
 	// create a ray using mouse pos and direction
 	Ray ray;
@@ -825,31 +837,31 @@ bool ToolMain::MouseClickedObj(DirectX::SimpleMath::Ray ray)
 	//If clicking an axis box. (Used for position, rotation and scaling)
 	if (m_axisBoxX.Intersects(ray.position, ray.direction, dist))
 	{
-		grabbedAxis = GrabbedAxis::x;
+		m_mouseTool->m_grabbedAxis = GrabbedAxis::x;
 
-		mouseGrabbing = true;
-		mouseGrabbedCoords[0] = mouse_x;
-		mouseGrabbedCoords[1] = mouse_y;
+		m_mouseTool->m_grabbing = true;
+		m_mouseTool->m_grabbedCoords[0] = m_mouseTool->x;
+		m_mouseTool->m_grabbedCoords[1] = m_mouseTool->y;
 
 		return true;
 	}
 	else if (m_axisBoxY.Intersects(ray.position, ray.direction, dist))
 	{
-		grabbedAxis = GrabbedAxis::y;
+		m_mouseTool->m_grabbedAxis = GrabbedAxis::y;
 
-		mouseGrabbing = true;
-		mouseGrabbedCoords[0] = mouse_x;
-		mouseGrabbedCoords[1] = mouse_y;
+		m_mouseTool->m_grabbing = true;
+		m_mouseTool->m_grabbedCoords[0] = m_mouseTool->x;
+		m_mouseTool->m_grabbedCoords[1] = m_mouseTool->y;
 
 		return true;
 	}
 	else if (m_axisBoxZ.Intersects(ray.position, ray.direction, dist))
 	{
-		grabbedAxis = GrabbedAxis::z;
+		m_mouseTool->m_grabbedAxis = GrabbedAxis::z;
 
-		mouseGrabbing = true;
-		mouseGrabbedCoords[0] = mouse_x;
-		mouseGrabbedCoords[1] = mouse_y;
+		m_mouseTool->m_grabbing = true;
+		m_mouseTool->m_grabbedCoords[0] = m_mouseTool->x;
+		m_mouseTool->m_grabbedCoords[1] = m_mouseTool->y;
 
 		return true;
 	}
@@ -924,11 +936,11 @@ void ToolMain::MouseLDown(MSG* msg)
 
 void ToolMain::MouseLUp(MSG* msg)
 {
-	if (mouseGrabbing)
+	if (m_mouseTool->m_grabbing)
 	{
 		//Update the scene list to match the current display list info.
 		m_d3dRenderer.UpdateSceneList(&m_gameGraph);
-		mouseGrabbing = false;
+		m_mouseTool->m_grabbing = false;
 	}
 
 	if (m_terrainTool.Active) m_terrainTool.Active = false; 
@@ -941,7 +953,7 @@ void ToolMain::MouseRDown(MSG* msg)
 	if (windowOpen == false)
 	{
 		m_toolInputCommands.mouseControls = true;
-		m_once = false;
+		m_mouseTool->m_once = false;
 	}
 }
 

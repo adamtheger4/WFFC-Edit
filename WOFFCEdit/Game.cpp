@@ -263,6 +263,8 @@ void Game::Render()
 		m_font->DrawString(m_sprites.get(), terrainEditor.c_str(), XMFLOAT2(580, 10), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
 	}
 
+	std::wstring DebugT = L"Debug: " + std::to_wstring(debug3);
+	m_font->DrawString(m_sprites.get(), DebugT.c_str(), XMFLOAT2(580, 120), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
 
 	m_sprites->End();
 
@@ -697,10 +699,8 @@ RayToDisplayChunkReturn Game::RayToDisplayChunkCollision(DirectX::SimpleMath::Ra
 	float dist = 10000;
 	DirectX::SimpleMath::Vector3 v1 = ray.position;
 	DirectX::SimpleMath::Vector3 v2 = ray.position + (ray.direction * dist);
-	DirectX::SimpleMath::Vector3 midpoint = (v1 + v2) / 2;
 
-	bool do_once = false;
-	for (size_t i = 0; i < 127; i++)
+	for (size_t i = 0; i < 127; i++) // terrain resolution.
 	{
 		for (size_t j = 0; j < 127; j++)
 		{
@@ -711,6 +711,7 @@ RayToDisplayChunkReturn Game::RayToDisplayChunkCollision(DirectX::SimpleMath::Ra
 
 			if (ray.Intersects(vector1, vector2, vector3, dist) || ray.Intersects(vector1, vector4, vector3, dist))
 			{
+				// if the intersected terrain is below the camera position.
 				if (m_displayChunk.GetTerrainGeometry(i, j).position.y < v1.y && m_displayChunk.GetTerrainGeometry(i, j).position.y > v2.y)
 				{
 					return_values.row = i;

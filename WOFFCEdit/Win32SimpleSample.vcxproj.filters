@@ -74,6 +74,9 @@
     <ClCompile Include="TerrainTool.cpp">
       <Filter>Tool</Filter>
     </ClCompile>
+    <ClCompile Include="MouseTool.cpp">
+      <Filter>Tool</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DeviceResources.h">
@@ -136,6 +139,9 @@
       <Filter>MFC</Filter>
     </ClInclude>
     <ClInclude Include="TerrainTool.h">
+      <Filter>Tool</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseTool.h">
       <Filter>Tool</Filter>
     </ClInclude>
   </ItemGroup>

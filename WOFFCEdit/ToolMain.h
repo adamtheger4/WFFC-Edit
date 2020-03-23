@@ -7,27 +7,8 @@
 #include "GameObject.h"
 #include "InputCommands.h"
 #include "TerrainTool.h"
+#include "MouseTool.h"
 #include <vector>
-
-struct ScreenPosToWorldSpaceReturn
-{
-	DirectX::SimpleMath::Vector3 pos;
-	DirectX::SimpleMath::Vector3 direction;
-};
-
-enum GrabbedAxis
-{
-	x,
-	y,
-	z
-};
-
-enum ManipulationType
-{
-	Position,
-	Rotation,
-	Scale
-};
 
 class ToolMain
 {
@@ -49,13 +30,9 @@ public: //methods
 
 	inline std::vector<SceneObject> GetSceneGraph() { return GameGraphToSceneGraph(m_gameGraph); }
 
-	inline void SetManipType(ManipulationType in_type) { m_manipType = in_type; }
+	inline void SetManipType(ManipulationType in_type) { m_mouseTool->m_manipType = in_type; }
 	TerrainTool m_terrainTool;
-
-	//Axis snap values.
-	float m_positionSnap = 1.0f;
-	float m_rotationSnap = 1.0f;
-	float m_scaleSnap = 1.0f;
+	MouseTool* m_mouseTool;
 
 	void	EnableTerrainText(bool enable);
 	void	UpdateTerrainText();
@@ -91,17 +68,8 @@ private:	//variables
 	void MouseRDown(MSG* msg);
 	void MouseRUp(MSG* msg);
 
-	GrabbedAxis grabbedAxis;
-	bool	mouseGrabbing = false;
-	float	mouseGrabbedCoords[2];
-	float	mouse_x;
-	float	mouse_y;
-	float	prevMouse_x;
-	float	prevMouse_y;
-	bool	m_once = false;
-
 	//Terrain tool toggle do once.
-	bool	m_Tonce = false;
+	bool	m_Tonce = true;
 
 	int m_width;		//dimensions passed to directX
 	int m_height;
@@ -110,6 +78,4 @@ private:	//variables
 	DirectX::BoundingBox m_axisBoxX;
 	DirectX::BoundingBox m_axisBoxY;
 	DirectX::BoundingBox m_axisBoxZ;
-
-	ManipulationType m_manipType = ManipulationType::Position;
 };
