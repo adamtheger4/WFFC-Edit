@@ -27,6 +27,9 @@ public:
 	float	targetHeight = 0.0f;
 	RayToDisplayChunkReturn mouseTerrainManipReturn;
 
+	//Terrain tool toggle do once.
+	bool	m_Tonce = true;
+
 	TerrainSculptMode m_terrainSculptMode = TerrainSculptMode::Hill;
 
 	inline bool	 GetEnable()	{ return Enabled; }

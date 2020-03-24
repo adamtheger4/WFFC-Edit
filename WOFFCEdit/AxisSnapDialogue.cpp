@@ -108,10 +108,10 @@ void AxisSnapDialogue::OnDeltaposSpin1(NMHDR *pNMHDR, LRESULT *pResult)
 	// TODO: Add your control notification handler code here
 	*pResult = 0;
 
-	m_toolMain->m_mouseTool->m_positionSnap -= pNMUpDown->iDelta;
+	m_toolMain->m_mouseTool.m_positionSnap -= pNMUpDown->iDelta;
 
 	CString t;
-	t.Format(_T("%d"), (int)m_toolMain->m_mouseTool->m_positionSnap);
+	t.Format(_T("%d"), (int)m_toolMain->m_mouseTool.m_positionSnap);
 
 	CWnd* pWnd = GetDlgItem(POSTEXT);
 	pWnd->SetWindowText(t);
@@ -123,10 +123,10 @@ void AxisSnapDialogue::OnDeltaposSpin2(NMHDR *pNMHDR, LRESULT *pResult)
 	// TODO: Add your control notification handler code here
 	*pResult = 0;
 
-	m_toolMain->m_mouseTool->m_rotationSnap -= pNMUpDown->iDelta;
+	m_toolMain->m_mouseTool.m_rotationSnap -= pNMUpDown->iDelta;
 
 	CString t;
-	t.Format(_T("%d"), (int)m_toolMain->m_mouseTool->m_rotationSnap);
+	t.Format(_T("%d"), (int)m_toolMain->m_mouseTool.m_rotationSnap);
 
 	CWnd* pWnd = GetDlgItem(ROTTEXT);
 	pWnd->SetWindowText(t);
@@ -138,10 +138,10 @@ void AxisSnapDialogue::OnDeltaposSpin3(NMHDR *pNMHDR, LRESULT *pResult)
 	// TODO: Add your control notification handler code here
 	*pResult = 0;
 
-	m_toolMain->m_mouseTool->m_scaleSnap -= pNMUpDown->iDelta;
+	m_toolMain->m_mouseTool.m_scaleSnap -= pNMUpDown->iDelta;
 
 	CString t;
-	t.Format(_T("%d"), (int)m_toolMain->m_mouseTool->m_scaleSnap);
+	t.Format(_T("%d"), (int)m_toolMain->m_mouseTool.m_scaleSnap);
 
 	CWnd* pWnd = GetDlgItem(SCATEXT);
 	pWnd->SetWindowText(t);
@@ -151,17 +151,17 @@ void AxisSnapDialogue::SetText()
 {
 	//Set the text boxes to display the current snap values.
 	CString t;
-	t.Format(_T("%d"), (int)m_toolMain->m_mouseTool->m_positionSnap);
+	t.Format(_T("%d"), (int)m_toolMain->m_mouseTool.m_positionSnap);
 
 	CWnd* pWnd = GetDlgItem(POSTEXT);
 	pWnd->SetWindowText(t);
 
-	t.Format(_T("%d"), (int)m_toolMain->m_mouseTool->m_rotationSnap);
+	t.Format(_T("%d"), (int)m_toolMain->m_mouseTool.m_rotationSnap);
 
 	pWnd = GetDlgItem(ROTTEXT);
 	pWnd->SetWindowText(t);
 
-	t.Format(_T("%d"), (int)m_toolMain->m_mouseTool->m_scaleSnap);
+	t.Format(_T("%d"), (int)m_toolMain->m_mouseTool.m_scaleSnap);
 
 	pWnd = GetDlgItem(SCATEXT);
 	pWnd->SetWindowText(t);

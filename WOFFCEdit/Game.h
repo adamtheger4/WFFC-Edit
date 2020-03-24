@@ -76,7 +76,7 @@ public:
 	inline void RotateSelectedObject(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector) { m_displayList[select_obj_ID].RotateObject(in_vector, m_dt); };
 	inline void ScaleSelectedObject(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector) { m_displayList[select_obj_ID].ScaleObject(in_vector, m_dt); };
 
-	inline void SetSelectedObjectPosition(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector) { m_displayList[select_obj_ID].m_position = in_vector; }
+	inline void SetSelectedObjectPosition(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector) { m_displayList[select_obj_ID].m_position = in_vector;  }
 	inline void SetSelectedObjectRotation(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector) { m_displayList[select_obj_ID].m_orientation = in_vector; }
 	inline void SetSelectedObjectScale(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector) { m_displayList[select_obj_ID].m_scale = in_vector; }
 	 

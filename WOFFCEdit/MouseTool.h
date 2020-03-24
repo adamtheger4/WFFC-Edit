@@ -37,20 +37,21 @@ struct GrabReturns
 class MouseTool
 {
 public:
-	MouseTool(Game*	m_d3dRenderer, TerrainTool*	in_terrainTool);
+	MouseTool();
+	MouseTool(Game*	m_d3dRenderer, TerrainTool*	in_terrainTool, InputCommands* in_InputCommands);
 	~MouseTool();
 
 	void	Update(MSG *msg, CRect WindowRECT);
 
 	//Mouse Variables
-	void MouseGrabbing();
-	bool MouseCollision();
-	bool MouseClickedObj(DirectX::SimpleMath::Ray ray);
-	void MouseLDown(MSG* msg);
-	void MouseLUp(MSG* msg);
-	void MouseRDown(MSG* msg);
-	void MouseRUp(MSG* msg);
-	ScreenPosToWorldSpaceReturn ScreenPosToWorldSpace();
+	void Grabbing();
+	bool Collision();
+	bool ClickedObj(DirectX::SimpleMath::Ray ray);
+	void LDown(MSG* msg);
+	void LUp(MSG* msg);
+	void RDown(MSG* msg);
+	void RUp(MSG* msg);
+	ScreenPosToWorldSpaceReturn ScreenPosToWorldSpace(float x, float y);
 
 	//Game Tool
 	Game* m_d3dRenderer;
@@ -58,7 +59,7 @@ public:
 	TerrainTool* m_terrainTool;
 
 	//Game objects
-	std::vector<GameObject> m_gameGraph;
+	std::vector<GameObject*> m_gameGraph;
 
 	//input commands
 	InputCommands* m_toolInputCommands;		
@@ -68,9 +69,9 @@ public:
 	GrabReturns m_grabReturns;
 	ScreenPosToWorldSpaceReturn m_screenToWorld;
 
-	BoundingBox* m_axisBoxX;
-	BoundingBox* m_axisBoxY;
-	BoundingBox* m_axisBoxZ;
+	BoundingBox m_axisBoxX;
+	BoundingBox m_axisBoxY;
+	BoundingBox m_axisBoxZ;
 
 	//Axis snap values.
 	float m_positionSnap = 1.0f;
@@ -84,10 +85,11 @@ public:
 	float	m_screenWidth;
 	float	m_screenHeight;
 
-	int m_selectedObject; //ID of current Selection
+	std::vector<int> m_selectedObjects; //ID of current Selections
 
 	bool	m_grabbing = false;
 	bool	m_windowOpen = false;
+	bool	m_pickMultiple = false;
 
 	float	m_grabbedCoords[2];
 

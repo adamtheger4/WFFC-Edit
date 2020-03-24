@@ -106,10 +106,10 @@ void TerrainEditorDialogue::OnDeltaposSpin1(NMHDR *pNMHDR, LRESULT *pResult)
 	// TODO: Add your control notification handler code here
 	*pResult = 0;
 
-	m_toolMain->m_mouseTool->m_positionSnap -= pNMUpDown->iDelta;
+	m_toolMain->m_mouseTool.m_positionSnap -= pNMUpDown->iDelta;
 
 	CString t;
-	t.Format(_T("%d"), (int)m_toolMain->m_mouseTool->m_positionSnap);
+	t.Format(_T("%d"), (int)m_toolMain->m_mouseTool.m_positionSnap);
 
 	CWnd* pWnd = GetDlgItem(POSTEXT);
 	pWnd->SetWindowText(t);
