@@ -39,8 +39,6 @@ void ToolMain::onActionInitialise(HWND handle, int width, int height)
 	//window size, handle etc for directX
 	m_width		= width;
 	m_height	= height;
-	m_mouseTool.m_screenWidth = m_width;
-	m_mouseTool.m_screenHeight = m_height;
 	
 	m_d3dRenderer.Initialize(handle, m_width, m_height);
 	m_toolHandle = handle;
@@ -381,44 +379,6 @@ void ToolMain::UpdateInput(MSG * msg)
 	//Mouse controls
 	if (m_toolInputCommands.mouseControls)
 	{
-		if (m_mouseTool.m_once)
-		{
-			std::vector<int> rotate{ 0, 0 };
-
-			if (m_mouseTool.x + 113> WindowRECT.CenterPoint().x)
-			{
-				m_toolInputCommands.rotRight = true;
-				rotate[0] = std::abs(WindowRECT.CenterPoint().x - (m_mouseTool.x + 113));
-			}
-			else m_toolInputCommands.rotRight = false;
-
-			if (m_mouseTool.x + 113 < WindowRECT.CenterPoint().x)
-			{
-				m_toolInputCommands.rotLeft = true;
-				rotate[0] = std::abs(WindowRECT.CenterPoint().x - (m_mouseTool.x + 113));
-			}
-			else  m_toolInputCommands.rotLeft = false;
-
-			if (m_mouseTool.y + 191 < WindowRECT.CenterPoint().y)
-			{
-				m_toolInputCommands.rotUp = true;
-				rotate[1] = std::abs(WindowRECT.CenterPoint().y - (m_mouseTool.y + 191));
-			}
-			else m_toolInputCommands.rotUp = false;
-
-			if (m_mouseTool.y + 191 > WindowRECT.CenterPoint().y)
-			{
-				m_toolInputCommands.rotDown = true;
-				rotate[1] = std::abs(WindowRECT.CenterPoint().y - (m_mouseTool.y + 191));
-			}
-			else m_toolInputCommands.rotDown = false;
-
-			m_toolInputCommands.camRotateX = rotate[0];
-			m_toolInputCommands.camRotateY = rotate[1];
-		}
-		m_mouseTool.m_once = true;
-
-
 		//WASD movement
 		if (m_keyArray['W'])
 		{
@@ -456,8 +416,19 @@ void ToolMain::UpdateInput(MSG * msg)
 		}
 		else m_toolInputCommands.down = false;
 
-		if (wheelDelta > 0) m_toolInputCommands.camMovementScalar += 0.1f;
-		else if (wheelDelta < 0 && m_toolInputCommands.camMovementScalar > 0.1f) m_toolInputCommands.camMovementScalar -= 0.1f;
+		if (wheelDelta > 0)
+		{
+			if(m_d3dRenderer.m_camera.m_arcBallMovement == false) m_toolInputCommands.camMovementScalar += 0.1f;
+			else m_toolInputCommands.scforward = true;
+		}
+		else if (wheelDelta == 0)  m_toolInputCommands.scforward = false;
+
+		if (wheelDelta < 0 && m_toolInputCommands.camMovementScalar > 0.1f)
+		{
+			if (m_d3dRenderer.m_camera.m_arcBallMovement == false) m_toolInputCommands.camMovementScalar -= 0.1f;
+			else m_toolInputCommands.scback = true;
+		}
+		else if (wheelDelta == 0) m_toolInputCommands.scback = false;
 
 		if (m_keyArray[16])
 		{
@@ -504,11 +475,11 @@ void ToolMain::UpdateInput(MSG * msg)
 	if (m_terrainTool.GetEnable())
 	{
 	
-		if (m_keyArray[16])
+		if (m_keyArray[16]) // L SHIFT
 		{
 			m_terrainTool.SetSculptType(TerrainSculptType::Flatten);
 		}
-		else if (m_keyArray[17])
+		else if (m_keyArray[17]) // L CTRL
 		{
 			m_terrainTool.SetSculptType(TerrainSculptType::Dig);
 		}
@@ -516,11 +487,37 @@ void ToolMain::UpdateInput(MSG * msg)
 	}
 	else 
 	{
-		if (m_keyArray[17])
+		if (m_keyArray[17]) // L CTRL
 		{
 			m_mouseTool.m_pickMultiple = true;
+
+			if (m_keyArray['C'])
+			{
+				//If there is a selected item copy it
+				if(m_mouseTool.m_selectedObjects.size() > 0) CopyObject(m_gameGraph[m_mouseTool.m_selectedObjects[0]]);
+			}
+
+			if (m_keyArray['V'])
+			{
+				//If there is a selected item copy it
+				PasteObject();
+				m_keyArray['V'] = false;
+			}
+
+			if (m_keyArray['F'])
+			{
+				if (m_mouseTool.m_selectedObjects.size() > 0)
+				{
+					m_d3dRenderer.m_camera.m_arcBallMovement = true;
+					Vector3 p{ m_gameGraph[m_mouseTool.m_selectedObjects[0]].posX, m_gameGraph[m_mouseTool.m_selectedObjects[0]].posY, m_gameGraph[m_mouseTool.m_selectedObjects[0]].posZ };
+			
+					m_d3dRenderer.m_camera.m_arcBallOrigin = p;
+				}
+				else m_d3dRenderer.m_camera.m_arcBallMovement = false;
+			}
+			else m_d3dRenderer.m_camera.m_arcBallMovement = false;
 		}
-		else m_mouseTool.m_pickMultiple = false;
+		else m_mouseTool.m_pickMultiple = false;  m_d3dRenderer.m_camera.m_arcBallMovement = false;
 	}
 	
 	UpdateTerrainText();
@@ -544,6 +541,31 @@ void ToolMain::UpdateTerrainText()
 	m_d3dRenderer.debug1 = m_terrainTool.GetSculptType();
 	m_d3dRenderer.debug2 = m_terrainTool.GetManipulationOffset().y;
 }
+
+void ToolMain::CopyObject(GameObject in_gameObject)
+{
+	copyObject = in_gameObject;
+}
+
+GameObject ToolMain::PasteObject()
+{
+	// add the object to scenegraph
+	m_gameGraph.push_back(copyObject);
+
+	//Process into renderable object
+	std::vector<SceneObject> sceneGraph = GameGraphToSceneGraph(m_gameGraph);
+	m_d3dRenderer.BuildDisplayList(&sceneGraph);
+	m_d3dRenderer.UpdateSceneList(&m_gameGraph);
+
+	m_mouseTool.m_gameGraph.clear();
+	for (int i = 0; i < m_gameGraph.size(); i++)
+	{
+		m_mouseTool.m_gameGraph.push_back(&m_gameGraph[i]);
+	}
+
+	return copyObject;
+}
+
 
 std::vector<SceneObject> ToolMain::GameGraphToSceneGraph(std::vector<GameObject> in_gameGraph)
 {
@@ -615,4 +637,5 @@ std::vector<SceneObject> ToolMain::GameGraphToSceneGraph(std::vector<GameObject>
 
 	return sceneGraph;
 }
+
 

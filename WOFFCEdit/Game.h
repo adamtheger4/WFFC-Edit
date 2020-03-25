@@ -111,6 +111,9 @@ public:
 	bool showObjText = false;
 	bool showTerrainText = false;
 	std::vector<Quad> m_terrainToolCursor;
+
+	//camera
+	Camera m_camera;
 	
 #ifdef DXTK_AUDIO
 	void NewAudioDevice();
@@ -139,9 +142,6 @@ private:
 	int m_selectedObject;						//ID of current Selection
 
 	void HandleInput();
-
-	//camera
-	Camera m_camera;
 
 	//control variables
 	bool m_grid;							//grid rendering on / off

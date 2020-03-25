@@ -15,6 +15,8 @@ struct InputCommands
 	bool rotRight;
 	bool rotUp;
 	bool rotDown;
+	bool scforward;
+	bool scback;
 
 	float camRotateX = 1;
 	float camRotateY = 1;

@@ -1,22 +1,10 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(391,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Win32SimpleSample.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  AxisSnapDialogue.cpp
-  _WIN32_WINNT not defined. Defaulting to _WIN32_WINNT_MAXVER (see WinSDKVer.h)
-c:\users\adamt\documents\github\wffc-edit\woffcedit\resource.h(36): warning C4005: 'IDC_STATIC': macro redefinition
-  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\atlmfc\include\afxres.h(343): note: see previous definition of 'IDC_STATIC'
-  MFCMain.cpp
-  _WIN32_WINNT not defined. Defaulting to _WIN32_WINNT_MAXVER (see WinSDKVer.h)
-c:\users\adamt\documents\github\wffc-edit\woffcedit\resource.h(36): warning C4005: 'IDC_STATIC': macro redefinition
-  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\atlmfc\include\afxres.h(343): note: see previous definition of 'IDC_STATIC'
-  TerrainEditorDialogue.cpp
-  _WIN32_WINNT not defined. Defaulting to _WIN32_WINNT_MAXVER (see WinSDKVer.h)
-c:\users\adamt\documents\github\wffc-edit\woffcedit\resource.h(36): warning C4005: 'IDC_STATIC': macro redefinition
-  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\atlmfc\include\afxres.h(343): note: see previous definition of 'IDC_STATIC'
   ToolMain.cpp
   _WIN32_WINNT not defined. Defaulting to _WIN32_WINNT_MAXVER (see WinSDKVer.h)
 c:\users\adamt\documents\github\wffc-edit\woffcedit\resource.h(36): warning C4005: 'IDC_STATIC': macro redefinition
   c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\atlmfc\include\afxres.h(343): note: see previous definition of 'IDC_STATIC'
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(42): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(43): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(102): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(103): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(104): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(105): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(106): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
@@ -24,16 +12,16 @@ c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(107): warning C
 c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(108): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(109): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(110): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(111): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(112): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(122): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(123): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(124): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(125): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(126): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(130): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(131): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(132): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(136): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(137): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(128): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(129): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(130): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(134): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(135): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(145): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(146): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(147): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(148): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(149): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
@@ -42,42 +30,10 @@ c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(151): warning C
 c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(152): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(153): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(154): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(155): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(156): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(165): warning C4018: '<': signed/unsigned mismatch
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(351): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(352): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(391): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=int
-          ]
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(398): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=int
-          ]
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(405): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=int
-          ]
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(412): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
-          with
-          [
-              _Ty=int
-          ]
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(416): warning C4244: '=': conversion from '_Ty' to 'float', possible loss of data
-          with
-          [
-              _Ty=int
-          ]
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(417): warning C4244: '=': conversion from '_Ty' to 'float', possible loss of data
-          with
-          [
-              _Ty=int
-          ]
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(544): warning C4244: '=': conversion from 'TerrainSculptType' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(553): warning C4018: '<': signed/unsigned mismatch
-  Generating Code...
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(163): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(349): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(350): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(541): warning C4244: '=': conversion from 'TerrainSculptType' to 'float', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(561): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\toolmain.cpp(575): warning C4018: '<': signed/unsigned mismatch
   Win32SimpleSample.vcxproj -> C:\Users\adamt\Documents\GitHub\WFFC-Edit\WOFFCEdit\Debug\WoFEdit.exe

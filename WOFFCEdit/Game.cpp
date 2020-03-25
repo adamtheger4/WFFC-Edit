@@ -116,6 +116,8 @@ void Game::Update(DX::StepTimer const& timer)
 {
 	m_view = m_camera.Update(m_dt, m_InputCommands);
 
+	debug3 = m_camera.m_camLookDirection.y;
+
     m_batchEffect->SetView(m_view);
     m_batchEffect->SetWorld(Matrix::Identity);
 	m_displayChunk.m_terrainEffect->SetView(m_view);

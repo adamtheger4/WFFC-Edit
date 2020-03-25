@@ -29,7 +29,7 @@ public: //methods
 	inline std::vector<SceneObject> GetSceneGraph() { return GameGraphToSceneGraph(m_gameGraph); }
 
 	TerrainTool m_terrainTool;
-	MouseTool m_mouseTool = MouseTool(&m_d3dRenderer, &m_terrainTool, &m_toolInputCommands);
+	MouseTool m_mouseTool = MouseTool(&m_d3dRenderer, &m_terrainTool, &m_toolInputCommands, &m_width, &m_height);
 
 	void	EnableTerrainText(bool enable);
 	void	UpdateTerrainText();
@@ -53,6 +53,10 @@ private:	//variables
 	CRect	WindowRECT;		//Window area rectangle. 
 	char	m_keyArray[256];
 	sqlite3 *m_databaseConnection;	//sqldatabase handle
+
+	void CopyObject(GameObject in_gameObject); // stores the in object to be pasted.
+	GameObject PasteObject();				   // Pastes the stored object (adds new object to game Graph).
+	GameObject copyObject; // the object currently stored in the clipboard to be copied.
 
 	int m_width;		//dimensions passed to directX
 	int m_height;

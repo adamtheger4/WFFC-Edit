@@ -9,11 +9,13 @@ MouseTool::MouseTool()
 	m_grabbing = false;
 }
 
-MouseTool::MouseTool(Game* in_game, TerrainTool* in_terrainTool, InputCommands* in_InputCommands)
+MouseTool::MouseTool(Game* in_game, TerrainTool* in_terrainTool, InputCommands* in_InputCommands, int* screenWidth, int* screenHeight)
 {
 	m_d3dRenderer = in_game;
 	m_terrainTool = in_terrainTool;
 	m_toolInputCommands = in_InputCommands;
+	m_screenWidth = screenWidth;
+	m_screenHeight = screenHeight;
 
 	m_axisBoxX.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
 	m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.0f, 0.0f,  0.0f };
@@ -30,13 +32,15 @@ void MouseTool::Update(MSG * msg, CRect WindowRECT)
 {
 	if (m_windowOpen == false)
 	{
-	
-
+		m_windowRECT = WindowRECT;
 		//Set cursor position to screen centre whilst mouse controls active.
 		if (m_toolInputCommands->mouseControls)
 		{
-			SetCursorPos(WindowRECT.CenterPoint().x, WindowRECT.CenterPoint().y);
+			SetCursorPos(m_windowRECT.CenterPoint().x, m_windowRECT.CenterPoint().y);
 		}
+
+		//Mouse controls
+		CamControls();
 
 		//Save mouse pos and direction in world space
 		ScreenPosToWorldSpaceReturn mouse_pos = ScreenPosToWorldSpace(x, y);
@@ -49,7 +53,7 @@ void MouseTool::Update(MSG * msg, CRect WindowRECT)
 		if (m_grabbing != true)
 		{
 			//If mouse is overlapping an axis grab arrow then highlight the arrow.
-			float dist = 1000;
+			float dist = 0;
 			if (m_axisBoxX.Intersects(ray.position, ray.direction, dist))
 			{
 				m_d3dRenderer->xAxisColor = DirectX::XMFLOAT4{ 0.5f, 0.0f, 0.0f, 1.0f };
@@ -76,51 +80,19 @@ void MouseTool::Update(MSG * msg, CRect WindowRECT)
 			}
 		}
 
-		Grabbing();
+		//Do grabbing logic.
+		GrabbingLogic();
 
-		if (m_terrainTool->Active == true)
-		{
-			//Clicking Terrain
-			m_terrainTool->mouseTerrainManipReturn = m_d3dRenderer->RayToDisplayChunkCollision(ray);
-
-			if (m_terrainTool->mouseTerrainManipReturn.did_hit)
-			{
-				std::vector<Quad> quads1 = m_d3dRenderer->BoxToQuads(m_terrainTool->mouseTerrainManipReturn.hit_location, DirectX::XMFLOAT3{ 0.2f, 0.2f, 0.2f });
-				m_d3dRenderer->m_terrainToolCursor = quads1;
-
-				if (m_terrainTool->updateTargetHeight)
-				{
-					m_terrainTool->targetHeight = m_terrainTool->mouseTerrainManipReturn.hit_location.y;
-					m_terrainTool->updateTargetHeight = false;
-				}
-
-				if (m_terrainTool->GetSculptType() == TerrainSculptType::Flatten)
-				{
-					m_d3dRenderer->FlattenTerrain(m_terrainTool->mouseTerrainManipReturn.row, m_terrainTool->mouseTerrainManipReturn.column, DirectX::XMFLOAT3{ m_terrainTool->GetManipulationOffset().x, m_terrainTool->GetManipulationOffset().y, m_terrainTool->GetManipulationOffset().z }, m_terrainTool->targetHeight, m_terrainTool->smoothSculpt);
-				}
-				else if (m_terrainTool->GetSculptType() == TerrainSculptType::Dig)
-				{
-					m_d3dRenderer->SculptTerrain(m_terrainTool->mouseTerrainManipReturn.row, m_terrainTool->mouseTerrainManipReturn.column, DirectX::XMFLOAT3{ -m_terrainTool->GetManipulationOffset().x, -m_terrainTool->GetManipulationOffset().y, -m_terrainTool->GetManipulationOffset().z }, m_terrainTool->smoothSculpt, m_terrainTool->m_terrainSculptMode);
-				}
-				else
-				{
-					m_d3dRenderer->SculptTerrain(m_terrainTool->mouseTerrainManipReturn.row, m_terrainTool->mouseTerrainManipReturn.column, m_terrainTool->GetManipulationOffset(), m_terrainTool->smoothSculpt, m_terrainTool->m_terrainSculptMode);
-				}
-			}
-		}
-		else
-		{
-			std::vector<Quad> quads1 = m_d3dRenderer->BoxToQuads(m_terrainTool->mouseTerrainManipReturn.hit_location, DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f });
-			m_d3dRenderer->m_terrainToolCursor = quads1;
-		}
-
+		//Do terrain tool logic.
+		TerrainToolLogic(ray);
 	}
 
+	//update the previous x and y coordinates of the mouse.
 	m_prevX = x;
 	m_prevY = y;
 }
 
-void MouseTool::Grabbing()
+void MouseTool::GrabbingLogic()
 {
 	//Mouse Grabbing objects
 	if (m_grabbing)
@@ -362,6 +334,45 @@ void MouseTool::Grabbing()
 	}
 }
 
+void MouseTool::TerrainToolLogic(Ray in_ray)
+{
+	if (m_terrainTool->Active == true)
+	{
+		//Clicking Terrain
+		m_terrainTool->mouseTerrainManipReturn = m_d3dRenderer->RayToDisplayChunkCollision(in_ray);
+
+		if (m_terrainTool->mouseTerrainManipReturn.did_hit)
+		{
+			std::vector<Quad> quads1 = m_d3dRenderer->BoxToQuads(m_terrainTool->mouseTerrainManipReturn.hit_location, DirectX::XMFLOAT3{ 0.2f, 0.2f, 0.2f });
+			m_d3dRenderer->m_terrainToolCursor = quads1;
+
+			if (m_terrainTool->updateTargetHeight)
+			{
+				m_terrainTool->targetHeight = m_terrainTool->mouseTerrainManipReturn.hit_location.y;
+				m_terrainTool->updateTargetHeight = false;
+			}
+
+			if (m_terrainTool->GetSculptType() == TerrainSculptType::Flatten)
+			{
+				m_d3dRenderer->FlattenTerrain(m_terrainTool->mouseTerrainManipReturn.row, m_terrainTool->mouseTerrainManipReturn.column, DirectX::XMFLOAT3{ m_terrainTool->GetManipulationOffset().x, m_terrainTool->GetManipulationOffset().y, m_terrainTool->GetManipulationOffset().z }, m_terrainTool->targetHeight, m_terrainTool->smoothSculpt);
+			}
+			else if (m_terrainTool->GetSculptType() == TerrainSculptType::Dig)
+			{
+				m_d3dRenderer->SculptTerrain(m_terrainTool->mouseTerrainManipReturn.row, m_terrainTool->mouseTerrainManipReturn.column, DirectX::XMFLOAT3{ -m_terrainTool->GetManipulationOffset().x, -m_terrainTool->GetManipulationOffset().y, -m_terrainTool->GetManipulationOffset().z }, m_terrainTool->smoothSculpt, m_terrainTool->m_terrainSculptMode);
+			}
+			else
+			{
+				m_d3dRenderer->SculptTerrain(m_terrainTool->mouseTerrainManipReturn.row, m_terrainTool->mouseTerrainManipReturn.column, m_terrainTool->GetManipulationOffset(), m_terrainTool->smoothSculpt, m_terrainTool->m_terrainSculptMode);
+			}
+		}
+	}
+	else
+	{
+		std::vector<Quad> quads1 = m_d3dRenderer->BoxToQuads(m_terrainTool->mouseTerrainManipReturn.hit_location, DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f });
+		m_d3dRenderer->m_terrainToolCursor = quads1;
+	}
+}
+
 bool MouseTool::Collision()
 {
 	//Save mouse pos and direction in world space
@@ -375,15 +386,90 @@ bool MouseTool::Collision()
 	//has the mouse clicked an obj
 	bool collision = ClickedObj(ray);
 
-
 	return collision;
+}
+
+void MouseTool::CamControls()
+{
+	if (m_toolInputCommands->mouseControls)
+	{
+		if (m_once)
+		{
+			std::vector<int> rotate{ 0, 0 };
+
+			if (m_d3dRenderer->m_camera.m_arcBallMovement == false)
+			{
+				if (x + 113 > m_windowRECT.CenterPoint().x)
+				{
+					m_toolInputCommands->rotRight = true;
+					rotate[0] = std::abs(m_windowRECT.CenterPoint().x - (x + 113));
+				}
+				else m_toolInputCommands->rotRight = false;
+
+				if (x + 113 < m_windowRECT.CenterPoint().x)
+				{
+					m_toolInputCommands->rotLeft = true;
+					rotate[0] = std::abs(m_windowRECT.CenterPoint().x - (x + 113));
+				}
+				else  m_toolInputCommands->rotLeft = false;
+
+				if (y + 191 < m_windowRECT.CenterPoint().y)
+				{
+					m_toolInputCommands->rotUp = true;
+					rotate[1] = std::abs(m_windowRECT.CenterPoint().y - (y + 191));
+				}
+				else m_toolInputCommands->rotUp = false;
+
+				if (y + 191 > m_windowRECT.CenterPoint().y)
+				{
+					m_toolInputCommands->rotDown = true;
+					rotate[1] = std::abs(m_windowRECT.CenterPoint().y - (y + 191));
+				}
+				else m_toolInputCommands->rotDown = false;
+			}
+			else
+			{
+				if (x + 113 > m_windowRECT.CenterPoint().x)
+				{
+					m_toolInputCommands->right = true;
+					rotate[0] = std::abs(m_windowRECT.CenterPoint().x - (x + 113));
+				}
+				else m_toolInputCommands->right = false;
+
+				if (x + 113 < m_windowRECT.CenterPoint().x)
+				{
+					m_toolInputCommands->left = true;
+					rotate[0] = std::abs(m_windowRECT.CenterPoint().x - (x + 113));
+				}
+				else  m_toolInputCommands->left = false;
+
+				if (y + 191 < m_windowRECT.CenterPoint().y)
+				{
+					m_toolInputCommands->up = true;
+					rotate[1] = std::abs(m_windowRECT.CenterPoint().y - (y + 191));
+				}
+				else m_toolInputCommands->up = false;
+
+				if (y + 191 > m_windowRECT.CenterPoint().y)
+				{
+					m_toolInputCommands->down = true;
+					rotate[1] = std::abs(m_windowRECT.CenterPoint().y - (y + 191));
+				}
+				else m_toolInputCommands->down = false;
+			}
+
+			m_toolInputCommands->camRotateX = rotate[0];
+			m_toolInputCommands->camRotateY = rotate[1];
+		}
+		m_once = true;
+	}
 }
 
 bool MouseTool::ClickedObj(DirectX::SimpleMath::Ray ray)
 {
 	float dist = 0;
 
-	//If clicking an axis box. (Used for position, rotation and scaling)
+	//If clicking an axis box. (Used for position, rotation and scaling of objects)
 	if (m_axisBoxX.Intersects(ray.position, ray.direction, dist))
 	{
 		m_grabbedAxis = GrabbedAxis::x;
@@ -529,10 +615,10 @@ ScreenPosToWorldSpaceReturn MouseTool::ScreenPosToWorldSpace(float x, float y)
 	Vector3 farSource = Vector3(x, y, 1.0f);
 
 	// find the two screen space positions in world space
-	Vector3 nearPoint = DirectX::XMVector3Unproject(nearSource, 0, 0, m_screenWidth, m_screenHeight, 0.0f, 1.0f,
+	Vector3 nearPoint = DirectX::XMVector3Unproject(nearSource, 0, 0, *m_screenWidth, *m_screenHeight, 0.0f, 1.0f,
 		m_d3dRenderer->GetProjMatrix(), m_d3dRenderer->GetViewMatrix(), DirectX::XMMatrixIdentity());
 
-	Vector3 farPoint = DirectX::XMVector3Unproject(farSource, 0, 0, m_screenWidth, m_screenHeight, 0.0f, 1.0f,
+	Vector3 farPoint = DirectX::XMVector3Unproject(farSource, 0, 0, *m_screenWidth, *m_screenHeight, 0.0f, 1.0f,
 		m_d3dRenderer->GetProjMatrix(), m_d3dRenderer->GetViewMatrix(), DirectX::XMMatrixIdentity());
 
 	Vector3 direction = farPoint - nearPoint;

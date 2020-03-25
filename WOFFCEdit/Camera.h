@@ -22,5 +22,14 @@ public:
 	DirectX::SimpleMath::Vector3		m_camUp;
 	float m_camRotRate;
 	float m_movespeed;
+
+	bool m_arcBallMovement = false;
+	DirectX::SimpleMath::Vector3 m_arcBallOrigin{0.0f, 0.0f, 0.0f};
+
+private:
+
+
+	DirectX::SimpleMath::Vector3		m_prevPosition;
+	DirectX::SimpleMath::Vector3		m_prevlookDirection;
 };
 

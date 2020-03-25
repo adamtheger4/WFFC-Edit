@@ -50,83 +50,154 @@ Camera::~Camera()
 
 DirectX::SimpleMath::Matrix Camera::Update(float dt, InputCommands _InputCommands)
 {
-	if (_InputCommands.rotRight)
+	if (m_arcBallMovement == false)
 	{
-		m_camOrientation.y -= dt * (m_camRotRate * _InputCommands.camRotateX);
-	}
-	if (_InputCommands.rotLeft)
-	{
-		m_camOrientation.y += dt * (m_camRotRate * _InputCommands.camRotateX);
-	}
-	if (_InputCommands.rotUp)
-	{
-		if (m_camOrientation.z < 1.5508)
+		if (_InputCommands.rotRight)
 		{
-			m_camOrientation.z += dt * (m_camRotRate *_InputCommands.camRotateY);
-
-			if (m_camOrientation.z > 1.5508)
+			m_camOrientation.y -= dt * (m_camRotRate * _InputCommands.camRotateX);
+		}
+		if (_InputCommands.rotLeft)
+		{
+			m_camOrientation.y += dt * (m_camRotRate * _InputCommands.camRotateX);
+		}
+		if (_InputCommands.rotUp)
+		{
+			if (m_camOrientation.z < 1.5508)
 			{
-				m_camOrientation.z = 1.5508;
+				m_camOrientation.z += dt * (m_camRotRate *_InputCommands.camRotateY);
+
+				if (m_camOrientation.z > 1.5508)
+				{
+					m_camOrientation.z = 1.5508;
+				}
 			}
 		}
-	}
-	if (_InputCommands.rotDown)
-	{
-		if (m_camOrientation.z > -1.5508)
+		if (_InputCommands.rotDown)
 		{
-			m_camOrientation.z -= dt * (m_camRotRate * _InputCommands.camRotateY);
-
-			if (m_camOrientation.z < -1.5508)
+			if (m_camOrientation.z > -1.5508)
 			{
-				m_camOrientation.z = -1.5508;
+				m_camOrientation.z -= dt * (m_camRotRate * _InputCommands.camRotateY);
+
+				if (m_camOrientation.z < -1.5508)
+				{
+					m_camOrientation.z = -1.5508;
+				}
 			}
 		}
+
+		m_camLookDirection.x = sin(m_camOrientation.y) * cos(m_camOrientation.z);
+		m_camLookDirection.y = sin(m_camOrientation.z) * cos(m_camOrientation.x);
+		m_camLookDirection.z = cos(m_camOrientation.y) * cos(m_camOrientation.z);
+
+		m_camLookDirection.Normalize();
+	}
+	else
+	{
+		Vector3 m_camOrientation = (m_arcBallOrigin - m_camPosition);
+
+		m_camLookDirection.x = m_camOrientation.x;
+		m_camLookDirection.y = m_camOrientation.y;
+		m_camLookDirection.z = m_camOrientation.z;
+		m_camLookDirection.Normalize();	
 	}
 
-	m_camLookDirection.x *= 3.1415 / 180;
-	m_camLookDirection.y *= 3.1415 / 180;
-	m_camLookDirection.z *= 3.1415 / 180;
-
-	m_camLookDirection.x = sin(m_camOrientation.y) * cos(m_camOrientation.z);
-	m_camLookDirection.y = sin(m_camOrientation.z);
-	m_camLookDirection.z = cos(m_camOrientation.y) * cos(m_camOrientation.z);
-	m_camLookDirection.Normalize();
-
+	//Set the forward vector to be the look direction
+	m_camFwd = m_camLookDirection;
 
 	//create right vector from look Direction
 	m_camLookDirection.Cross(Vector3::UnitY, m_camRight);
 	m_camRight.Normalize();
 
-	//create up vector from look Direction
-	m_camUp.x = (float)(sin(m_camOrientation.y) * sin(m_camOrientation.z) * -1);
-	m_camUp.y = (float)(cos(m_camOrientation.z));
-	m_camUp.z = (float)(cos(m_camOrientation.y) * sin(m_camOrientation.z) * -1);
+	//Get the up vector using the right vector.
+	m_camLookDirection.Cross(-m_camRight, m_camUp);
 	m_camUp.Normalize();
 
 	//process input and update stuff
-	if (_InputCommands.forward)
+	if (m_arcBallMovement == false)
 	{
-		m_camPosition += dt * (m_camLookDirection * (m_movespeed * _InputCommands.camMove));
+		if (_InputCommands.forward)
+		{
+			m_camPosition += dt * (m_camFwd * (m_movespeed * _InputCommands.camMove));
+		}
+		if (_InputCommands.back)
+		{
+			m_camPosition -= dt * (m_camFwd * (m_movespeed * _InputCommands.camMove));
+		}
+		if (_InputCommands.right)
+		{
+			m_camPosition += dt * (m_camRight * (m_movespeed * _InputCommands.camMove));
+		}
+		if (_InputCommands.left)
+		{
+			m_camPosition -= dt * (m_camRight * (m_movespeed * _InputCommands.camMove));
+		}
+		if (_InputCommands.up)
+		{
+			m_camPosition += dt * (m_camUp * (m_movespeed * _InputCommands.camMove));
+		}
+		if (_InputCommands.down)
+		{
+			m_camPosition -= dt * (m_camUp * (m_movespeed * _InputCommands.camMove));
+		}
 	}
-	if (_InputCommands.back)
+	else // ARC BALL CONTROLS.
 	{
-		m_camPosition -= dt * (m_camLookDirection * (m_movespeed * _InputCommands.camMove));
-	}
-	if (_InputCommands.right)
-	{
-		m_camPosition += dt * (m_camRight * (m_movespeed * _InputCommands.camMove));
-	}
-	if (_InputCommands.left)
-	{
-		m_camPosition -= dt * (m_camRight * (m_movespeed * _InputCommands.camMove));
-	}
-	if (_InputCommands.up)
-	{
-		m_camPosition += dt * (m_camUp * (m_movespeed * _InputCommands.camMove));
-	}
-	if (_InputCommands.down)
-	{
-		m_camPosition -= dt * (m_camUp * (m_movespeed * _InputCommands.camMove));
+		if (_InputCommands.forward || _InputCommands.scforward)
+		{
+			m_camPosition += dt * (m_camFwd * (m_movespeed * _InputCommands.camMove));
+		}
+		if (_InputCommands.back || _InputCommands.scback)
+		{
+			m_camPosition -= dt * (m_camFwd * (m_movespeed * _InputCommands.camMove));
+		}
+		if (_InputCommands.right)
+		{
+			m_camPosition += dt * (m_camRight * (m_movespeed * _InputCommands.camRotateX * 0.1f));
+
+			m_camLookDirection.x = (m_arcBallOrigin - m_camPosition).x;
+			m_camLookDirection.y = (m_arcBallOrigin - m_camPosition).y;
+			m_camLookDirection.z = (m_arcBallOrigin - m_camPosition).z;
+			m_camLookDirection.Normalize();
+		}
+		if (_InputCommands.left)
+		{
+			m_camPosition -= dt * (m_camRight * (m_movespeed * _InputCommands.camRotateX * 0.1f));
+
+			m_camLookDirection.x = (m_arcBallOrigin - m_camPosition).x;
+			m_camLookDirection.y = (m_arcBallOrigin - m_camPosition).y;
+			m_camLookDirection.z = (m_arcBallOrigin - m_camPosition).z;
+			m_camLookDirection.Normalize();
+		}
+		if (_InputCommands.up)
+		{
+			if (m_camLookDirection.y >= -0.9f) 	m_camPosition += dt * (m_camUp * (m_movespeed * _InputCommands.camRotateY * 0.1f));		
+
+			m_camLookDirection.x = (m_arcBallOrigin - m_camPosition).x;
+			m_camLookDirection.y = (m_arcBallOrigin - m_camPosition).y;
+			m_camLookDirection.z = (m_arcBallOrigin - m_camPosition).z;
+			m_camLookDirection.Normalize();
+
+			if (m_camLookDirection.y < -0.9f)
+			{
+				m_camLookDirection = m_prevlookDirection;
+				m_camPosition = m_prevPosition;
+			}
+		}
+		if (_InputCommands.down)
+		{
+			if (m_camLookDirection.y <= 0.9f) m_camPosition -= dt * (m_camUp * (m_movespeed * _InputCommands.camRotateY * 0.1f));	
+
+			m_camLookDirection.x = (m_arcBallOrigin - m_camPosition).x;
+			m_camLookDirection.y = (m_arcBallOrigin - m_camPosition).y;
+			m_camLookDirection.z = (m_arcBallOrigin - m_camPosition).z;
+			m_camLookDirection.Normalize();
+
+			if (m_camLookDirection.y > 0.9f)
+			{
+				m_camLookDirection = m_prevlookDirection;
+				m_camPosition = m_prevPosition;
+			}
+		}
 	}
 
 	//update lookat point
@@ -134,6 +205,10 @@ DirectX::SimpleMath::Matrix Camera::Update(float dt, InputCommands _InputCommand
 
 	//apply camera vectors
 	DirectX::SimpleMath::Matrix	m_view = Matrix::CreateLookAt(m_camPosition, m_camLookAt, Vector3::UnitY);
+
+	//Save the previous camera position.
+	m_prevPosition = m_camPosition;
+	m_prevlookDirection = m_camLookDirection;
 
 	return m_view;
 }
