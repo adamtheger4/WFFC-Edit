@@ -5,6 +5,7 @@
 #include "SceneObject.h"
 #include "ToolMain.h"
 #include "TerrainTool.h"
+#include "TerrainEditorConfirmDialogue.h"
 #include <vector>
 
 class TerrainEditorDialogue : public CDialogEx
@@ -30,6 +31,9 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
+
+	TerrainEditorConfirmDialogue m_TerrainEditorConfirmDialogue;
+
 	// Control variable for more efficient access of the listbox
 	virtual BOOL OnInitDialog() override;
 	virtual void PostNcDestroy();
@@ -49,6 +53,7 @@ public:
 	afx_msg void OnBnClickedButton40002();
 	afx_msg void OnBnClickedButton40003();
 	afx_msg void OnBnClickedButton40004();
+	afx_msg void OnBnClickedButtonSAVEBUTTON();
 	afx_msg void OnDeltaSpin1(NMHDR *pNMHDR, LRESULT *pResult);
 };
 

@@ -36,10 +36,19 @@ public: //methods
 
 	bool	windowOpen = false;
 
+	void SaveHeightmap();
+	void SavePreviousHeightmap();
+	void UndoHeightmapChanges();
+
 public:	//variables
 	//std::vector<SceneObject>    m_sceneGraph;	//our scenegraph storing all the objects in the current chunk
 	std::vector<GameObject>    m_gameGraph;
 	ChunkObject					m_chunk;		//our landscape chunk
+
+	std::vector <std::vector<GameObject>> m_undoGameGraph; //Previous game graphs for undoing actions
+	std::vector <ChunkObject>			  m_undoChunk;	//previous landscape chunk for undoing actions
+	std::vector <std::vector<GameObject>> m_redoGameGraph; //Previous game graph for redoing actions
+	std::vector <ChunkObject>			  m_redoChunk;	//previous landscape chunk for redoing actions
 
 private:	//methods
 	void	onContentAdded();
@@ -54,9 +63,19 @@ private:	//variables
 	char	m_keyArray[256];
 	sqlite3 *m_databaseConnection;	//sqldatabase handle
 
-	void CopyObject(GameObject in_gameObject); // stores the in object to be pasted.
-	GameObject PasteObject();				   // Pastes the stored object (adds new object to game Graph).
-	GameObject copyObject; // the object currently stored in the clipboard to be copied.
+	void DeleteObjects(std::vector<int> objectIDs); // marks in objects to be deleted at end of tick in toolmain.
+	void CopyObjects(std::vector<GameObject> in_gameObjects); // stores the in objects to be pasted.
+	std::vector<GameObject> PasteObjects();				   // Pastes the stored object (adds new object to game Graph).
+	std::vector<GameObject> copyObjects; // the object currently stored in the clipboard to be copied.
+
+	//Destroys any gameGraph objects at the end of the tick.
+	void DestroyObjects();
+	//Whether to call Destroy objects at the end of the next tick.
+	bool bDoDestroy = false;
+
+	void SaveLastAction();
+	void UndoAction();
+	void RedoAction();
 
 	int m_width;		//dimensions passed to directX
 	int m_height;

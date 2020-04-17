@@ -13,6 +13,7 @@ BEGIN_MESSAGE_MAP(TerrainEditorDialogue, CDialogEx)
 	ON_BN_CLICKED(ID_BUTTON40002, &TerrainEditorDialogue::OnBnClickedButton40002)
 	ON_BN_CLICKED(ID_BUTTON40003, &TerrainEditorDialogue::OnBnClickedButton40003)
 	ON_BN_CLICKED(ID_BUTTON40004, &TerrainEditorDialogue::OnBnClickedButton40004)
+	ON_BN_CLICKED(SAVEBUTTON, &TerrainEditorDialogue::OnBnClickedButtonSAVEBUTTON)
 END_MESSAGE_MAP()
 
 TerrainEditorDialogue::TerrainEditorDialogue(CWnd * pParent, ToolMain in_toolSystem)
@@ -40,6 +41,7 @@ void TerrainEditorDialogue::DoDataExchange(CDataExchange* pDX)
 void TerrainEditorDialogue::End()
 {
 	m_toolMain->windowOpen = false;
+
 	DestroyWindow();	//destory the window properly.  INcluding the links and pointers created.  THis is so the dialogue can start again. 
 }
 
@@ -196,6 +198,7 @@ void TerrainEditorDialogue::OnBnClickedButton40001()
 
 	if (ChkBox == BST_CHECKED)
 	{
+		m_toolMain->SavePreviousHeightmap();
 		m_toolMain->m_terrainTool.SetEnable(true);
 		m_toolMain->EnableTerrainText(true);
 	}
@@ -203,6 +206,10 @@ void TerrainEditorDialogue::OnBnClickedButton40001()
 	{
 		m_toolMain->m_terrainTool.SetEnable(false);
 		m_toolMain->EnableTerrainText(false);
+
+		m_TerrainEditorConfirmDialogue.Create(IDD_DIALOG4);	//Start up modeless
+		m_TerrainEditorConfirmDialogue.ShowWindow(SW_SHOW);	//show modeless
+		m_TerrainEditorConfirmDialogue.m_toolMain = m_toolMain;
 	}
 
 	m_toolMain->UpdateTerrainText();
@@ -247,6 +254,12 @@ void TerrainEditorDialogue::OnBnClickedButton40004()
 	m_ctlCheck4->SetCheck(1);
 
 	m_toolMain->m_terrainTool.m_terrainSculptMode = TerrainSculptMode::Plateau;
+}
+
+void TerrainEditorDialogue::OnBnClickedButtonSAVEBUTTON()
+{
+	m_toolMain->SaveHeightmap();
+	m_toolMain->SavePreviousHeightmap();
 }
 
 void TerrainEditorDialogue::OnDeltaSpin1(NMHDR *pNMHDR, LRESULT *pResult)

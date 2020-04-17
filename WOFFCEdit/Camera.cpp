@@ -103,6 +103,7 @@ DirectX::SimpleMath::Matrix Camera::Update(float dt, InputCommands _InputCommand
 
 	//Set the forward vector to be the look direction
 	m_camFwd = m_camLookDirection;
+	m_camFwd.Normalize();
 
 	//create right vector from look Direction
 	m_camLookDirection.Cross(Vector3::UnitY, m_camRight);
@@ -152,7 +153,7 @@ DirectX::SimpleMath::Matrix Camera::Update(float dt, InputCommands _InputCommand
 		}
 		if (_InputCommands.right)
 		{
-			m_camPosition += dt * (m_camRight * (m_movespeed * _InputCommands.camRotateX * 0.1f));
+			m_camPosition += (m_camRight * (m_movespeed * _InputCommands.camRotateX * 0.1f));
 
 			m_camLookDirection.x = (m_arcBallOrigin - m_camPosition).x;
 			m_camLookDirection.y = (m_arcBallOrigin - m_camPosition).y;
@@ -161,7 +162,7 @@ DirectX::SimpleMath::Matrix Camera::Update(float dt, InputCommands _InputCommand
 		}
 		if (_InputCommands.left)
 		{
-			m_camPosition -= dt * (m_camRight * (m_movespeed * _InputCommands.camRotateX * 0.1f));
+			m_camPosition -= (m_camRight * (m_movespeed * _InputCommands.camRotateX * 0.1f));
 
 			m_camLookDirection.x = (m_arcBallOrigin - m_camPosition).x;
 			m_camLookDirection.y = (m_arcBallOrigin - m_camPosition).y;
@@ -170,7 +171,7 @@ DirectX::SimpleMath::Matrix Camera::Update(float dt, InputCommands _InputCommand
 		}
 		if (_InputCommands.up)
 		{
-			if (m_camLookDirection.y >= -0.9f) 	m_camPosition += dt * (m_camUp * (m_movespeed * _InputCommands.camRotateY * 0.1f));		
+			if (m_camLookDirection.y >= -0.9f) 	m_camPosition +=  (m_camUp * (m_movespeed * _InputCommands.camRotateY * 0.1f));		
 
 			m_camLookDirection.x = (m_arcBallOrigin - m_camPosition).x;
 			m_camLookDirection.y = (m_arcBallOrigin - m_camPosition).y;
@@ -185,7 +186,7 @@ DirectX::SimpleMath::Matrix Camera::Update(float dt, InputCommands _InputCommand
 		}
 		if (_InputCommands.down)
 		{
-			if (m_camLookDirection.y <= 0.9f) m_camPosition -= dt * (m_camUp * (m_movespeed * _InputCommands.camRotateY * 0.1f));	
+			if (m_camLookDirection.y <= 0.9f) m_camPosition -= (m_camUp * (m_movespeed * _InputCommands.camRotateY * 0.1f));	
 
 			m_camLookDirection.x = (m_arcBallOrigin - m_camPosition).x;
 			m_camLookDirection.y = (m_arcBallOrigin - m_camPosition).y;

@@ -68,11 +68,6 @@ void ToolMain::onActionInitialise(HWND handle, int width, int height)
 void ToolMain::onActionLoad()
 {
 	//load current chunk and objects into lists
-	//if (!m_sceneGraph.empty())		//is the vector empty
-	//{
-	//	m_sceneGraph.clear();		//if not, empty it
-	//}
-
 	if (m_gameGraph.empty())
 	{
 		m_gameGraph.clear();
@@ -197,6 +192,7 @@ void ToolMain::onActionLoad()
 	//Process REsults into renderable
 	std::vector<SceneObject> sceneGraph = GameGraphToSceneGraph(m_gameGraph);
 	m_d3dRenderer.BuildDisplayList(&sceneGraph);
+
 	//build the renderable chunk 
 	m_d3dRenderer.BuildDisplayChunk(&m_chunk);
 
@@ -292,6 +288,7 @@ void ToolMain::onActionSave()
 		rc = sqlite3_prepare_v2(m_databaseConnection, sqlCommand2.c_str(), -1, &pResults, 0);
 		sqlite3_step(pResults);	
 	}
+
 	MessageBox(NULL, L"Objects Saved", L"Notification", MB_OK);
 }
 
@@ -326,6 +323,9 @@ void ToolMain::Tick(MSG *msg)
 	//Renderer Update Call
 	m_d3dRenderer.Tick(&m_toolInputCommands);	
 
+	//Destroy any objects marked to be.
+	if(bDoDestroy)
+	DestroyObjects();
 	
 }
 
@@ -362,6 +362,8 @@ void ToolMain::UpdateInput(MSG * msg)
 	case WM_LBUTTONUP:	//mouse button up,  you will probably need to check when its up too
 	//set some flag for the mouse button in inputcommands
 		m_mouseTool.LUp(msg);
+		SaveLastAction();
+
 		m_d3dRenderer.UpdateSceneList(&m_gameGraph);
 		break;
 
@@ -453,24 +455,25 @@ void ToolMain::UpdateInput(MSG * msg)
 	}
 
 
-	if (m_keyArray['T'])
-	{
-		if (m_terrainTool.m_Tonce)
-		{
-			if (m_terrainTool.GetEnable() == false)
-			{
-				m_terrainTool.SetEnable(true);
-				EnableTerrainText(true);
-			}
-			else
-			{
-				m_terrainTool.SetEnable(false);
-				EnableTerrainText(false);
-			}
+	//if (m_keyArray['T'])
+	//{
+	//	if (m_terrainTool.m_Tonce)
+	//	{
+	//		if (m_terrainTool.GetEnable() == false)
+	//		{
+	//			m_terrainTool.SetEnable(true);
+	//			EnableTerrainText(true);
+	//		}
+	//		else
+	//		{
+	//			m_terrainTool.SetEnable(false);
+	//			EnableTerrainText(false);
 
-			m_terrainTool.m_Tonce = false;
-		}
-	}
+	//		}
+
+	//		m_terrainTool.m_Tonce = false;
+	//	}
+	//}
 
 	if (m_terrainTool.GetEnable())
 	{
@@ -494,32 +497,81 @@ void ToolMain::UpdateInput(MSG * msg)
 			if (m_keyArray['C'])
 			{
 				//If there is a selected item copy it
-				if(m_mouseTool.m_selectedObjects.size() > 0) CopyObject(m_gameGraph[m_mouseTool.m_selectedObjects[0]]);
+				if (m_mouseTool.m_selectedObjects.size() > 0)
+				{
+					std::vector<GameObject> copyObjs;
+
+					for (int i = 0; i < m_mouseTool.m_selectedObjects.size(); i++)
+					{
+						copyObjs.push_back(m_gameGraph[m_mouseTool.m_selectedObjects[i]]);
+					}
+
+					CopyObjects(copyObjs);
+				}
 			}
 
 			if (m_keyArray['V'])
 			{
 				//If there is a selected item copy it
-				PasteObject();
+				SaveLastAction();
+				PasteObjects();
 				m_keyArray['V'] = false;
 			}
 
-			if (m_keyArray['F'])
+			//Undo action
+			if (m_keyArray['Z'])
 			{
+				m_keyArray['Z'] = false;
+				UndoAction();
+				
 				if (m_mouseTool.m_selectedObjects.size() > 0)
 				{
-					m_d3dRenderer.m_camera.m_arcBallMovement = true;
-					Vector3 p{ m_gameGraph[m_mouseTool.m_selectedObjects[0]].posX, m_gameGraph[m_mouseTool.m_selectedObjects[0]].posY, m_gameGraph[m_mouseTool.m_selectedObjects[0]].posZ };
-			
-					m_d3dRenderer.m_camera.m_arcBallOrigin = p;
+					m_mouseTool.UpdateAxisArrows(m_mouseTool.m_selectedObjects[m_mouseTool.m_selectedObjects.size() - 1]);
 				}
-				else m_d3dRenderer.m_camera.m_arcBallMovement = false;
 			}
-			else m_d3dRenderer.m_camera.m_arcBallMovement = false;
+
+			//Redo action
+			if (m_keyArray['Y'])
+			{
+				m_keyArray['Y'] = false;
+				RedoAction();
+
+				if (m_mouseTool.m_selectedObjects.size() > 0)
+				{
+					m_mouseTool.UpdateAxisArrows(m_mouseTool.m_selectedObjects[m_mouseTool.m_selectedObjects.size() - 1]);
+				}
+			}
 		}
 		else m_mouseTool.m_pickMultiple = false;  m_d3dRenderer.m_camera.m_arcBallMovement = false;
 	}
 	
+	if (m_keyArray['F'])
+	{
+		if (m_mouseTool.m_selectedObjects.size() > 0)
+		{
+			m_d3dRenderer.m_camera.m_arcBallMovement = true;
+			Vector3 p{ m_gameGraph[m_mouseTool.m_selectedObjects[0]].posX, m_gameGraph[m_mouseTool.m_selectedObjects[0]].posY, m_gameGraph[m_mouseTool.m_selectedObjects[0]].posZ };
+
+			m_d3dRenderer.m_camera.m_arcBallOrigin = p;
+		}
+		else m_d3dRenderer.m_camera.m_arcBallMovement = false;
+	}
+	else m_d3dRenderer.m_camera.m_arcBallMovement = false;
+
+	//Delete Objects
+	if (m_keyArray[46]) // Del
+	{
+		if (m_mouseTool.m_selectedObjects.size() > 0)
+		{
+			SaveLastAction();
+			DeleteObjects(m_mouseTool.m_selectedObjects);
+		}
+		m_keyArray[46] = false;
+
+		m_d3dRenderer.renderAxisArrows = false;
+		m_mouseTool.m_selectedObjects.clear();
+	}
+
 	UpdateTerrainText();
 }
 
@@ -542,15 +594,69 @@ void ToolMain::UpdateTerrainText()
 	m_d3dRenderer.debug2 = m_terrainTool.GetManipulationOffset().y;
 }
 
-void ToolMain::CopyObject(GameObject in_gameObject)
+void ToolMain::SaveHeightmap()
 {
-	copyObject = in_gameObject;
+	m_d3dRenderer.SaveHeightmap();
 }
 
-GameObject ToolMain::PasteObject()
+void ToolMain::SavePreviousHeightmap()
 {
-	// add the object to scenegraph
-	m_gameGraph.push_back(copyObject);
+	m_d3dRenderer.SavePreviousHeightmap();
+}
+
+void ToolMain::UndoHeightmapChanges()
+{
+	m_d3dRenderer.UndoHeightmapChanges();
+}
+
+void ToolMain::DeleteObjects(std::vector<int> objectIDs)
+{
+	for (int i = 0; i < objectIDs.size(); i++)
+	{
+		m_gameGraph[objectIDs[i]].bMarkedForDelete = true;
+	}
+
+	bDoDestroy = true;
+}
+
+void ToolMain::CopyObjects(std::vector<GameObject> in_gameObjects)
+{
+	copyObjects.clear();
+	copyObjects = in_gameObjects;
+}
+
+std::vector<GameObject> ToolMain::PasteObjects()
+{
+	for (int i = 0; i < copyObjects.size(); i++)
+	{
+		// add the object to scenegraph
+		m_gameGraph.push_back(copyObjects[i]);
+
+		//Process into renderable object
+		std::vector<SceneObject> sceneGraph = GameGraphToSceneGraph(m_gameGraph);
+		m_d3dRenderer.BuildDisplayList(&sceneGraph);
+		m_d3dRenderer.UpdateSceneList(&m_gameGraph);
+
+		m_mouseTool.m_gameGraph.clear();
+		for (int i = 0; i < m_gameGraph.size(); i++)
+		{
+			m_mouseTool.m_gameGraph.push_back(&m_gameGraph[i]);
+		}
+	}
+
+	return copyObjects;
+}
+
+void ToolMain::DestroyObjects()
+{
+	for (int i = 0; i < m_gameGraph.size(); i++)
+	{
+		if (m_gameGraph[i].bMarkedForDelete == true)
+		{
+			m_gameGraph.erase(m_gameGraph.begin() + i);
+			i = -1;
+		}
+	}
 
 	//Process into renderable object
 	std::vector<SceneObject> sceneGraph = GameGraphToSceneGraph(m_gameGraph);
@@ -563,7 +669,76 @@ GameObject ToolMain::PasteObject()
 		m_mouseTool.m_gameGraph.push_back(&m_gameGraph[i]);
 	}
 
-	return copyObject;
+	bDoDestroy = false;
+}
+
+void ToolMain::SaveLastAction()
+{
+	m_undoGameGraph.push_back(m_gameGraph);
+
+	m_undoChunk.push_back(m_chunk);
+}
+
+void ToolMain::UndoAction()
+{
+	if (m_undoGameGraph.size() > 0)
+	{
+		m_redoGameGraph.push_back(m_gameGraph);
+
+		//Set the game graph to be the one from the last action.
+		m_gameGraph = m_undoGameGraph[m_undoGameGraph.size() - 1];
+
+		//Remove the last action from the action list.
+		m_undoGameGraph.erase(m_undoGameGraph.begin() + m_undoGameGraph.size() - 1);
+	}
+
+	if (m_undoChunk.size() > 0)
+	{
+		m_chunk = m_undoChunk[m_undoChunk.size() - 1];
+		m_undoChunk.erase(m_undoChunk.begin() + m_undoChunk.size() - 1);
+	}
+
+	//Process into renderable object
+	std::vector<SceneObject> sceneGraph = GameGraphToSceneGraph(m_gameGraph);
+	m_d3dRenderer.BuildDisplayList(&sceneGraph);
+	m_d3dRenderer.UpdateSceneList(&m_gameGraph);
+
+	m_mouseTool.m_gameGraph.clear();
+	for (int i = 0; i < m_gameGraph.size(); i++)
+	{
+		m_mouseTool.m_gameGraph.push_back(&m_gameGraph[i]);
+	}
+}
+
+void ToolMain::RedoAction()
+{
+	if (m_redoGameGraph.size() > 0)
+	{
+		m_undoGameGraph.push_back(m_gameGraph);
+
+		//Set the game graph to be the one from the last action.
+		m_gameGraph = m_redoGameGraph[m_redoGameGraph.size() - 1];
+
+		//Remove the last action from the action list.
+		m_redoGameGraph.erase(m_redoGameGraph.begin() + m_redoGameGraph.size() - 1);
+	}
+
+	if (m_redoChunk.size() > 0)
+	{
+		m_chunk = m_redoChunk[m_redoChunk.size() - 1];
+		m_redoChunk.erase(m_redoChunk.begin() + m_redoChunk.size() - 1);
+	}
+
+	//Process into renderable object
+	std::vector<SceneObject> sceneGraph = GameGraphToSceneGraph(m_gameGraph);
+	m_d3dRenderer.BuildDisplayList(&sceneGraph);
+	m_d3dRenderer.UpdateSceneList(&m_gameGraph);
+
+	m_mouseTool.m_gameGraph.clear();
+	for (int i = 0; i < m_gameGraph.size(); i++)
+	{
+		m_mouseTool.m_gameGraph.push_back(&m_gameGraph[i]);
+	}
 }
 
 

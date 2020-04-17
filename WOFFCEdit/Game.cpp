@@ -257,12 +257,15 @@ void Game::Render()
 	}
 	else if (showObjText)
 	{
-		std::wstring objPos = L"Position: " + std::to_wstring(m_displayList[m_selectedObject].m_position.x) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_position.y) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_position.z);
-		m_font->DrawString(m_sprites.get(), objPos.c_str(), XMFLOAT2(580, 10), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
-		std::wstring objRot = L"Rotation: " + std::to_wstring(m_displayList[m_selectedObject].m_orientation.x) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_orientation.y) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_orientation.z);
-		m_font->DrawString(m_sprites.get(), objRot.c_str(), XMFLOAT2(580, 25), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
-		std::wstring objSca = L"Scale:      " + std::to_wstring(m_displayList[m_selectedObject].m_scale.x) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_scale.y) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_scale.z);
-		m_font->DrawString(m_sprites.get(), objSca.c_str(), XMFLOAT2(580, 40), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+		if (m_selectedObject < m_displayList.size())
+		{
+			std::wstring objPos = L"Position: " + std::to_wstring(m_displayList[m_selectedObject].m_position.x) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_position.y) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_position.z);
+			m_font->DrawString(m_sprites.get(), objPos.c_str(), XMFLOAT2(580, 10), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+			std::wstring objRot = L"Rotation: " + std::to_wstring(m_displayList[m_selectedObject].m_orientation.x) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_orientation.y) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_orientation.z);
+			m_font->DrawString(m_sprites.get(), objRot.c_str(), XMFLOAT2(580, 25), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+			std::wstring objSca = L"Scale:      " + std::to_wstring(m_displayList[m_selectedObject].m_scale.x) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_scale.y) + L", " + std::to_wstring(m_displayList[m_selectedObject].m_scale.z);
+			m_font->DrawString(m_sprites.get(), objSca.c_str(), XMFLOAT2(580, 40), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+		}
 	}
 
 
@@ -703,6 +706,42 @@ RayToDisplayChunkReturn Game::RayToDisplayChunkCollision(DirectX::SimpleMath::Ra
 	DirectX::SimpleMath::Vector3 v1 = ray.position;
 	DirectX::SimpleMath::Vector3 v2 = ray.position + (ray.direction * dist);
 
+	//the distance in to check from the current triangle on the next iteration
+	const int itThresh = 10;
+
+	//Check triangles close to the last intersected triangle first
+	for (size_t i = lastTerrainX - itThresh; i < lastTerrainX + itThresh; i++) // terrain resolution.
+	{
+		for (size_t j = lastTerrainY - itThresh; j < lastTerrainY + itThresh; j++)
+		{
+			if (lastTerrainX - itThresh > 0 && lastTerrainX + itThresh < 127 && lastTerrainY - itThresh > 0 && lastTerrainY + itThresh < 127)
+			{
+				DirectX::SimpleMath::Vector3 vector1 = m_displayChunk.GetTerrainGeometry(i, j).position;
+				DirectX::SimpleMath::Vector3 vector2 = m_displayChunk.GetTerrainGeometry(i, j + 1).position;
+				DirectX::SimpleMath::Vector3 vector3 = m_displayChunk.GetTerrainGeometry(i + 1, j + 1).position;
+				DirectX::SimpleMath::Vector3 vector4 = m_displayChunk.GetTerrainGeometry(i + 1, j).position;
+
+				if (ray.Intersects(vector1, vector2, vector3, dist) || ray.Intersects(vector1, vector4, vector3, dist))
+				{
+					// if the intersected terrain is below the camera position.
+					if (m_displayChunk.GetTerrainGeometry(i, j).position.y < v1.y && m_displayChunk.GetTerrainGeometry(i, j).position.y > v2.y)
+					{
+						return_values.row = i;
+						return_values.column = j;
+						return_values.did_hit = true;
+						return_values.hit_location = ray.position + (ray.direction * dist);//m_displayChunk.GetTerrainGeometry(i, j).position;
+
+						lastTerrainX = i;
+						lastTerrainY = j;
+
+						return return_values;
+					}
+				}
+			}
+		}
+	}
+
+	//Check all triangles iteratively (big performance impact) 
 	for (size_t i = 0; i < 127; i++) // terrain resolution.
 	{
 		for (size_t j = 0; j < 127; j++)
@@ -721,6 +760,9 @@ RayToDisplayChunkReturn Game::RayToDisplayChunkCollision(DirectX::SimpleMath::Ra
 					return_values.column = j;
 					return_values.did_hit = true;
 					return_values.hit_location = ray.position + (ray.direction * dist);//m_displayChunk.GetTerrainGeometry(i, j).position;
+
+					lastTerrainX = i;
+					lastTerrainY = j;
 
 					return return_values;
 				}
@@ -864,6 +906,26 @@ std::vector<DirectX::SimpleMath::Vector3> Game::HalfRay(DirectX::SimpleMath::Vec
 	std::vector<DirectX::SimpleMath::Vector3> return_vectors{ new_v1 , new_v2};
 
 	return return_vectors;
+}
+
+void Game::UpdateDisplayChunkNormals()
+{
+	m_displayChunk.CalculateTerrainNormals();
+}
+
+void Game::SavePreviousHeightmap()
+{
+	m_displayChunk.SavePrevHeightmap();
+}
+
+void Game::SaveHeightmap()
+{
+	m_displayChunk.SaveHeightMap();
+}
+
+void Game::UndoHeightmapChanges()
+{
+	m_displayChunk.HeightmapUndo();
 }
 
 #ifdef DXTK_AUDIO

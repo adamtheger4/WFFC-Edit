@@ -49,6 +49,8 @@ public:
 	void RDown(MSG* msg);
 	void RUp(MSG* msg);
 
+	void UpdateAxisArrows(int select_index);
+
 	GrabbedAxis m_grabbedAxis;
 	ManipulationType m_manipType = ManipulationType::Position;
 	GrabReturns m_grabReturns;
@@ -85,6 +87,7 @@ private:
 
 	// Terrain Tool Reference.
 	TerrainTool* m_terrainTool;
+	bool bTerrainUpdateNormals = false;
 
 	// Input commands Reference.
 	InputCommands* m_toolInputCommands;

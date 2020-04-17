@@ -9,5 +9,6 @@ public:
 	~GameObject();
 
 	DirectX::BoundingSphere bounding_sphere;
+	bool bMarkedForDelete = false;
 };
 

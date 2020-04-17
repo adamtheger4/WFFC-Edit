@@ -97,238 +97,241 @@ void MouseTool::GrabbingLogic()
 	//Mouse Grabbing objects
 	if (m_grabbing)
 	{
-		float min_input = 1.0f;
-		switch (m_grabbedAxis)
-		{
-		case GrabbedAxis::x:
-			switch (m_manipType)
-			{
-
-			case ManipulationType::Position:
-				if (m_d3dRenderer->GetActiveCameraLocation().z >= m_gameGraph.at(m_selectedObjects[0])->posZ) //Invert input based on which side the camera is on from the object->
-				{
-					for (int i = 0; i < m_selectedObjects.size(); i++)
-					{
-						if (x - m_grabbedCoords[0] > min_input)
-							m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) + Vector3{ m_positionSnap , 0.0f, 0.0f });
-						else if (x - m_grabbedCoords[0] < -min_input)
-							m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) - Vector3{ m_positionSnap , 0.0f, 0.0f });
-					}
-				}
-				else
-				{
-					for (int i = 0; i < m_selectedObjects.size(); i++)
-					{
-						if (x - m_grabbedCoords[0] < -min_input)
-							m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) + Vector3{ m_positionSnap , 0.0f, 0.0f });
-						else if (x - m_grabbedCoords[0] > min_input)
-							m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) - Vector3{ m_positionSnap , 0.0f, 0.0f });
-					}
-				}
-
-				break;
-
-			case ManipulationType::Rotation:
-				if (m_d3dRenderer->GetActiveCameraLocation().z >= m_gameGraph.at(m_selectedObjects[0])->posZ) //Invert input based on which side the camera is on from the object.
-				{
-					for (int i = 0; i < m_selectedObjects.size(); i++)
-					{
-						if (x - m_grabbedCoords[0] > min_input)
-						{
-							m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) + Vector3{ m_rotationSnap , 0.0f, 0.0f });
-						}
-						else if (x - m_grabbedCoords[0] < -min_input)
-							m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) - Vector3{ m_rotationSnap , 0.0f, 0.0f });
-					}
-				}
-				else
-				{
-					for (int i = 0; i < m_selectedObjects.size(); i++)
-					{
-						if (x - m_grabbedCoords[0] < -min_input)
-						{
-							m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) + Vector3{ m_rotationSnap , 0.0f, 0.0f });
-
-						}
-						else if (x - m_grabbedCoords[0] > min_input)
-							m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) - Vector3{ m_rotationSnap , 0.0f, 0.0f });
-					}
-				}
-				break;
-
-			case ManipulationType::Scale:
-				if (m_d3dRenderer->GetActiveCameraLocation().z >= m_gameGraph.at(m_selectedObjects[0])->posZ) //Invert input based on which side the camera is on from the object.
-				{
-					for (int i = 0; i < m_selectedObjects.size(); i++)
-					{
-						if (x - m_grabbedCoords[0] > min_input)
-							m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) + Vector3{ m_scaleSnap , 0.0f, 0.0f });
-						else if (x - m_grabbedCoords[0] < -min_input)
-							m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) - Vector3{ m_scaleSnap , 0.0f, 0.0f });
-					}
-				}
-				else
-				{
-					for (int i = 0; i < m_selectedObjects.size(); i++)
-					{
-						if (x - m_grabbedCoords[0] < -min_input)
-							m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) + Vector3{ m_scaleSnap , 0.0f, 0.0f });
-						else if (x - m_grabbedCoords[0] > min_input)
-							m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) - Vector3{ m_scaleSnap , 0.0f, 0.0f });
-					}
-				}
-				break;
-
-			}
-			break;
-
-		case GrabbedAxis::y:
-
-			switch (m_manipType)
-			{
-			case ManipulationType::Position:
-				for (int i = 0; i < m_selectedObjects.size(); i++)
-				{
-					if (y - m_grabbedCoords[1] < -min_input)
-						m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) + Vector3{ 0.0f, m_positionSnap, 0.0f });
-					else if (y - m_grabbedCoords[1] > min_input)
-						m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) - Vector3{ 0.0f, m_positionSnap, 0.0f });
-				}
-				break;
-
-			case ManipulationType::Rotation:
-				for (int i = 0; i < m_selectedObjects.size(); i++)
-				{
-					if (y - m_grabbedCoords[1] > min_input)
-						m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) + Vector3{ 0.0f, m_rotationSnap, 0.0f });
-					else if (y - m_grabbedCoords[1] < -min_input)
-						m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) - Vector3{ 0.0f, m_rotationSnap, 0.0f });
-				}
-				break;
-
-			case ManipulationType::Scale:
-				for (int i = 0; i < m_selectedObjects.size(); i++)
-				{
-					if (y - m_grabbedCoords[1] < -min_input)
-						m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) + Vector3{ 0.0f, m_scaleSnap, 0.0f });
-					else if (y - m_grabbedCoords[1] > min_input)
-						m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) - Vector3{ 0.0f, m_scaleSnap, 0.0f });
-				}
-				break;
-			}
-			break;
-
-		case GrabbedAxis::z:
-
-			switch (m_manipType)
-			{
-			case ManipulationType::Position:
-				if (m_d3dRenderer->GetActiveCameraLocation().x <= m_gameGraph.at(m_selectedObjects[0])->posX) //Invert input based on which side the camera is on from the object.
-				{
-					for (int i = 0; i < m_selectedObjects.size(); i++)
-					{
-						if (x - m_grabbedCoords[0] > min_input)
-							m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) + Vector3{ 0.0f, 0.0f, m_positionSnap });
-						else if (x - m_grabbedCoords[0] < -min_input)
-							m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) - Vector3{ 0.0f, 0.0f, m_positionSnap });
-					}
-				}
-				else
-				{
-					for (int i = 0; i < m_selectedObjects.size(); i++)
-					{
-						if (x - m_grabbedCoords[0] < -min_input)
-							m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) + Vector3{ 0.0f, 0.0f, m_positionSnap });
-						else if (x - m_grabbedCoords[0] > min_input)
-							m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) - Vector3{ 0.0f, 0.0f, m_positionSnap });
-					}
-				}
-				break;
-
-			case ManipulationType::Rotation:
-				if (m_d3dRenderer->GetActiveCameraLocation().x >= m_gameGraph.at(m_selectedObjects[0])->posX) //Invert input based on which side the camera is on from the object.
-				{
-					for (int i = 0; i < m_selectedObjects.size(); i++)
-					{
-						if (x - m_grabbedCoords[0] > min_input)
-							m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) + Vector3{ 0.0f, 0.0f, m_rotationSnap });
-						else if (x - m_grabbedCoords[0] < -min_input)
-							m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) - Vector3{ 0.0f, 0.0f, m_rotationSnap });
-					}
-				}
-				else
-				{
-					for (int i = 0; i < m_selectedObjects.size(); i++)
-					{
-						if (x - m_grabbedCoords[0] < -min_input)
-							m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) + Vector3{ 0.0f, 0.0f, m_rotationSnap });
-						else if (x - m_grabbedCoords[0] > min_input)
-							m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) - Vector3{ 0.0f, 0.0f, m_rotationSnap });
-					}
-				}
-				break;
-
-			case ManipulationType::Scale:
-				if (m_d3dRenderer->GetActiveCameraLocation().x >= m_gameGraph.at(m_selectedObjects[0])->posX) //Invert input based on which side the camera is on from the object.
-				{
-					for (int i = 0; i < m_selectedObjects.size(); i++)
-					{
-						if (x - m_grabbedCoords[0] > min_input)
-							m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) + Vector3{ 0.0f, 0.0f, m_scaleSnap });
-						else if (x - m_grabbedCoords[0] < -min_input)
-							m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) - Vector3{ 0.0f, 0.0f, m_scaleSnap });
-					}
-				}
-				else
-				{
-					for (int i = 0; i < m_selectedObjects.size(); i++)
-					{
-						if (x - m_grabbedCoords[0] < -min_input)
-							m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) + Vector3{ 0.0f, 0.0f, m_scaleSnap });
-						else if (x - m_grabbedCoords[0] > min_input)
-							m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) - Vector3{ 0.0f, 0.0f, m_scaleSnap });
-					}
-				}
-				break;
-
-			}
-			break;
-		}
-
-		m_grabbedCoords[0] = x;
-		m_grabbedCoords[1] = y;
-
 		if (m_selectedObjects.size() > 0)
 		{
-			//update axis arrows and collsion box position.
-			DirectX::SimpleMath::Vector3 pos = m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[0]);
-			m_axisBoxX.Center = DirectX::SimpleMath::Vector3{ pos.x + 1.1f, pos.y, pos.z };
-			m_axisBoxY.Center = DirectX::SimpleMath::Vector3{ pos.x, pos.y + 1.1f, pos.z };
-			m_axisBoxZ.Center = DirectX::SimpleMath::Vector3{ pos.x, pos.y, pos.z + 1.1f };
-			m_axisBoxX.Extents = DirectX::XMFLOAT3{ 1.0f, 0.1f,  0.1f };
-			m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.1f, 1.0f,  0.1f };
-			m_axisBoxZ.Extents = DirectX::XMFLOAT3{ 0.1f, 0.1f,  1.0f };
-
-			m_d3dRenderer->x_arrow = m_axisBoxX.Center;
-			m_d3dRenderer->y_arrow = m_axisBoxY.Center;
-			m_d3dRenderer->z_arrow = m_axisBoxZ.Center;
-
-			std::vector<Quad> quads1 = m_d3dRenderer->BoxToQuads(m_axisBoxX.Center, m_axisBoxX.Extents);
-			std::vector<Quad> quads2 = m_d3dRenderer->BoxToQuads(m_axisBoxY.Center, m_axisBoxY.Extents);
-			std::vector<Quad> quads3 = m_d3dRenderer->BoxToQuads(m_axisBoxZ.Center, m_axisBoxZ.Extents);
-
-			m_d3dRenderer->m_axisBoxList.clear();
-			for (int j = 0; j < quads1.size(); j++)
+			float min_input = 1.0f;
+			switch (m_grabbedAxis)
 			{
-				m_d3dRenderer->m_axisBoxList.push_back(quads1[j]);
+			case GrabbedAxis::x:
+				switch (m_manipType)
+				{
+
+				case ManipulationType::Position:
+					if (m_d3dRenderer->GetActiveCameraLocation().z >= m_gameGraph.at(m_selectedObjects[0])->posZ) //Invert input based on which side the camera is on from the object->
+					{
+						for (int i = 0; i < m_selectedObjects.size(); i++)
+						{
+							if (x - m_grabbedCoords[0] > min_input)
+								m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) + Vector3{ m_positionSnap , 0.0f, 0.0f });
+							else if (x - m_grabbedCoords[0] < -min_input)
+								m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) - Vector3{ m_positionSnap , 0.0f, 0.0f });
+						}
+					}
+					else
+					{
+						for (int i = 0; i < m_selectedObjects.size(); i++)
+						{
+							if (x - m_grabbedCoords[0] < -min_input)
+								m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) + Vector3{ m_positionSnap , 0.0f, 0.0f });
+							else if (x - m_grabbedCoords[0] > min_input)
+								m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) - Vector3{ m_positionSnap , 0.0f, 0.0f });
+						}
+					}
+
+					break;
+
+				case ManipulationType::Rotation:
+					if (m_d3dRenderer->GetActiveCameraLocation().z >= m_gameGraph.at(m_selectedObjects[0])->posZ) //Invert input based on which side the camera is on from the object.
+					{
+						for (int i = 0; i < m_selectedObjects.size(); i++)
+						{
+							if (x - m_grabbedCoords[0] > min_input)
+							{
+								m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) + Vector3{ m_rotationSnap , 0.0f, 0.0f });
+							}
+							else if (x - m_grabbedCoords[0] < -min_input)
+								m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) - Vector3{ m_rotationSnap , 0.0f, 0.0f });
+						}
+					}
+					else
+					{
+						for (int i = 0; i < m_selectedObjects.size(); i++)
+						{
+							if (x - m_grabbedCoords[0] < -min_input)
+							{
+								m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) + Vector3{ m_rotationSnap , 0.0f, 0.0f });
+
+							}
+							else if (x - m_grabbedCoords[0] > min_input)
+								m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) - Vector3{ m_rotationSnap , 0.0f, 0.0f });
+						}
+					}
+					break;
+
+				case ManipulationType::Scale:
+					if (m_d3dRenderer->GetActiveCameraLocation().z >= m_gameGraph.at(m_selectedObjects[0])->posZ) //Invert input based on which side the camera is on from the object.
+					{
+						for (int i = 0; i < m_selectedObjects.size(); i++)
+						{
+							if (x - m_grabbedCoords[0] > min_input)
+								m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) + Vector3{ m_scaleSnap , 0.0f, 0.0f });
+							else if (x - m_grabbedCoords[0] < -min_input)
+								m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) - Vector3{ m_scaleSnap , 0.0f, 0.0f });
+						}
+					}
+					else
+					{
+						for (int i = 0; i < m_selectedObjects.size(); i++)
+						{
+							if (x - m_grabbedCoords[0] < -min_input)
+								m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) + Vector3{ m_scaleSnap , 0.0f, 0.0f });
+							else if (x - m_grabbedCoords[0] > min_input)
+								m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) - Vector3{ m_scaleSnap , 0.0f, 0.0f });
+						}
+					}
+					break;
+
+				}
+				break;
+
+			case GrabbedAxis::y:
+
+				switch (m_manipType)
+				{
+				case ManipulationType::Position:
+					for (int i = 0; i < m_selectedObjects.size(); i++)
+					{
+						if (y - m_grabbedCoords[1] < -min_input)
+							m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) + Vector3{ 0.0f, m_positionSnap, 0.0f });
+						else if (y - m_grabbedCoords[1] > min_input)
+							m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) - Vector3{ 0.0f, m_positionSnap, 0.0f });
+					}
+					break;
+
+				case ManipulationType::Rotation:
+					for (int i = 0; i < m_selectedObjects.size(); i++)
+					{
+						if (y - m_grabbedCoords[1] > min_input)
+							m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) + Vector3{ 0.0f, m_rotationSnap, 0.0f });
+						else if (y - m_grabbedCoords[1] < -min_input)
+							m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) - Vector3{ 0.0f, m_rotationSnap, 0.0f });
+					}
+					break;
+
+				case ManipulationType::Scale:
+					for (int i = 0; i < m_selectedObjects.size(); i++)
+					{
+						if (y - m_grabbedCoords[1] < -min_input)
+							m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) + Vector3{ 0.0f, m_scaleSnap, 0.0f });
+						else if (y - m_grabbedCoords[1] > min_input)
+							m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) - Vector3{ 0.0f, m_scaleSnap, 0.0f });
+					}
+					break;
+				}
+				break;
+
+			case GrabbedAxis::z:
+
+				switch (m_manipType)
+				{
+				case ManipulationType::Position:
+					if (m_d3dRenderer->GetActiveCameraLocation().x <= m_gameGraph.at(m_selectedObjects[0])->posX) //Invert input based on which side the camera is on from the object.
+					{
+						for (int i = 0; i < m_selectedObjects.size(); i++)
+						{
+							if (x - m_grabbedCoords[0] > min_input)
+								m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) + Vector3{ 0.0f, 0.0f, m_positionSnap });
+							else if (x - m_grabbedCoords[0] < -min_input)
+								m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) - Vector3{ 0.0f, 0.0f, m_positionSnap });
+						}
+					}
+					else
+					{
+						for (int i = 0; i < m_selectedObjects.size(); i++)
+						{
+							if (x - m_grabbedCoords[0] < -min_input)
+								m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) + Vector3{ 0.0f, 0.0f, m_positionSnap });
+							else if (x - m_grabbedCoords[0] > min_input)
+								m_d3dRenderer->SetSelectedObjectPosition(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[i]) - Vector3{ 0.0f, 0.0f, m_positionSnap });
+						}
+					}
+					break;
+
+				case ManipulationType::Rotation:
+					if (m_d3dRenderer->GetActiveCameraLocation().x >= m_gameGraph.at(m_selectedObjects[0])->posX) //Invert input based on which side the camera is on from the object.
+					{
+						for (int i = 0; i < m_selectedObjects.size(); i++)
+						{
+							if (x - m_grabbedCoords[0] > min_input)
+								m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) + Vector3{ 0.0f, 0.0f, m_rotationSnap });
+							else if (x - m_grabbedCoords[0] < -min_input)
+								m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) - Vector3{ 0.0f, 0.0f, m_rotationSnap });
+						}
+					}
+					else
+					{
+						for (int i = 0; i < m_selectedObjects.size(); i++)
+						{
+							if (x - m_grabbedCoords[0] < -min_input)
+								m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) + Vector3{ 0.0f, 0.0f, m_rotationSnap });
+							else if (x - m_grabbedCoords[0] > min_input)
+								m_d3dRenderer->SetSelectedObjectRotation(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjRotation(m_selectedObjects[i]) - Vector3{ 0.0f, 0.0f, m_rotationSnap });
+						}
+					}
+					break;
+
+				case ManipulationType::Scale:
+					if (m_d3dRenderer->GetActiveCameraLocation().x >= m_gameGraph.at(m_selectedObjects[0])->posX) //Invert input based on which side the camera is on from the object.
+					{
+						for (int i = 0; i < m_selectedObjects.size(); i++)
+						{
+							if (x - m_grabbedCoords[0] > min_input)
+								m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) + Vector3{ 0.0f, 0.0f, m_scaleSnap });
+							else if (x - m_grabbedCoords[0] < -min_input)
+								m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) - Vector3{ 0.0f, 0.0f, m_scaleSnap });
+						}
+					}
+					else
+					{
+						for (int i = 0; i < m_selectedObjects.size(); i++)
+						{
+							if (x - m_grabbedCoords[0] < -min_input)
+								m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) + Vector3{ 0.0f, 0.0f, m_scaleSnap });
+							else if (x - m_grabbedCoords[0] > min_input)
+								m_d3dRenderer->SetSelectedObjectScale(m_selectedObjects[i], m_d3dRenderer->GetDisplayObjScale(m_selectedObjects[i]) - Vector3{ 0.0f, 0.0f, m_scaleSnap });
+						}
+					}
+					break;
+
+				}
+				break;
 			}
-			for (int j = 0; j < quads2.size(); j++)
+
+			m_grabbedCoords[0] = x;
+			m_grabbedCoords[1] = y;
+
+			if (m_selectedObjects.size() > 0)
 			{
-				m_d3dRenderer->m_axisBoxList.push_back(quads2[j]);
-			}
-			for (int j = 0; j < quads3.size(); j++)
-			{
-				m_d3dRenderer->m_axisBoxList.push_back(quads3[j]);
+				//update axis arrows and collsion box position.
+				DirectX::SimpleMath::Vector3 pos = m_d3dRenderer->GetDisplayObjPos(m_selectedObjects[m_selectedObjects.size() - 1]);
+				m_axisBoxX.Center = DirectX::SimpleMath::Vector3{ pos.x + 1.1f, pos.y, pos.z };
+				m_axisBoxY.Center = DirectX::SimpleMath::Vector3{ pos.x, pos.y + 1.1f, pos.z };
+				m_axisBoxZ.Center = DirectX::SimpleMath::Vector3{ pos.x, pos.y, pos.z + 1.1f };
+				m_axisBoxX.Extents = DirectX::XMFLOAT3{ 1.0f, 0.1f,  0.1f };
+				m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.1f, 1.0f,  0.1f };
+				m_axisBoxZ.Extents = DirectX::XMFLOAT3{ 0.1f, 0.1f,  1.0f };
+
+				m_d3dRenderer->x_arrow = m_axisBoxX.Center;
+				m_d3dRenderer->y_arrow = m_axisBoxY.Center;
+				m_d3dRenderer->z_arrow = m_axisBoxZ.Center;
+
+				std::vector<Quad> quads1 = m_d3dRenderer->BoxToQuads(m_axisBoxX.Center, m_axisBoxX.Extents);
+				std::vector<Quad> quads2 = m_d3dRenderer->BoxToQuads(m_axisBoxY.Center, m_axisBoxY.Extents);
+				std::vector<Quad> quads3 = m_d3dRenderer->BoxToQuads(m_axisBoxZ.Center, m_axisBoxZ.Extents);
+
+				m_d3dRenderer->m_axisBoxList.clear();
+				for (int j = 0; j < quads1.size(); j++)
+				{
+					m_d3dRenderer->m_axisBoxList.push_back(quads1[j]);
+				}
+				for (int j = 0; j < quads2.size(); j++)
+				{
+					m_d3dRenderer->m_axisBoxList.push_back(quads2[j]);
+				}
+				for (int j = 0; j < quads3.size(); j++)
+				{
+					m_d3dRenderer->m_axisBoxList.push_back(quads3[j]);
+				}
 			}
 		}
 	}
@@ -338,6 +341,11 @@ void MouseTool::TerrainToolLogic(Ray in_ray)
 {
 	if (m_terrainTool->Active == true)
 	{
+		if (bTerrainUpdateNormals == false)
+		{
+			bTerrainUpdateNormals = true;
+		}
+
 		//Clicking Terrain
 		m_terrainTool->mouseTerrainManipReturn = m_d3dRenderer->RayToDisplayChunkCollision(in_ray);
 
@@ -368,6 +376,11 @@ void MouseTool::TerrainToolLogic(Ray in_ray)
 	}
 	else
 	{
+		if (bTerrainUpdateNormals)
+		{
+			bTerrainUpdateNormals = false;
+			m_d3dRenderer->UpdateDisplayChunkNormals();
+		}
 		std::vector<Quad> quads1 = m_d3dRenderer->BoxToQuads(m_terrainTool->mouseTerrainManipReturn.hit_location, DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f });
 		m_d3dRenderer->m_terrainToolCursor = quads1;
 	}
@@ -506,50 +519,25 @@ bool MouseTool::ClickedObj(DirectX::SimpleMath::Ray ray)
 	{
 		if (ray.Intersects(m_gameGraph[i]->bounding_sphere, dist))
 		{
+			int select_index;
+
 			//Set the selected object to be the object collision occurs with
 			if (m_pickMultiple)
 			{
 				m_selectedObjects.push_back(i);
+				select_index = m_selectedObjects.size() - 1;
 			}
 			else if (m_pickMultiple == false)
 			{
 				m_selectedObjects.clear();
 				m_selectedObjects.push_back(i);
+
+				select_index = 0;
 			}
 
 			m_d3dRenderer->SetSelectedObj(m_selectedObjects[0]);
 
-			//Axis arrows bounding box.
-			m_axisBoxX.Center = DirectX::XMFLOAT3{ m_gameGraph[m_selectedObjects[0]]->posX + 1.1f, m_gameGraph[m_selectedObjects[0]]->posY, m_gameGraph[m_selectedObjects[0]]->posZ };
-			m_axisBoxY.Center = DirectX::XMFLOAT3{ m_gameGraph[m_selectedObjects[0]]->posX, m_gameGraph[m_selectedObjects[0]]->posY + 1.1f, m_gameGraph[m_selectedObjects[0]]->posZ };
-			m_axisBoxZ.Center = DirectX::XMFLOAT3{ m_gameGraph[m_selectedObjects[0]]->posX, m_gameGraph[m_selectedObjects[0]]->posY, m_gameGraph[m_selectedObjects[0]]->posZ + 1.1f };
-					  
-			m_axisBoxX.Extents = DirectX::XMFLOAT3{ 1.0f, 0.1f,  0.1f };
-			m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.1f, 1.0f,  0.1f };
-			m_axisBoxZ.Extents = DirectX::XMFLOAT3{ 0.1f, 0.1f,  1.0f };
-
-			m_d3dRenderer->renderAxisArrows = true;
-			m_d3dRenderer->x_arrow = m_axisBoxX.Center;
-			m_d3dRenderer->y_arrow = m_axisBoxY.Center;
-			m_d3dRenderer->z_arrow = m_axisBoxZ.Center;
-
-			std::vector<Quad> quads1 = m_d3dRenderer->BoxToQuads(m_axisBoxX.Center, m_axisBoxX.Extents);
-			std::vector<Quad> quads2 = m_d3dRenderer->BoxToQuads(m_axisBoxY.Center, m_axisBoxY.Extents);
-			std::vector<Quad> quads3 = m_d3dRenderer->BoxToQuads(m_axisBoxZ.Center, m_axisBoxZ.Extents);
-
-			m_d3dRenderer->m_axisBoxList.clear();
-			for (int j = 0; j < quads1.size(); j++)
-			{
-				m_d3dRenderer->m_axisBoxList.push_back(quads1[j]);
-			}
-			for (int j = 0; j < quads2.size(); j++)
-			{
-				m_d3dRenderer->m_axisBoxList.push_back(quads2[j]);
-			}
-			for (int j = 0; j < quads3.size(); j++)
-			{
-				m_d3dRenderer->m_axisBoxList.push_back(quads3[j]);
-			}
+			UpdateAxisArrows(select_index);
 
 			m_d3dRenderer->showObjText = true;
 			return true;
@@ -604,6 +592,44 @@ void MouseTool::RDown(MSG* msg)
 void MouseTool::RUp(MSG* msg)
 {
 	m_toolInputCommands->mouseControls = false;
+}
+
+void MouseTool::UpdateAxisArrows(int select_index)
+{
+	if (m_selectedObjects.size() > 0)
+	{
+		//Axis arrows bounding box.
+		m_axisBoxX.Center = DirectX::XMFLOAT3{ m_gameGraph[m_selectedObjects[m_selectedObjects.size() - 1]]->posX + 1.1f, m_gameGraph[m_selectedObjects[m_selectedObjects.size() - 1]]->posY, m_gameGraph[m_selectedObjects[m_selectedObjects.size() - 1]]->posZ };
+		m_axisBoxY.Center = DirectX::XMFLOAT3{ m_gameGraph[m_selectedObjects[m_selectedObjects.size() - 1]]->posX, m_gameGraph[m_selectedObjects[m_selectedObjects.size() - 1]]->posY + 1.1f, m_gameGraph[m_selectedObjects[m_selectedObjects.size() - 1]]->posZ };
+		m_axisBoxZ.Center = DirectX::XMFLOAT3{ m_gameGraph[m_selectedObjects[m_selectedObjects.size() - 1]]->posX, m_gameGraph[m_selectedObjects[m_selectedObjects.size() - 1]]->posY, m_gameGraph[m_selectedObjects[m_selectedObjects.size() - 1]]->posZ + 1.1f };
+
+		m_axisBoxX.Extents = DirectX::XMFLOAT3{ 1.0f, 0.1f,  0.1f };
+		m_axisBoxY.Extents = DirectX::XMFLOAT3{ 0.1f, 1.0f,  0.1f };
+		m_axisBoxZ.Extents = DirectX::XMFLOAT3{ 0.1f, 0.1f,  1.0f };
+
+		m_d3dRenderer->renderAxisArrows = true;
+		m_d3dRenderer->x_arrow = m_axisBoxX.Center;
+		m_d3dRenderer->y_arrow = m_axisBoxY.Center;
+		m_d3dRenderer->z_arrow = m_axisBoxZ.Center;
+
+		std::vector<Quad> quads1 = m_d3dRenderer->BoxToQuads(m_axisBoxX.Center, m_axisBoxX.Extents);
+		std::vector<Quad> quads2 = m_d3dRenderer->BoxToQuads(m_axisBoxY.Center, m_axisBoxY.Extents);
+		std::vector<Quad> quads3 = m_d3dRenderer->BoxToQuads(m_axisBoxZ.Center, m_axisBoxZ.Extents);
+
+		m_d3dRenderer->m_axisBoxList.clear();
+		for (int j = 0; j < quads1.size(); j++)
+		{
+			m_d3dRenderer->m_axisBoxList.push_back(quads1[j]);
+		}
+		for (int j = 0; j < quads2.size(); j++)
+		{
+			m_d3dRenderer->m_axisBoxList.push_back(quads2[j]);
+		}
+		for (int j = 0; j < quads3.size(); j++)
+		{
+			m_d3dRenderer->m_axisBoxList.push_back(quads3[j]);
+		}
+	}
 }
 
 ScreenPosToWorldSpaceReturn MouseTool::ScreenPosToWorldSpace(float x, float y)

@@ -25,6 +25,7 @@ public:
 	void LoadHeightMap(std::shared_ptr<DX::DeviceResources>  DevResources);
 	void SaveHeightMap();			//saves the heigtmap back to file.
 	void UpdateTerrain();			//updates the geometry based on the heigtmap
+	void UpdateHeightmap();			//updates the heightmap based on the geometry
 	void GenerateHeightmap();		//creates or alters the heightmap
 	std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionNormalTexture>>  m_batch;
 	std::unique_ptr<DirectX::BasicEffect>       m_terrainEffect;
@@ -36,11 +37,18 @@ public:
 	inline void SetTerrainGeometryPosition(int row, int column, DirectX::SimpleMath::Vector3 p) {m_terrainGeometry[row][column].position = p; }
 	inline DirectX::XMFLOAT3 GetTerrainGeometryPosition(int row, int column) { return m_terrainGeometry[row][column].position; }
 
+	void SavePrevHeightmap();
+
+	void CalculateTerrainNormals();
+
+	void HeightmapUndo();
+
 private:
 	
 	DirectX::VertexPositionNormalTexture m_terrainGeometry[TERRAINRESOLUTION][TERRAINRESOLUTION];
+
 	BYTE m_heightMap[TERRAINRESOLUTION*TERRAINRESOLUTION];
-	void CalculateTerrainNormals();
+	BYTE m_prevHeightMap[TERRAINRESOLUTION*TERRAINRESOLUTION];
 
 	float	m_terrainHeightScale;
 	int		m_terrainSize;				//size of terrain in metres

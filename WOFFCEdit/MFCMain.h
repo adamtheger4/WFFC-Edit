@@ -11,6 +11,7 @@
 #include "SelectDialogue.h"
 #include "AxisSnapDialogue.h"
 #include "TerrainEditorDialogue.h"
+#include "TerrainEditorConfirmDialogue.h"
 
 
 class MFCMain : public CWinApp 

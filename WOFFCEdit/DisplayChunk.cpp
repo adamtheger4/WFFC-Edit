@@ -141,11 +141,9 @@ void DisplayChunk::LoadHeightMap(std::shared_ptr<DX::DeviceResources>  DevResour
 
 void DisplayChunk::SaveHeightMap()
 {
-/*	for (size_t i = 0; i < TERRAINRESOLUTION*TERRAINRESOLUTION; i++)
-	{
-		m_heightMap[i] = 0;
-	}*/
-
+	//SavePrevHeightmap();
+	UpdateHeightmap();
+	
 	FILE *pFile = NULL;
 
 	// Open The File In Read / Binary Mode.
@@ -179,16 +177,28 @@ void DisplayChunk::UpdateTerrain()
 
 }
 
+void DisplayChunk::UpdateHeightmap()
+{
+	//all this is doing is transferring the height from the terrain geometry into the heightmap.
+	int index;
+	for (size_t i = 0; i < TERRAINRESOLUTION; i++)
+	{
+		for (size_t j = 0; j < TERRAINRESOLUTION; j++)
+		{
+			index = (TERRAINRESOLUTION * i) + j;
+			m_heightMap[index] = m_terrainGeometry[i][j].position.y / m_terrainHeightScale;
+		}
+	}
+}
+
 void DisplayChunk::GenerateHeightmap()
 {
 	//insert how YOU want to update the heigtmap here! :D
-
 	for (int i = 0; i < (TERRAINRESOLUTION); i++)
 	{
 		for (int j = 0; j < (TERRAINRESOLUTION ); j++)
 		{
 			m_terrainGeometry[i][j].position.x++;
-		
 		}
 	}
 
@@ -199,8 +209,6 @@ void DisplayChunk::CalculateTerrainNormals()
 {
 	int index1, index2, index3, index4;
 	DirectX::SimpleMath::Vector3 upDownVector, leftRightVector, normalVector;
-
-
 
 	for (int i = 0; i<(TERRAINRESOLUTION - 1); i++)
 	{
@@ -221,4 +229,35 @@ void DisplayChunk::CalculateTerrainNormals()
 			m_terrainGeometry[i][j].normal = normalVector;	//set the normal for this point based on our result
 		}
 	}
+}
+
+void DisplayChunk::SavePrevHeightmap()
+{
+	//all this is doing is transferring the height from the terrain geometry into the heightmap.
+	int index;
+	for (size_t i = 0; i < TERRAINRESOLUTION; i++)
+	{
+		for (size_t j = 0; j < TERRAINRESOLUTION; j++)
+		{
+			index = (TERRAINRESOLUTION * i) + j;
+			m_prevHeightMap[index] = m_terrainGeometry[i][j].position.y / m_terrainHeightScale;
+		}
+	}
+}
+
+void DisplayChunk::HeightmapUndo()
+{
+	//all this is doing is transferring the height from the terrain geometry into the heightmap.
+	int index;
+	for (size_t i = 0; i < TERRAINRESOLUTION; i++)
+	{
+		for (size_t j = 0; j < TERRAINRESOLUTION; j++)
+		{
+			index = (TERRAINRESOLUTION * i) + j;
+			m_heightMap[index] = (float)(m_prevHeightMap[index]);
+		}
+	}
+
+	UpdateTerrain();
+	CalculateTerrainNormals();
 }
