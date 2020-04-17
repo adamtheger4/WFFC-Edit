@@ -30,6 +30,7 @@ TerrainEditorDialogue::TerrainEditorDialogue(CWnd * pParent)
 
 TerrainEditorDialogue::~TerrainEditorDialogue()
 {
+	DestroyWindow();
 }
 
 void TerrainEditorDialogue::DoDataExchange(CDataExchange* pDX)
@@ -40,7 +41,7 @@ void TerrainEditorDialogue::DoDataExchange(CDataExchange* pDX)
 
 void TerrainEditorDialogue::End()
 {
-	m_toolMain->windowOpen = false;
+	//m_toolMain->windowOpen = false;
 
 	DestroyWindow();	//destory the window properly.  INcluding the links and pointers created.  THis is so the dialogue can start again. 
 }
@@ -210,6 +211,8 @@ void TerrainEditorDialogue::OnBnClickedButton40001()
 		m_TerrainEditorConfirmDialogue.Create(IDD_DIALOG4);	//Start up modeless
 		m_TerrainEditorConfirmDialogue.ShowWindow(SW_SHOW);	//show modeless
 		m_TerrainEditorConfirmDialogue.m_toolMain = m_toolMain;
+
+		m_toolMain->windowOpen = true;
 	}
 
 	m_toolMain->UpdateTerrainText();

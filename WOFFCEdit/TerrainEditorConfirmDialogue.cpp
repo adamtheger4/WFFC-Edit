@@ -20,6 +20,7 @@ TerrainEditorConfirmDialogue::TerrainEditorConfirmDialogue(CWnd * pParent)
 
 TerrainEditorConfirmDialogue::~TerrainEditorConfirmDialogue()
 {
+	DestroyWindow();
 }
 
 void TerrainEditorConfirmDialogue::DoDataExchange(CDataExchange* pDX)
@@ -96,11 +97,13 @@ void TerrainEditorConfirmDialogue::OnBnClickedOk()
 void TerrainEditorConfirmDialogue::OnBnClickedButtonYes()
 {
 	m_toolMain->SaveHeightmap();
+
 	End();
 }
 
 void TerrainEditorConfirmDialogue::OnBnClickedButtonNo()
 {
 	m_toolMain->UndoHeightmapChanges();
+
 	End();
 }
