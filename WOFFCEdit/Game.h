@@ -60,27 +60,26 @@ public:
 	void SaveDisplayChunk(ChunkObject *SceneChunk);	//saves geometry et al
 	void ClearDisplayList();
 
+	//Terrain tool functions
 	RayToDisplayChunkReturn RayToDisplayChunkCollision(DirectX::SimpleMath::Ray ray);
-	RayToDisplayChunkReturn GetCurrentTerrainPoint();
 	void SculptTerrain(int row, int column, DirectX::XMFLOAT3 offset, bool smooth_sculpt, int sculptMode);
 	void FlattenTerrain(int row, int column, DirectX::XMFLOAT3 offset, float targetHeight, bool smooth_sculpt);
 	void SmoothSculptTerrain(int row, int column, DirectX::XMFLOAT3 offset, int sculptMode);
-	std::vector<DirectX::SimpleMath::Vector3> HalfRay(DirectX::SimpleMath::Vector3 v1, DirectX::SimpleMath::Vector3 v2, bool top);
+	void PaintTerrain(int row, int column);
 
+	ID3D11ShaderResourceView* LoadTextureToPaint(std::string inTexturePath);
+
+
+	//Save/Undo changes made by terrain tool.
 	void UpdateDisplayChunkNormals();
 	void SavePreviousHeightmap();
 	void SaveHeightmap();
-
 	void UndoHeightmapChanges();
 
+	//Object Manipulation
 	inline DirectX::SimpleMath::Vector3 GetDisplayObjPos(int objID) { return m_displayList[objID].m_position; };
 	inline DirectX::SimpleMath::Vector3 GetDisplayObjRotation(int objID) {return  m_displayList[objID].m_orientation;}
 	inline DirectX::SimpleMath::Vector3 GetDisplayObjScale(int objID) { return  m_displayList[objID].m_scale; }
-
-	//Object Manipulation
-	void MoveSelectedObject(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector);
-	inline void RotateSelectedObject(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector) { m_displayList[select_obj_ID].RotateObject(in_vector, m_dt); };
-	inline void ScaleSelectedObject(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector) { m_displayList[select_obj_ID].ScaleObject(in_vector, m_dt); };
 
 	inline void SetSelectedObjectPosition(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector) { m_displayList[select_obj_ID].m_position = in_vector;  }
 	inline void SetSelectedObjectRotation(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector) { m_displayList[select_obj_ID].m_orientation = in_vector; }
@@ -91,17 +90,20 @@ public:
 	DirectX::SimpleMath::Vector3 y_arrow;
 	DirectX::SimpleMath::Vector3 z_arrow;
 
-	//View Matrices
+	inline DirectX::SimpleMath::Vector3 GetActiveCameraLocation() { return m_camera.m_camPosition; }
+
+	void SetSelectedObj(int selectedID);
+
+
+	//Render Matrices
 	inline DirectX::SimpleMath::Matrix GetViewMatrix() { return m_view; }
 	inline DirectX::SimpleMath::Matrix GetProjMatrix() { return m_projection; }
 	inline DirectX::SimpleMath::Matrix GetWorldMatrix() { return m_world; }
 
-	inline DirectX::SimpleMath::Vector3 GetActiveCameraLocation() { return m_camera.m_camPosition; }
+	//Camera
+	Camera m_camera;
 
-	inline DirectX::Mouse::State GetMouseState() { return m_mouse->GetState(); }
-
-	void SetSelectedObj(int selectedID);
-
+	//Converts input box parameters to vertices.
 	std::vector<Quad> BoxToQuads(DirectX::SimpleMath::Vector3 center, DirectX::SimpleMath::Vector3 extents);
 
 	//Used to draw axis arrows.
@@ -110,16 +112,13 @@ public:
 	DirectX::XMFLOAT4 yAxisColor { 0.0f, 1.0f, 0.0f, 1.0f };
 	DirectX::XMFLOAT4 zAxisColor { 0.0f, 0.0f, 1.0f, 1.0f };
 
-	float debug1; 
-	float debug2;
-	float debug3;
-	
 	bool showObjText = false;
 	bool showTerrainText = false;
 	std::vector<Quad> m_terrainToolCursor;
 
-	//camera
-	Camera m_camera;
+	float debug1;
+	float debug2;
+	float debug3;
 	
 #ifdef DXTK_AUDIO
 	void NewAudioDevice();
@@ -128,8 +127,6 @@ public:
 private:
 
 	//Implemented Functions.
-
-	//
 
 	void Update(DX::StepTimer const& timer);
 
@@ -149,8 +146,6 @@ private:
 
 	int lastTerrainX = 0;
 	int lastTerrainY = 0;
-
-	void HandleInput();
 
 	//control variables
 	bool m_grid;							//grid rendering on / off

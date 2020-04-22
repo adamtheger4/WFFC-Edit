@@ -37,14 +37,22 @@ public:
 	inline void SetTerrainGeometryPosition(int row, int column, DirectX::SimpleMath::Vector3 p) {m_terrainGeometry[row][column].position = p; }
 	inline DirectX::XMFLOAT3 GetTerrainGeometryPosition(int row, int column) { return m_terrainGeometry[row][column].position; }
 
+	void PaintTerrain(int row, int column);
+
 	void SavePrevHeightmap();
 
 	void CalculateTerrainNormals();
 
 	void HeightmapUndo();
 
+	void DrawTerrain(std::vector<std::pair<int, int>> inTerrain);
+
+	ID3D11ShaderResourceView*	m_terrainPaintDiffuse;
+
 private:
 	
+	std::vector<std::pair<int, int>> m_terrain;
+
 	DirectX::VertexPositionNormalTexture m_terrainGeometry[TERRAINRESOLUTION][TERRAINRESOLUTION];
 
 	BYTE m_heightMap[TERRAINRESOLUTION*TERRAINRESOLUTION];

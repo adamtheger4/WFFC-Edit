@@ -339,42 +339,66 @@ void MouseTool::GrabbingLogic()
 
 void MouseTool::TerrainToolLogic(Ray in_ray)
 {
-	if (m_terrainTool->Active == true)
+	if (m_terrainTool->Active == true) // If tool is active
 	{
-		if (bTerrainUpdateNormals == false)
+		if (m_terrainTool->m_terrainSculptMode == TerrainSculptMode::Vertex) // If tool is in vertex sculpting mode
 		{
-			bTerrainUpdateNormals = true;
+			if (bTerrainUpdateNormals == false) //update the normals when making changes to terrain
+			{
+				bTerrainUpdateNormals = true;
+			}
+
+			//Clicking Terrain
+			if (x != m_prevX || y != m_prevY) // only update the mouse terrain position if the mouse moves.
+			{
+				m_terrainTool->mouseTerrainManipReturn = m_d3dRenderer->RayToDisplayChunkCollision(in_ray);
+			}
+
+			if (m_terrainTool->mouseTerrainManipReturn.did_hit) // if the mouse hit a tri on the terrain.
+			{
+				//Draw a cube where the mouse is hitting.
+				std::vector<Quad> quads1 = m_d3dRenderer->BoxToQuads(m_terrainTool->mouseTerrainManipReturn.hit_location, DirectX::XMFLOAT3{ 0.2f, 0.2f, 0.2f });
+				m_d3dRenderer->m_terrainToolCursor = quads1;
+
+				if (m_terrainTool->updateTargetHeight) // if updating the target height for terrain flattening
+				{
+					m_terrainTool->targetHeight = m_terrainTool->mouseTerrainManipReturn.hit_location.y;
+					m_terrainTool->updateTargetHeight = false;
+				}
+
+				if (m_terrainTool->GetSculptType() == VertexSculptType::Flatten)
+				{
+					m_d3dRenderer->FlattenTerrain(m_terrainTool->mouseTerrainManipReturn.row, m_terrainTool->mouseTerrainManipReturn.column, DirectX::XMFLOAT3{ m_terrainTool->GetManipulationOffset().x, m_terrainTool->GetManipulationOffset().y, m_terrainTool->GetManipulationOffset().z }, m_terrainTool->targetHeight, m_terrainTool->smoothSculpt);
+				}
+				else if (m_terrainTool->GetSculptType() == VertexSculptType::Dig)
+				{
+					m_d3dRenderer->SculptTerrain(m_terrainTool->mouseTerrainManipReturn.row, m_terrainTool->mouseTerrainManipReturn.column, DirectX::XMFLOAT3{ -m_terrainTool->GetManipulationOffset().x, -m_terrainTool->GetManipulationOffset().y, -m_terrainTool->GetManipulationOffset().z }, m_terrainTool->smoothSculpt, m_terrainTool->m_terrainSculptMode);
+				}
+				else
+				{
+					m_d3dRenderer->SculptTerrain(m_terrainTool->mouseTerrainManipReturn.row, m_terrainTool->mouseTerrainManipReturn.column, m_terrainTool->GetManipulationOffset(), m_terrainTool->smoothSculpt, m_terrainTool->m_terrainSculptMode);
+				}
+			}
 		}
 
-		//Clicking Terrain
-		m_terrainTool->mouseTerrainManipReturn = m_d3dRenderer->RayToDisplayChunkCollision(in_ray);
-
-		if (m_terrainTool->mouseTerrainManipReturn.did_hit)
+		else if (m_terrainTool->m_terrainSculptMode = TerrainSculptMode::Paint) // If tool is in vertex Paint mode
 		{
-			std::vector<Quad> quads1 = m_d3dRenderer->BoxToQuads(m_terrainTool->mouseTerrainManipReturn.hit_location, DirectX::XMFLOAT3{ 0.2f, 0.2f, 0.2f });
-			m_d3dRenderer->m_terrainToolCursor = quads1;
-
-			if (m_terrainTool->updateTargetHeight)
+			if (x != m_prevX || y != m_prevY) // only update the mouse terrain position if the mouse moves.
 			{
-				m_terrainTool->targetHeight = m_terrainTool->mouseTerrainManipReturn.hit_location.y;
-				m_terrainTool->updateTargetHeight = false;
+				m_terrainTool->mouseTerrainManipReturn = m_d3dRenderer->RayToDisplayChunkCollision(in_ray);
 			}
 
-			if (m_terrainTool->GetSculptType() == TerrainSculptType::Flatten)
+			if (m_terrainTool->mouseTerrainManipReturn.did_hit) // if the mouse hit a tri on the terrain.
 			{
-				m_d3dRenderer->FlattenTerrain(m_terrainTool->mouseTerrainManipReturn.row, m_terrainTool->mouseTerrainManipReturn.column, DirectX::XMFLOAT3{ m_terrainTool->GetManipulationOffset().x, m_terrainTool->GetManipulationOffset().y, m_terrainTool->GetManipulationOffset().z }, m_terrainTool->targetHeight, m_terrainTool->smoothSculpt);
-			}
-			else if (m_terrainTool->GetSculptType() == TerrainSculptType::Dig)
-			{
-				m_d3dRenderer->SculptTerrain(m_terrainTool->mouseTerrainManipReturn.row, m_terrainTool->mouseTerrainManipReturn.column, DirectX::XMFLOAT3{ -m_terrainTool->GetManipulationOffset().x, -m_terrainTool->GetManipulationOffset().y, -m_terrainTool->GetManipulationOffset().z }, m_terrainTool->smoothSculpt, m_terrainTool->m_terrainSculptMode);
-			}
-			else
-			{
-				m_d3dRenderer->SculptTerrain(m_terrainTool->mouseTerrainManipReturn.row, m_terrainTool->mouseTerrainManipReturn.column, m_terrainTool->GetManipulationOffset(), m_terrainTool->smoothSculpt, m_terrainTool->m_terrainSculptMode);
+				//Draw a cube where the mouse is hitting.
+				std::vector<Quad> quads1 = m_d3dRenderer->BoxToQuads(m_terrainTool->mouseTerrainManipReturn.hit_location, DirectX::XMFLOAT3{ 0.2f, 0.2f, 0.2f });
+				m_d3dRenderer->m_terrainToolCursor = quads1;
+
+				m_d3dRenderer->PaintTerrain(m_terrainTool->mouseTerrainManipReturn.row, m_terrainTool->mouseTerrainManipReturn.column);
 			}
 		}
 	}
-	else
+	else // If tool isnt active
 	{
 		if (bTerrainUpdateNormals)
 		{
@@ -384,6 +408,7 @@ void MouseTool::TerrainToolLogic(Ray in_ray)
 		std::vector<Quad> quads1 = m_d3dRenderer->BoxToQuads(m_terrainTool->mouseTerrainManipReturn.hit_location, DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f });
 		m_d3dRenderer->m_terrainToolCursor = quads1;
 	}
+
 }
 
 bool MouseTool::Collision()

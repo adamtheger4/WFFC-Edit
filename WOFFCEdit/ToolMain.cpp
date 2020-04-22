@@ -354,14 +354,13 @@ void ToolMain::UpdateInput(MSG * msg)
 		wheelDelta = GET_WHEEL_DELTA_WPARAM(msg->wParam);
 		break; 
 
-	case WM_LBUTTONDOWN:	//mouse button down,  you will probably need to check when its up too
-		//set some flag for the mouse button in inputcommands
+	case WM_LBUTTONDOWN:  //mouse button down
 		m_mouseTool.LDown(msg);
 		break;
 
-	case WM_LBUTTONUP:	//mouse button up,  you will probably need to check when its up too
-	//set some flag for the mouse button in inputcommands
+	case WM_LBUTTONUP:	  //mouse button up
 		m_mouseTool.LUp(msg);
+
 		SaveLastAction();
 
 		m_d3dRenderer.UpdateSceneList(&m_gameGraph);
@@ -378,6 +377,7 @@ void ToolMain::UpdateInput(MSG * msg)
 	}
 
 	//here we update all the actual app functionality that we want.  This information will either be used int toolmain, or sent down to the renderer (Camera movement etc
+
 	//Mouse controls
 	if (m_toolInputCommands.mouseControls)
 	{
@@ -439,7 +439,7 @@ void ToolMain::UpdateInput(MSG * msg)
 		}
 		else m_toolInputCommands.camMove = m_toolInputCommands.camMovementScalar;
 	}
-	else
+	else // if mouse controls are not active, disable any mouse input variables.
 	{
 		m_toolInputCommands.rotUp = false;
 		m_toolInputCommands.rotDown = false;
@@ -454,41 +454,20 @@ void ToolMain::UpdateInput(MSG * msg)
 		m_toolInputCommands.down = false;
 	}
 
-
-	//if (m_keyArray['T'])
-	//{
-	//	if (m_terrainTool.m_Tonce)
-	//	{
-	//		if (m_terrainTool.GetEnable() == false)
-	//		{
-	//			m_terrainTool.SetEnable(true);
-	//			EnableTerrainText(true);
-	//		}
-	//		else
-	//		{
-	//			m_terrainTool.SetEnable(false);
-	//			EnableTerrainText(false);
-
-	//		}
-
-	//		m_terrainTool.m_Tonce = false;
-	//	}
-	//}
-
+	//Terrain Tool enabled controls.
 	if (m_terrainTool.GetEnable())
 	{
-	
 		if (m_keyArray[16]) // L SHIFT
 		{
-			m_terrainTool.SetSculptType(TerrainSculptType::Flatten);
+			m_terrainTool.SetSculptType(VertexSculptType::Flatten);
 		}
 		else if (m_keyArray[17]) // L CTRL
 		{
-			m_terrainTool.SetSculptType(TerrainSculptType::Dig);
+			m_terrainTool.SetSculptType(VertexSculptType::Dig);
 		}
-		else  m_terrainTool.SetSculptType(TerrainSculptType::Add);
+		else  m_terrainTool.SetSculptType(VertexSculptType::Add);
 	}
-	else 
+	else //Controls when no tools active.
 	{
 		if (m_keyArray[17]) // L CTRL
 		{
@@ -740,7 +719,6 @@ void ToolMain::RedoAction()
 		m_mouseTool.m_gameGraph.push_back(&m_gameGraph[i]);
 	}
 }
-
 
 std::vector<SceneObject> ToolMain::GameGraphToSceneGraph(std::vector<GameObject> in_gameGraph)
 {

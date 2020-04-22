@@ -1,4 +1,6 @@
 #include "TerrainTool.h"
+#include <string>
+
 
 TerrainTool::TerrainTool()
 {

@@ -46,6 +46,7 @@ BOOL MFCMain::InitInstance()
 
 	m_ToolAxisSnapDialogue.m_toolMain = &m_ToolSystem;
 	m_TerrainEditorDialogue.m_toolMain = &m_ToolSystem;
+	m_TerrainEditorPaintDialogue.m_toolMain = &m_ToolSystem;
 	return TRUE;
 }
 

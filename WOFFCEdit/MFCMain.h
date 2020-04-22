@@ -11,6 +11,7 @@
 #include "SelectDialogue.h"
 #include "AxisSnapDialogue.h"
 #include "TerrainEditorDialogue.h"
+#include "TerrainEditorPaintDialogue.h"
 #include "TerrainEditorConfirmDialogue.h"
 
 
@@ -31,6 +32,7 @@ private:
 	SelectDialogue m_ToolSelectDialogue;			//for modeless dialogue, declare it here
 	AxisSnapDialogue m_ToolAxisSnapDialogue;
 	TerrainEditorDialogue m_TerrainEditorDialogue;
+	TerrainEditorPaintDialogue m_TerrainEditorPaintDialogue;
 
 	int m_width;		
 	int m_height;

@@ -41,7 +41,9 @@ public: //methods
 	void UndoHeightmapChanges();
 
 public:	//variables
-	//std::vector<SceneObject>    m_sceneGraph;	//our scenegraph storing all the objects in the current chunk
+	//std::vector<SceneObject>    m_sceneGraph;	
+
+	//our scenegraph storing all the objects in the current chunk
 	std::vector<GameObject>    m_gameGraph;
 	ChunkObject					m_chunk;		//our landscape chunk
 

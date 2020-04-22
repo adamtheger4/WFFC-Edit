@@ -56,6 +56,16 @@ BOOL TerrainEditorConfirmDialogue::OnInitDialog()
 
 void TerrainEditorConfirmDialogue::PostNcDestroy()
 {
+	m_toolMain->windowOpen = false;
+
+	DestroyWindow();
+}
+
+void TerrainEditorConfirmDialogue::OnCancel()
+{
+	m_toolMain->windowOpen = false;
+
+	DestroyWindow();
 }
 
 

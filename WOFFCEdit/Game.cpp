@@ -22,7 +22,6 @@ Game::Game()
     m_deviceResources = std::make_unique<DX::DeviceResources>();
     m_deviceResources->RegisterDeviceNotify(this);
 	m_displayList.clear();
-	
 	//initial Settings
 	//modes
 	//m_grid = true;
@@ -56,6 +55,8 @@ void Game::Initialize(HWND window, int width, int height)
 
     m_deviceResources->CreateWindowSizeDependentResources();
     CreateWindowSizeDependentResources();
+
+	m_displayChunk.m_terrainPaintDiffuse = LoadTextureToPaint("database/data/rock.dds");
 
 #ifdef DXTK_AUDIO
     // Create DirectXTK for Audio objects
@@ -123,7 +124,6 @@ void Game::Update(DX::StepTimer const& timer)
 	m_displayChunk.m_terrainEffect->SetView(m_view);
 	m_displayChunk.m_terrainEffect->SetWorld(Matrix::Identity);
 
-	HandleInput();
 
 #ifdef DXTK_AUDIO
     m_audioTimerAcc -= (float)timer.GetElapsedSeconds();
@@ -422,17 +422,16 @@ void Game::DrawTerrainToolCursor()
 	m_batch->End();
 }
 
-void Game::HandleInput()
+ID3D11ShaderResourceView*  Game::LoadTextureToPaint(std::string inTexturePath)
 {
-	if (m_InputCommands.forward)
-	{
-		//m_displayChunk.GenerateHeightmap();
-	}
-}
+	ID3D11ShaderResourceView* texture;
 
-void Game::MoveSelectedObject(int select_obj_ID, DirectX::SimpleMath::Vector3 in_vector)
-{
-	m_displayList[select_obj_ID].MoveObject(in_vector, m_dt);
+	////load the diffuse texture and save it in the terrain paint variable.
+	std::wstring texturewstr = StringToWCHART(inTexturePath);
+	HRESULT rs;
+	rs = CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), texturewstr.c_str(), NULL, &texture);	//load tex into Shader resource	view and resource
+
+	return texture;
 }
 
 std::vector<Quad> Game::BoxToQuads(DirectX::SimpleMath::Vector3 center, DirectX::SimpleMath::Vector3 extents)
@@ -880,32 +879,12 @@ void Game::SmoothSculptTerrain(int row, int column, DirectX::XMFLOAT3 offset, in
 
 		m_displayChunk.SetTerrainGeometryPosition(row - 1, column + 1, m_displayChunk.GetTerrainGeometryPosition(row - 1, column + 1) + offset);
 		m_displayChunk.SetTerrainGeometryPosition(row + 1, column - 1, m_displayChunk.GetTerrainGeometryPosition(row + 1, column - 1) + offset);
-																																																												  
-
 	}
-
-
 }
 
-std::vector<DirectX::SimpleMath::Vector3> Game::HalfRay(DirectX::SimpleMath::Vector3 v1, DirectX::SimpleMath::Vector3 v2, bool top)
+void Game::PaintTerrain(int row, int column)
 {
-	DirectX::SimpleMath::Vector3 new_v1;
-	DirectX::SimpleMath::Vector3 new_v2;
-
-	if (top)
-	{
-		new_v1 = v1;
-		new_v2 = (v1 + v2) / 2;
-	}
-	else
-	{
-		new_v1 = (v1 + v2) / 2;
-		new_v2 = v2;
-	}
-
-	std::vector<DirectX::SimpleMath::Vector3> return_vectors{ new_v1 , new_v2};
-
-	return return_vectors;
+	m_displayChunk.PaintTerrain(row, column);
 }
 
 void Game::UpdateDisplayChunkNormals()

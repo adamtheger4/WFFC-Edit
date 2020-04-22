@@ -184,6 +184,7 @@
     <ClCompile Include="sqlite3.c" />
     <ClCompile Include="TerrainEditorConfirmDialogue.cpp" />
     <ClCompile Include="TerrainEditorDialogue.cpp" />
+    <ClCompile Include="TerrainEditorPaintDialogue.cpp" />
     <ClCompile Include="TerrainTool.cpp" />
     <ClCompile Include="ToolMain.cpp" />
   </ItemGroup>
@@ -210,6 +211,7 @@
     <ClInclude Include="MFCMain.h" />
     <ClInclude Include="TerrainEditorConfirmDialogue.h" />
     <ClInclude Include="TerrainEditorDialogue.h" />
+    <ClInclude Include="TerrainEditorPaintDialogue.h" />
     <ClInclude Include="TerrainTool.h" />
     <ClInclude Include="ToolMain.h" />
   </ItemGroup>

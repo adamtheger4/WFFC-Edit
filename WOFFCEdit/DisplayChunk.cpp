@@ -46,10 +46,12 @@ void DisplayChunk::RenderBatch(std::shared_ptr<DX::DeviceResources>  DevResource
 {
 	auto context = DevResources->GetD3DDeviceContext();
 
-	m_terrainEffect->Apply(context);
 	context->IASetInputLayout(m_terrainInputLayout.Get());
 
-	m_batch->Begin();
+	m_batch->Begin();	
+	m_terrainEffect->SetTexture(m_texture_diffuse);
+	m_terrainEffect->Apply(context);
+
 	for (size_t i = 0; i < TERRAINRESOLUTION-1; i++)	//looping through QUADS.  so we subtrack one from the terrain array or it will try to draw a quad starting with the last vertex in each row. Which wont work
 	{
 		for (size_t j = 0; j < TERRAINRESOLUTION-1; j++)//same as above
@@ -58,6 +60,16 @@ void DisplayChunk::RenderBatch(std::shared_ptr<DX::DeviceResources>  DevResource
 		}
 	}
 	m_batch->End();
+
+	if (m_terrain.size() > 0)
+	{
+		m_batch->Begin();
+		m_terrainEffect->SetTexture(m_terrainPaintDiffuse);
+		m_terrainEffect->Apply(context);
+		DrawTerrain(m_terrain);
+		m_batch->End();
+	}
+
 }
 
 void DisplayChunk::InitialiseBatch()
@@ -231,6 +243,11 @@ void DisplayChunk::CalculateTerrainNormals()
 	}
 }
 
+void DisplayChunk::PaintTerrain(int row, int column)
+{
+	m_terrain.push_back(std::pair<int, int>(row, column));
+}
+
 void DisplayChunk::SavePrevHeightmap()
 {
 	//all this is doing is transferring the height from the terrain geometry into the heightmap.
@@ -260,4 +277,17 @@ void DisplayChunk::HeightmapUndo()
 
 	UpdateTerrain();
 	CalculateTerrainNormals();
+}
+
+void DisplayChunk::DrawTerrain(std::vector<std::pair<int, int>> inTerrain)
+{
+	for (int i = 0; i < inTerrain.size(); i++)
+	{
+		m_batch->DrawQuad(
+			m_terrainGeometry[inTerrain[i].first][inTerrain[i].second],
+			m_terrainGeometry[inTerrain[i].first][inTerrain[i].second + 1],
+			m_terrainGeometry[inTerrain[i].first + 1][inTerrain[i].second + 1],
+			m_terrainGeometry[inTerrain[i].first + 1][inTerrain[i].second]		
+		);
+	}
 }

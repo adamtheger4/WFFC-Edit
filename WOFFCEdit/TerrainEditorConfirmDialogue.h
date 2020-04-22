@@ -30,6 +30,7 @@ public:
 	// Control variable for more efficient access of the listbox
 	virtual BOOL OnInitDialog() override;
 	virtual void PostNcDestroy();
+	virtual void OnCancel();
 	afx_msg void OnBnClickedOk();
 
 	ToolMain* m_toolMain;

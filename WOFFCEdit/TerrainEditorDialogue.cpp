@@ -41,7 +41,7 @@ void TerrainEditorDialogue::DoDataExchange(CDataExchange* pDX)
 
 void TerrainEditorDialogue::End()
 {
-	//m_toolMain->windowOpen = false;
+	m_toolMain->windowOpen = false;
 
 	DestroyWindow();	//destory the window properly.  INcluding the links and pointers created.  THis is so the dialogue can start again. 
 }
@@ -66,6 +66,16 @@ BOOL TerrainEditorDialogue::OnInitDialog()
 
 void TerrainEditorDialogue::PostNcDestroy()
 {
+	m_toolMain->windowOpen = false;
+
+	DestroyWindow();
+}
+
+void TerrainEditorDialogue::OnCancel()
+{
+	m_toolMain->windowOpen = false;
+
+	DestroyWindow();
 }
 
 
@@ -169,7 +179,7 @@ void TerrainEditorDialogue::SetData()
 
 	CButton *m_ctlCheck3 = (CButton*)GetDlgItem(ID_BUTTON40003);
 	CButton *m_ctlCheck4 = (CButton*)GetDlgItem(ID_BUTTON40004);
-	if (m_toolMain->m_terrainTool.m_terrainSculptMode == TerrainSculptMode::Hill)
+	if (m_toolMain->m_terrainTool.m_terrainSculptMode == VertexSculptMode::Hill)
 	{
 		m_ctlCheck3->SetCheck(1);
 		m_ctlCheck4->SetCheck(0);
@@ -202,6 +212,7 @@ void TerrainEditorDialogue::OnBnClickedButton40001()
 		m_toolMain->SavePreviousHeightmap();
 		m_toolMain->m_terrainTool.SetEnable(true);
 		m_toolMain->EnableTerrainText(true);
+		m_toolMain->m_terrainTool.m_terrainSculptMode = TerrainSculptMode::Vertex;
 	}
 	else if (ChkBox == BST_UNCHECKED)
 	{
@@ -245,7 +256,7 @@ void TerrainEditorDialogue::OnBnClickedButton40003()
 	m_ctlCheck3->SetCheck(1);
 	m_ctlCheck4->SetCheck(0);
 
-	m_toolMain->m_terrainTool.m_terrainSculptMode = TerrainSculptMode::Hill;
+	m_toolMain->m_terrainTool.m_vertexSculptMode = VertexSculptMode::Hill;
 }
 
 void TerrainEditorDialogue::OnBnClickedButton40004()
@@ -256,7 +267,7 @@ void TerrainEditorDialogue::OnBnClickedButton40004()
 	m_ctlCheck3->SetCheck(0);
 	m_ctlCheck4->SetCheck(1);
 
-	m_toolMain->m_terrainTool.m_terrainSculptMode = TerrainSculptMode::Plateau;
+	m_toolMain->m_terrainTool.m_vertexSculptMode = VertexSculptMode::Plateau;
 }
 
 void TerrainEditorDialogue::OnBnClickedButtonSAVEBUTTON()
