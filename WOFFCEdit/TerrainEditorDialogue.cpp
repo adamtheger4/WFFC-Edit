@@ -158,7 +158,7 @@ void TerrainEditorDialogue::SetText()
 void TerrainEditorDialogue::SetData()
 {
 	CButton *m_ctlCheck1 = (CButton*)GetDlgItem(ID_BUTTON40001);
-	if (m_toolMain->m_terrainTool.GetEnable())
+	if (m_toolMain->m_terrainTool.GetEnable() && m_toolMain->m_terrainTool.m_terrainSculptMode == TerrainSculptMode::Vertex)
 	{
 		m_ctlCheck1->SetCheck(1);
 	}
@@ -211,8 +211,9 @@ void TerrainEditorDialogue::OnBnClickedButton40001()
 	{
 		m_toolMain->SavePreviousHeightmap();
 		m_toolMain->m_terrainTool.SetEnable(true);
-		m_toolMain->EnableTerrainText(true);
 		m_toolMain->m_terrainTool.m_terrainSculptMode = TerrainSculptMode::Vertex;
+		m_toolMain->EnableTerrainText(true);
+	
 	}
 	else if (ChkBox == BST_UNCHECKED)
 	{
@@ -221,6 +222,7 @@ void TerrainEditorDialogue::OnBnClickedButton40001()
 
 		m_TerrainEditorConfirmDialogue.Create(IDD_DIALOG4);	//Start up modeless
 		m_TerrainEditorConfirmDialogue.ShowWindow(SW_SHOW);	//show modeless
+		m_TerrainEditorConfirmDialogue.m_terrainMode = TerrainSculptMode::Vertex;
 		m_TerrainEditorConfirmDialogue.m_toolMain = m_toolMain;
 
 		m_toolMain->windowOpen = true;
@@ -272,8 +274,11 @@ void TerrainEditorDialogue::OnBnClickedButton40004()
 
 void TerrainEditorDialogue::OnBnClickedButtonSAVEBUTTON()
 {
-	m_toolMain->SaveHeightmap();
-	m_toolMain->SavePreviousHeightmap();
+	if (m_toolMain->m_terrainTool.m_terrainSculptMode == TerrainSculptMode::Vertex)
+	{
+		m_toolMain->SaveHeightmap();
+		m_toolMain->SavePreviousHeightmap();
+	}
 }
 
 void TerrainEditorDialogue::OnDeltaSpin1(NMHDR *pNMHDR, LRESULT *pResult)

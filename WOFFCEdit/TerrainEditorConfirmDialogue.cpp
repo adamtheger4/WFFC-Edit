@@ -106,14 +106,28 @@ void TerrainEditorConfirmDialogue::OnBnClickedOk()
 
 void TerrainEditorConfirmDialogue::OnBnClickedButtonYes()
 {
-	m_toolMain->SaveHeightmap();
+	if (m_terrainMode == TerrainSculptMode::Vertex)
+	{
+		m_toolMain->SaveHeightmap();
+	}
+	else if (m_terrainMode == TerrainSculptMode::Paint)
+	{
+		m_toolMain->SaveTerrainTextures();
+	}
 
 	End();
 }
 
 void TerrainEditorConfirmDialogue::OnBnClickedButtonNo()
 {
-	m_toolMain->UndoHeightmapChanges();
+	if (m_terrainMode == TerrainSculptMode::Vertex)
+	{
+		m_toolMain->UndoHeightmapChanges();
+	}
+	else if (m_terrainMode == TerrainSculptMode::Paint)
+	{
+		m_toolMain->UndoTerrainPaintChanges();
+	}
 
 	End();
 }

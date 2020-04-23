@@ -27,12 +27,16 @@ protected:
 	afx_msg void End();		//kill the dialogue
 	afx_msg void Select();	//Item has been selected
 
-
+	std::vector<std::string> m_texLocations;
+	int m_currentSelection;
 
 	DECLARE_MESSAGE_MAP()
 public:
 
+	TerrainEditorConfirmDialogue m_TerrainEditorConfirmDialogue;
+
 	// Control variable for more efficient access of the listbox
+	CListBox m_listBox;
 	virtual BOOL OnInitDialog() override;
 	virtual void PostNcDestroy();
 	virtual void OnCancel();
@@ -51,6 +55,7 @@ public:
 	afx_msg void OnBnClickedButton40001();
 	afx_msg void OnBnClickedButtonSAVEBUTTON();
 	afx_msg void OnDeltaSpin1(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnLbnSelchangeTexlist();
 };
 
 

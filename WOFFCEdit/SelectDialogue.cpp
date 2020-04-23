@@ -90,6 +90,7 @@ BOOL SelectDialogue::OnInitDialog()
 
 void SelectDialogue::PostNcDestroy()
 {
+	DestroyWindow();
 }
 
 

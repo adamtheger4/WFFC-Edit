@@ -34,7 +34,6 @@ public:
 
 	TerrainEditorConfirmDialogue m_TerrainEditorConfirmDialogue;
 
-	// Control variable for more efficient access of the listbox
 	virtual BOOL OnInitDialog() override;
 	virtual void PostNcDestroy();
 	virtual void OnCancel();

@@ -11,6 +11,7 @@ BEGIN_MESSAGE_MAP(TerrainEditorPaintDialogue, CDialogEx)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_HEIGHTSPIN, &TerrainEditorPaintDialogue::OnDeltaSpin1)
 	ON_BN_CLICKED(ID_BUTTON40001, &TerrainEditorPaintDialogue::OnBnClickedButton40001)
 	ON_BN_CLICKED(SAVEBUTTON, &TerrainEditorPaintDialogue::OnBnClickedButtonSAVEBUTTON)
+	ON_LBN_SELCHANGE(IDC_TEXLIST, &TerrainEditorPaintDialogue::OnLbnSelchangeTexlist)
 END_MESSAGE_MAP()
 
 TerrainEditorPaintDialogue::TerrainEditorPaintDialogue(CWnd * pParent, ToolMain in_toolSystem)
@@ -33,7 +34,7 @@ TerrainEditorPaintDialogue::~TerrainEditorPaintDialogue()
 void TerrainEditorPaintDialogue::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	//DDX_Control(pDX, IDC_LIST1, m_listBox);
+	DDX_Control(pDX, IDC_TEXLIST, m_listBox);
 }
 
 void TerrainEditorPaintDialogue::End()
@@ -43,19 +44,19 @@ void TerrainEditorPaintDialogue::End()
 	DestroyWindow();	//destory the window properly.  INcluding the links and pointers created.  THis is so the dialogue can start again. 
 }
 
+void TerrainEditorPaintDialogue::Select()
+{
+	int index = m_listBox.GetCurSel();
+	CString currentSelectionValue;
+
+	m_listBox.GetText(index, currentSelectionValue);
+
+	m_currentSelection = _ttoi(currentSelectionValue);
+}
+
 BOOL TerrainEditorPaintDialogue::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
-
-	//uncomment for modal only
-/*	//roll through all the objects in the scene graph and put an entry for each in the listbox
-	int numSceneObjects = m_sceneGraph->size();
-	for (size_t i = 0; i < numSceneObjects; i++)
-	{
-		//easily possible to make the data string presented more complex. showing other columns.
-		std::wstring listBoxEntry = std::to_wstring(m_sceneGraph->at(i).ID);
-		m_listBox.AddString(listBoxEntry.c_str());
-	}*/
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
@@ -155,7 +156,7 @@ void TerrainEditorPaintDialogue::SetText()
 void TerrainEditorPaintDialogue::SetData()
 {
 	CButton *m_ctlCheck1 = (CButton*)GetDlgItem(ID_BUTTON40001);
-	if (m_toolMain->m_terrainTool.GetEnable())
+	if (m_toolMain->m_terrainTool.GetEnable() && m_toolMain->m_terrainTool.m_terrainSculptMode == TerrainSculptMode::Paint)
 	{
 		m_ctlCheck1->SetCheck(1);
 	}
@@ -163,37 +164,6 @@ void TerrainEditorPaintDialogue::SetData()
 	{
 		m_ctlCheck1->SetCheck(0);
 	}
-
-	CButton *m_ctlCheck2 = (CButton*)GetDlgItem(ID_BUTTON40002);
-	if (m_toolMain->m_terrainTool.smoothSculpt)
-	{
-		m_ctlCheck2->SetCheck(1);
-	}
-	else
-	{
-		m_ctlCheck2->SetCheck(0);
-	}
-
-	CButton *m_ctlCheck3 = (CButton*)GetDlgItem(ID_BUTTON40003);
-	CButton *m_ctlCheck4 = (CButton*)GetDlgItem(ID_BUTTON40004);
-	if (m_toolMain->m_terrainTool.m_terrainSculptMode == VertexSculptMode::Hill)
-	{
-		m_ctlCheck3->SetCheck(1);
-		m_ctlCheck4->SetCheck(0);
-	}
-	else
-	{
-		m_ctlCheck3->SetCheck(0);
-		m_ctlCheck4->SetCheck(1);
-	}
-
-	CString t;
-	t.Format(_T("%d"), (int)m_toolMain->m_terrainTool.GetManipulationOffset().y);
-
-	CWnd* pWnd = GetDlgItem(HEIGHTTEXT);
-	pWnd->SetWindowText(t);
-
-	m_toolMain->UpdateTerrainText();
 
 	m_toolMain->windowOpen = true;
 }
@@ -206,15 +176,21 @@ void TerrainEditorPaintDialogue::OnBnClickedButton40001()
 
 	if (ChkBox == BST_CHECKED)
 	{
-		m_toolMain->SavePreviousHeightmap();
+		m_toolMain->SavePreviousTerrainTextures();
+		m_toolMain->m_terrainTool.m_terrainSculptMode = TerrainSculptMode::Paint;
 		m_toolMain->m_terrainTool.SetEnable(true);
 		m_toolMain->EnableTerrainText(true);
-		m_toolMain->m_terrainTool.m_terrainSculptMode = TerrainSculptMode::Paint;
+
 	}
 	else if (ChkBox == BST_UNCHECKED)
 	{
 		m_toolMain->m_terrainTool.SetEnable(false);
 		m_toolMain->EnableTerrainText(false);
+
+		m_TerrainEditorConfirmDialogue.Create(IDD_DIALOG4);	//Start up modeless
+		m_TerrainEditorConfirmDialogue.ShowWindow(SW_SHOW);	//show modeless
+		m_TerrainEditorConfirmDialogue.m_terrainMode = TerrainSculptMode::Paint;
+		m_TerrainEditorConfirmDialogue.m_toolMain = m_toolMain;
 
 		m_toolMain->windowOpen = true;
 	}
@@ -225,8 +201,11 @@ void TerrainEditorPaintDialogue::OnBnClickedButton40001()
 
 void TerrainEditorPaintDialogue::OnBnClickedButtonSAVEBUTTON()
 {
-	m_toolMain->SaveHeightmap();
-	m_toolMain->SavePreviousHeightmap();
+	if (m_toolMain->m_terrainTool.m_terrainSculptMode == TerrainSculptMode::Paint)
+	{
+		m_toolMain->SaveTerrainTextures();
+		m_toolMain->SavePreviousTerrainTextures();
+	}
 }
 
 void TerrainEditorPaintDialogue::OnDeltaSpin1(NMHDR *pNMHDR, LRESULT *pResult)
@@ -244,4 +223,12 @@ void TerrainEditorPaintDialogue::OnDeltaSpin1(NMHDR *pNMHDR, LRESULT *pResult)
 	pWnd->SetWindowText(t);
 
 	m_toolMain->UpdateTerrainText();
+}
+
+void TerrainEditorPaintDialogue::OnLbnSelchangeTexlist()
+{
+	// TODO: Add your control notification handler code here
+	CListBox *m_listBox = (CListBox*)GetDlgItem(IDC_TEXLIST);
+
+
 }

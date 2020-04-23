@@ -40,6 +40,11 @@ public: //methods
 	void SavePreviousHeightmap();
 	void UndoHeightmapChanges();
 
+	void LoadTextureLocations();
+	void SaveTerrainTextures();
+	void SavePreviousTerrainTextures();
+	void UndoTerrainPaintChanges();
+
 public:	//variables
 	//std::vector<SceneObject>    m_sceneGraph;	
 

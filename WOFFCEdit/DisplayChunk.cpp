@@ -1,4 +1,6 @@
 #include <string>
+#include <sstream>
+#include <fstream> 
 #include "DisplayChunk.h"
 #include "Game.h"
 
@@ -90,6 +92,8 @@ void DisplayChunk::InitialiseBatch()
 		}
 	}
 	CalculateTerrainNormals();
+
+	LoadAllTextures();
 	
 }
 
@@ -153,7 +157,6 @@ void DisplayChunk::LoadHeightMap(std::shared_ptr<DX::DeviceResources>  DevResour
 
 void DisplayChunk::SaveHeightMap()
 {
-	//SavePrevHeightmap();
 	UpdateHeightmap();
 	
 	FILE *pFile = NULL;
@@ -171,6 +174,72 @@ void DisplayChunk::SaveHeightMap()
 	fwrite(m_heightMap, 1, TERRAINRESOLUTION*TERRAINRESOLUTION, pFile);
 	fclose(pFile);
 	
+}
+
+void DisplayChunk::SaveAllTextures()
+{
+	SaveTexture("database/terrain.csv", m_terrain);
+}
+
+void DisplayChunk::SaveTexture(std::string path, std::vector<std::pair<int, int>> inTerrain)
+{
+	std::ofstream f(path);
+
+	for (int i = 0; i < inTerrain.size(); i++)
+	{
+		f << inTerrain[i].first << ",";
+		f << inTerrain[i].second << "\n";
+	}
+
+	f.close();
+}
+
+void DisplayChunk::LoadAllTextures()
+{
+	LoadTexture("database/terrain.csv", m_terrain);
+}
+
+void DisplayChunk::LoadTexture(std::string path, std::vector<std::pair<int, int>>& inTerrain)
+{
+	std::ifstream f(path);
+
+	std::string line;
+	while (std::getline(f, line))
+	{
+		std::pair<int, int> p; // current row/column
+		
+		while (getline(f, line)) //Read the file line by line
+		{
+			std::stringstream ss(line);
+			
+			//Cell Row
+			std::string x;
+			getline(ss, x, ',');
+			std::stringstream(x) >> p.first;
+			
+			//Cell Column
+			std::string y;
+			getline(ss, y);
+			std::stringstream(y) >> p.second;
+
+			inTerrain.push_back(p);
+		}
+	}
+
+	f.close();
+	
+	for (int i = 0; i < path.size(); i++)
+	{
+		if (path[i] == '.')
+		{
+			path.insert(i, "l");
+			break;
+		}
+	}
+
+	std::ofstream outF(path);
+	outF << path;
+	outF.close();
 }
 
 void DisplayChunk::UpdateTerrain()
@@ -262,6 +331,11 @@ void DisplayChunk::SavePrevHeightmap()
 	}
 }
 
+void DisplayChunk::SavePrevTerrainTexture()
+{
+	m_prevTerrain = m_terrain;
+}
+
 void DisplayChunk::HeightmapUndo()
 {
 	//all this is doing is transferring the height from the terrain geometry into the heightmap.
@@ -277,6 +351,11 @@ void DisplayChunk::HeightmapUndo()
 
 	UpdateTerrain();
 	CalculateTerrainNormals();
+}
+
+void DisplayChunk::TerrainPaintUndo()
+{
+	m_terrain = m_prevTerrain;
 }
 
 void DisplayChunk::DrawTerrain(std::vector<std::pair<int, int>> inTerrain)

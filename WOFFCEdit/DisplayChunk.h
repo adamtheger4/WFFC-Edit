@@ -40,10 +40,16 @@ public:
 	void PaintTerrain(int row, int column);
 
 	void SavePrevHeightmap();
+	void SavePrevTerrainTexture();
 
 	void CalculateTerrainNormals();
 
+	void SaveAllTextures();
+	void SaveTexture(std::string path, std::vector<std::pair<int, int>> inTerrain); //saves the textures to file.
+	void LoadAllTextures();
+	void LoadTexture(std::string path, std::vector<std::pair<int, int>> &inTerrain);
 	void HeightmapUndo();
+	void TerrainPaintUndo();
 
 	void DrawTerrain(std::vector<std::pair<int, int>> inTerrain);
 
@@ -52,6 +58,7 @@ public:
 private:
 	
 	std::vector<std::pair<int, int>> m_terrain;
+	std::vector<std::pair<int, int>> m_prevTerrain;
 
 	DirectX::VertexPositionNormalTexture m_terrainGeometry[TERRAINRESOLUTION][TERRAINRESOLUTION];
 

@@ -299,34 +299,14 @@ void ToolMain::onActionSaveTerrain()
 
 void ToolMain::Tick(MSG *msg)
 {
-	//do we have a selection
-	
-	//do we have a mode
-	//are we clicking / dragging /releasing
-
-	//has something changed
-		//update Scenegraph
-		//add to scenegraph
-		//resend scenegraph to Direct X renderer
-
-
-	//Set cursor position to screen centre whilst mouse controls active.
-	//if (m_toolInputCommands.mouseControls)
-	//{
-	//	SetCursorPos(WindowRECT.CenterPoint().x, WindowRECT.CenterPoint().y);
-	//}
-
 	m_mouseTool.Update(msg, WindowRECT);
-
-	//MouseUpdate();
 
 	//Renderer Update Call
 	m_d3dRenderer.Tick(&m_toolInputCommands);	
 
-	//Destroy any objects marked to be.
+	//Destroy any objects marked to be destroyed at the end of this tick.
 	if(bDoDestroy)
-	DestroyObjects();
-	
+	DestroyObjects();	
 }
 
 void ToolMain::UpdateInput(MSG * msg)
@@ -355,10 +335,12 @@ void ToolMain::UpdateInput(MSG * msg)
 		break; 
 
 	case WM_LBUTTONDOWN:  //mouse button down
-		m_mouseTool.LDown(msg);
+		if(!windowOpen)
+			m_mouseTool.LDown(msg);
 		break;
 
 	case WM_LBUTTONUP:	  //mouse button up
+
 		m_mouseTool.LUp(msg);
 
 		SaveLastAction();
@@ -560,6 +542,15 @@ void ToolMain::EnableTerrainText(bool enable)
 	{
 		m_d3dRenderer.showTerrainText = true;
 		m_d3dRenderer.renderAxisArrows = false;
+
+		if (m_terrainTool.m_terrainSculptMode == TerrainSculptMode::Vertex)
+		{
+			m_d3dRenderer.vertexPaint = true;
+		}
+		else
+		{
+			m_d3dRenderer.vertexPaint = false;
+		}
 	}
 	else
 	{
@@ -569,8 +560,15 @@ void ToolMain::EnableTerrainText(bool enable)
 
 void ToolMain::UpdateTerrainText()
 {
-	m_d3dRenderer.debug1 = m_terrainTool.GetSculptType();
-	m_d3dRenderer.debug2 = m_terrainTool.GetManipulationOffset().y;
+	if (m_terrainTool.m_terrainSculptMode == TerrainSculptMode::Vertex)
+	{
+		m_d3dRenderer.debug1 = m_terrainTool.GetSculptType();
+		m_d3dRenderer.debug2 = m_terrainTool.GetManipulationOffset().y;
+	}
+	else if (m_terrainTool.m_terrainSculptMode == TerrainSculptMode::Paint)
+	{
+	
+	}
 }
 
 void ToolMain::SaveHeightmap()
@@ -586,6 +584,25 @@ void ToolMain::SavePreviousHeightmap()
 void ToolMain::UndoHeightmapChanges()
 {
 	m_d3dRenderer.UndoHeightmapChanges();
+}
+
+void ToolMain::LoadTextureLocations()
+{
+}
+
+void ToolMain::SaveTerrainTextures()
+{
+	m_d3dRenderer.SaveTerrainTextures();
+}
+
+void ToolMain::SavePreviousTerrainTextures()
+{
+	m_d3dRenderer.SavePreviousTerrainPaint();
+}
+
+void ToolMain::UndoTerrainPaintChanges()
+{
+	m_d3dRenderer.UndoTerrainPaintChanges();
 }
 
 void ToolMain::DeleteObjects(std::vector<int> objectIDs)

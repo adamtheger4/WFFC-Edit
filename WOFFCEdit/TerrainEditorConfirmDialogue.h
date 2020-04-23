@@ -35,6 +35,8 @@ public:
 
 	ToolMain* m_toolMain;
 
+	TerrainSculptMode m_terrainMode;
+
 	afx_msg void OnBnClickedButtonYes();
 	afx_msg void OnBnClickedButtonNo();
 };

@@ -72,9 +72,13 @@ public:
 
 	//Save/Undo changes made by terrain tool.
 	void UpdateDisplayChunkNormals();
-	void SavePreviousHeightmap();
 	void SaveHeightmap();
+	void SavePreviousHeightmap();
 	void UndoHeightmapChanges();
+
+	void SaveTerrainTextures();
+	void SavePreviousTerrainPaint();
+	void UndoTerrainPaintChanges();
 
 	//Object Manipulation
 	inline DirectX::SimpleMath::Vector3 GetDisplayObjPos(int objID) { return m_displayList[objID].m_position; };
@@ -114,6 +118,7 @@ public:
 
 	bool showObjText = false;
 	bool showTerrainText = false;
+	bool vertexPaint = true;
 	std::vector<Quad> m_terrainToolCursor;
 
 	float debug1;

@@ -42,7 +42,8 @@ private:
 	afx_msg void MenuFileSaveTerrain();
 	afx_msg void MenuEditSelect();
 	afx_msg void SetAxisSnapValues();
-	afx_msg void OpenTerrainDialogue();
+	afx_msg void OpenTerrainVertexDialogue();
+	afx_msg void OpenTerrainPaintDialogue();
 	afx_msg	void ToolBarButton1();
 	afx_msg	inline void SetToolManipTypePos() { m_ToolSystem.m_mouseTool.m_manipType = ManipulationType::Position;}
 	afx_msg	inline void SetToolManipTypeRot() { m_ToolSystem.m_mouseTool.m_manipType = ManipulationType::Rotation;}

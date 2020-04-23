@@ -238,22 +238,30 @@ void Game::Render()
 	
 	if (showTerrainText)
 	{
-		std::wstring controls = L"Dig: (Hold CTRL), Flatten: (Hold SHIFT)";
-		m_font->DrawString(m_sprites.get(), controls.c_str(), XMFLOAT2(580, 40), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+		if (vertexPaint)
+		{
+			std::wstring controls = L"Dig: (Hold CTRL), Flatten: (Hold SHIFT)";
+			m_font->DrawString(m_sprites.get(), controls.c_str(), XMFLOAT2(580, 40), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
 
-		std::wstring flattenEnabled = L"Sculpt Type: ";
-		if (debug1 == 1) flattenEnabled += L"Dig";
-		else if (debug1 == 2) flattenEnabled += L"Flatten";
-		else flattenEnabled += L"Add";
-		m_font->DrawString(m_sprites.get(), flattenEnabled.c_str(), XMFLOAT2(580, 70), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+			std::wstring flattenEnabled = L"Sculpt Type: ";
+			if (debug1 == 1) flattenEnabled += L"Dig";
+			else if (debug1 == 2) flattenEnabled += L"Flatten";
+			else flattenEnabled += L"Add";
+			m_font->DrawString(m_sprites.get(), flattenEnabled.c_str(), XMFLOAT2(580, 70), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
 
-		std::wstring terrainEditor = L"Terrain Editor Height Offset: " + std::to_wstring(debug2);
-		terrainEditor.pop_back();
-		terrainEditor.pop_back();
-		terrainEditor.pop_back();
-		terrainEditor.pop_back();
-		terrainEditor.pop_back();
-		m_font->DrawString(m_sprites.get(), terrainEditor.c_str(), XMFLOAT2(580, 10), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+			std::wstring terrainEditor = L"Terrain Editor Height Offset: " + std::to_wstring(debug2);
+			terrainEditor.pop_back();
+			terrainEditor.pop_back();
+			terrainEditor.pop_back();
+			terrainEditor.pop_back();
+			terrainEditor.pop_back();
+			m_font->DrawString(m_sprites.get(), terrainEditor.c_str(), XMFLOAT2(580, 10), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+		}
+		else
+		{
+			std::wstring terrainEditor = L"Terrain Paint Tool: ";
+			m_font->DrawString(m_sprites.get(), terrainEditor.c_str(), XMFLOAT2(580, 10), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+		}
 	}
 	else if (showObjText)
 	{
@@ -269,8 +277,8 @@ void Game::Render()
 	}
 
 
-	std::wstring DebugT = L"Debug: " + std::to_wstring(debug3);
-	m_font->DrawString(m_sprites.get(), DebugT.c_str(), XMFLOAT2(580, 120), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+	//std::wstring DebugT = L"Debug: " + std::to_wstring(debug3);
+	//m_font->DrawString(m_sprites.get(), DebugT.c_str(), XMFLOAT2(580, 120), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
 
 	m_sprites->End();
 
@@ -905,6 +913,21 @@ void Game::SaveHeightmap()
 void Game::UndoHeightmapChanges()
 {
 	m_displayChunk.HeightmapUndo();
+}
+
+void Game::SaveTerrainTextures()
+{
+	m_displayChunk.SaveAllTextures();
+}
+
+void Game::SavePreviousTerrainPaint()
+{
+	m_displayChunk.SavePrevTerrainTexture();
+}
+
+void Game::UndoTerrainPaintChanges()
+{
+	m_displayChunk.TerrainPaintUndo();
 }
 
 #ifdef DXTK_AUDIO
