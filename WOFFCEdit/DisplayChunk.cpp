@@ -94,7 +94,15 @@ void DisplayChunk::InitialiseBatch()
 	CalculateTerrainNormals();
 
 	LoadAllTextures();
-	
+}
+
+void DisplayChunk::InitTerrainLayers(int numLayers)
+{
+	for (int i = 0; i < numLayers; i++)
+	{
+		TerrainType t;
+		m_terrains.push_back(t);
+	}
 }
 
 void DisplayChunk::LoadHeightMap(std::shared_ptr<DX::DeviceResources>  DevResources)
@@ -369,4 +377,28 @@ void DisplayChunk::DrawTerrain(std::vector<std::pair<int, int>> inTerrain)
 			m_terrainGeometry[inTerrain[i].first + 1][inTerrain[i].second]		
 		);
 	}
+}
+
+void DisplayChunk::SetTerrainLayerTexture(ID3D11ShaderResourceView * texture, int texIndex)
+{
+	m_terrains[m_terrainIndex].texture_diffuse = texture;
+	m_terrains[m_terrainIndex].texIndex = texIndex;
+}
+
+void DisplayChunk::SetTerrainLayerTerrain(std::vector<std::pair<int, int>> terrain)
+{
+	m_terrains[m_terrainIndex].terrain = terrain;
+}
+
+void DisplayChunk::SetTerrainLayerIndex(int index)
+{
+	if (index < m_terrains.size())
+	{
+		m_terrainIndex = index;
+	}
+}
+
+int DisplayChunk::GetTerrainLayerTexIndex()
+{
+	return m_terrains[m_terrainIndex].texIndex;
 }

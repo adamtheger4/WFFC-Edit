@@ -56,7 +56,7 @@ void Game::Initialize(HWND window, int width, int height)
     m_deviceResources->CreateWindowSizeDependentResources();
     CreateWindowSizeDependentResources();
 
-	m_displayChunk.m_terrainPaintDiffuse = LoadTextureToPaint("database/data/terraintextures/rock.dds");
+	//m_displayChunk.m_terrainPaintDiffuse = LoadTextureToPaint("database/data/terraintextures/rock.dds");
 
 #ifdef DXTK_AUDIO
     // Create DirectXTK for Audio objects
@@ -430,7 +430,7 @@ void Game::DrawTerrainToolCursor()
 	m_batch->End();
 }
 
-ID3D11ShaderResourceView*  Game::LoadTextureToPaint(std::string inTexturePath)
+ID3D11ShaderResourceView*  Game::LoadTextureToPaint(std::string inTexturePath, int textureIndex)
 {
 	ID3D11ShaderResourceView* texture;
 
@@ -440,8 +440,24 @@ ID3D11ShaderResourceView*  Game::LoadTextureToPaint(std::string inTexturePath)
 	rs = CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), texturewstr.c_str(), NULL, &texture);	//load tex into Shader resource	view and resource
 
 	m_displayChunk.m_terrainPaintDiffuse = texture;
+	m_displayChunk.SetTerrainLayerTexture(texture, textureIndex);
 
 	return texture;
+}
+
+void Game::SetTerrainPaintLayer(int layerIndex)
+{
+	m_displayChunk.SetTerrainLayerIndex(layerIndex);
+}
+
+int Game::GetTerrainLayerIndex()
+{
+	return m_displayChunk.GetTerrainLayerIndex();
+}
+
+int Game::GetTerrainLayerTexIndex()
+{
+	return m_displayChunk.GetTerrainLayerTexIndex();
 }
 
 std::vector<Quad> Game::BoxToQuads(DirectX::SimpleMath::Vector3 center, DirectX::SimpleMath::Vector3 extents)
@@ -915,6 +931,11 @@ void Game::SaveHeightmap()
 void Game::UndoHeightmapChanges()
 {
 	m_displayChunk.HeightmapUndo();
+}
+
+void Game::InitTerrainLayers(int numLayers)
+{
+	m_displayChunk.InitTerrainLayers(numLayers);
 }
 
 void Game::SaveTerrainTextures()

@@ -14,6 +14,13 @@ struct RayToDisplayChunkReturn
 	bool did_hit = false;
 };
 
+struct TerrainType
+{
+	std::vector<std::pair<int, int>>	terrain;
+	ID3D11ShaderResourceView *			texture_diffuse;
+	int									texIndex;
+};
+
 class DisplayChunk
 {
 public:
@@ -22,6 +29,7 @@ public:
 	void PopulateChunkData(ChunkObject * SceneChunk);
 	void RenderBatch(std::shared_ptr<DX::DeviceResources>  DevResources);
 	void InitialiseBatch();	//initial setup, base coordinates etc based on scale
+	void InitTerrainLayers(int numLayers);
 	void LoadHeightMap(std::shared_ptr<DX::DeviceResources>  DevResources);
 	void SaveHeightMap();			//saves the heigtmap back to file.
 	void UpdateTerrain();			//updates the geometry based on the heigtmap
@@ -55,10 +63,23 @@ public:
 
 	ID3D11ShaderResourceView*	m_terrainPaintDiffuse;
 
+	void SetTerrainLayerTexture(ID3D11ShaderResourceView* texture, int texIndex);
+	void SetTerrainLayerTerrain(std::vector<std::pair<int, int>> terrain);
+	void SetTerrainLayerIndex(int index);
+	inline int GetTerrainLayerIndex() { return m_terrainIndex; }
+	int GetTerrainLayerTexIndex();
+
+	std::vector<TerrainType> m_terrains;
+	std::vector<TerrainType> m_prevTerrains;
+
 private:
 	
 	std::vector<std::pair<int, int>> m_terrain;
 	std::vector<std::pair<int, int>> m_prevTerrain;
+
+	int m_terrainIndex = 0;
+
+
 
 	DirectX::VertexPositionNormalTexture m_terrainGeometry[TERRAINRESOLUTION][TERRAINRESOLUTION];
 

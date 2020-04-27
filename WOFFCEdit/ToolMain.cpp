@@ -44,8 +44,6 @@ void ToolMain::onActionInitialise(HWND handle, int width, int height)
 	m_toolHandle = handle;
 	GetWindowRect(m_toolHandle, &WindowRECT);
 
-	//m_terrainTool.LoadAllTexturePaths();
-
 	//database connection establish
 	int rc;
 	rc = sqlite3_open_v2("database/test.db",&m_databaseConnection, SQLITE_OPEN_READWRITE, NULL);
@@ -76,6 +74,9 @@ void ToolMain::onActionLoad()
 	}
 
 	m_terrainTool.LoadAllTexturePaths();
+
+	//Init a terrain layer for each texture loaded.
+	m_d3dRenderer.InitTerrainLayers(m_terrainTool.m_terrainTexturePaths.GetSize());
 
 	//SQL
 	int rc;
@@ -590,9 +591,9 @@ void ToolMain::UndoHeightmapChanges()
 	m_d3dRenderer.UndoHeightmapChanges();
 }
 
-void ToolMain::LoadTextureToPaint(std::string inPath)
+void ToolMain::LoadTextureToPaint(std::string inPath, int texIndex)
 {
-	m_d3dRenderer.LoadTextureToPaint(inPath);
+	m_d3dRenderer.LoadTextureToPaint(inPath, texIndex);
 }
 
 void ToolMain::SaveTerrainTextures()
@@ -603,6 +604,21 @@ void ToolMain::SaveTerrainTextures()
 void ToolMain::SavePreviousTerrainTextures()
 {
 	m_d3dRenderer.SavePreviousTerrainPaint();
+}
+
+void ToolMain::SetTerrainLayerIndex(int index)
+{
+	m_d3dRenderer.SetTerrainPaintLayer(index);
+}
+
+int ToolMain::GetTerrainLayerTextureIndex()
+{
+	return m_d3dRenderer.GetTerrainLayerTexIndex();
+}
+
+int ToolMain::GetTerrainLayerIndex()
+{
+	return m_d3dRenderer.GetTerrainLayerIndex();
 }
 
 void ToolMain::UndoTerrainPaintChanges()

@@ -8,7 +8,7 @@ IMPLEMENT_DYNAMIC(TerrainEditorPaintDialogue, CDialogEx)
 BEGIN_MESSAGE_MAP(TerrainEditorPaintDialogue, CDialogEx)
 	ON_COMMAND(IDOK, &TerrainEditorPaintDialogue::End)					//ok button
 	ON_BN_CLICKED(IDOK, &TerrainEditorPaintDialogue::End)
-	ON_NOTIFY(UDN_DELTAPOS, IDC_HEIGHTSPIN, &TerrainEditorPaintDialogue::OnDeltaSpin1)
+	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN1, &TerrainEditorPaintDialogue::OnDeltaSpin1)
 	ON_BN_CLICKED(ID_BUTTON40001, &TerrainEditorPaintDialogue::OnBnClickedButton40001)
 	ON_BN_CLICKED(SAVEBUTTON, &TerrainEditorPaintDialogue::OnBnClickedButtonSAVEBUTTON)
 	ON_LBN_SELCHANGE(IDC_TEXLIST, &TerrainEditorPaintDialogue::OnLbnSelchangeTexlist)
@@ -50,7 +50,6 @@ void TerrainEditorPaintDialogue::Select()
 	CString currentSelectionValue;
 
 	m_listBox.GetText(index, currentSelectionValue);
-
 	m_currentSelection = _ttoi(currentSelectionValue);
 }
 
@@ -173,6 +172,13 @@ void TerrainEditorPaintDialogue::SetData()
 		m_listBox.AddString(m_toolMain->m_terrainTool.m_terrainTexturePaths.GetAt(i));
 	}
 
+	//Set the text that displays the current terrain layer
+	CString t;
+	t.Format(_T("%d"), m_toolMain->GetTerrainLayerIndex());
+
+	CWnd* pWnd = GetDlgItem(LAYERTEXT);
+	pWnd->SetWindowText(t);
+
 	m_toolMain->windowOpen = true;
 }
 
@@ -222,15 +228,15 @@ void TerrainEditorPaintDialogue::OnDeltaSpin1(NMHDR *pNMHDR, LRESULT *pResult)
 	// TODO: Add your control notification handler code here
 	*pResult = 0;
 
-	m_toolMain->m_terrainTool.SetManipulationOffset(DirectX::XMFLOAT3{ m_toolMain->m_terrainTool.GetManipulationOffset().x, m_toolMain->m_terrainTool.GetManipulationOffset().y - pNMUpDown->iDelta, m_toolMain->m_terrainTool.GetManipulationOffset().z });
+	m_toolMain->SetTerrainLayerIndex(m_toolMain->GetTerrainLayerIndex() - pNMUpDown->iDelta);
 
 	CString t;
-	t.Format(_T("%d"), (int)m_toolMain->m_terrainTool.GetManipulationOffset().y);
+	t.Format(_T("%d"), m_toolMain->GetTerrainLayerIndex());
 
-	CWnd* pWnd = GetDlgItem(HEIGHTTEXT);
+	CWnd* pWnd = GetDlgItem(LAYERTEXT);
 	pWnd->SetWindowText(t);
 
-	m_toolMain->UpdateTerrainText();
+	m_listBox.SetCurSel(m_toolMain->GetTerrainLayerTextureIndex());
 }
 
 void TerrainEditorPaintDialogue::OnLbnSelchangeTexlist()
@@ -238,7 +244,6 @@ void TerrainEditorPaintDialogue::OnLbnSelchangeTexlist()
 	int index = m_listBox.GetCurSel();
 
 	CString currentSelectionValue;
-
 	m_listBox.GetText(index, currentSelectionValue);
 
 	//Append the directory to the selected file.
@@ -251,5 +256,5 @@ void TerrainEditorPaintDialogue::OnLbnSelchangeTexlist()
 	std::string s(ConvertedAnsiString);
 
 	m_toolMain->m_terrainTool.m_paintTexturePath = s;
-	m_toolMain->LoadTextureToPaint(s);
+	m_toolMain->LoadTextureToPaint(s, index);
 }

@@ -1,12 +1,6 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(391,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Win32SimpleSample.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  Game.cpp
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(192): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(191): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(190): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(268): warning C4018: '<': signed/unsigned mismatch
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(225): warning C4101: 'Buffer': unreferenced local variable
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(371): warning C4018: '<': signed/unsigned mismatch
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(420): warning C4018: '<': signed/unsigned mismatch
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(722): warning C4018: '<': signed/unsigned mismatch
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(724): warning C4018: '<': signed/unsigned mismatch
+  TerrainEditorPaintDialogue.cpp
+  _WIN32_WINNT not defined. Defaulting to _WIN32_WINNT_MAXVER (see WinSDKVer.h)
+c:\users\adamt\documents\github\wffc-edit\woffcedit\resource.h(43): warning C4005: 'IDC_STATIC': macro redefinition
+  c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\atlmfc\include\afxres.h(343): note: see previous definition of 'IDC_STATIC'
   Win32SimpleSample.vcxproj -> C:\Users\adamt\Documents\GitHub\WFFC-Edit\WOFFCEdit\Debug\WoFEdit.exe

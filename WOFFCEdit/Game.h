@@ -67,7 +67,6 @@ public:
 	void SmoothSculptTerrain(int row, int column, DirectX::XMFLOAT3 offset, int sculptMode);
 	void PaintTerrain(int row, int column);
 
-	ID3D11ShaderResourceView* LoadTextureToPaint(std::string inTexturePath);
 
 	//Save/Undo changes made by terrain tool.
 	void UpdateDisplayChunkNormals();
@@ -75,9 +74,14 @@ public:
 	void SavePreviousHeightmap();
 	void UndoHeightmapChanges();
 
+	void InitTerrainLayers(int numLayers);
 	void SaveTerrainTextures();
 	void SavePreviousTerrainPaint();
 	void UndoTerrainPaintChanges();
+	ID3D11ShaderResourceView* LoadTextureToPaint(std::string inTexturePath, int textureIndex);
+	void SetTerrainPaintLayer(int layerIndex);
+	int GetTerrainLayerIndex();
+	int GetTerrainLayerTexIndex();
 
 	//Object Manipulation
 	inline DirectX::SimpleMath::Vector3 GetDisplayObjPos(int objID) { return m_displayList[objID].m_position; };
