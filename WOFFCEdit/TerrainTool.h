@@ -5,9 +5,15 @@
 
 enum VertexSculptType
 {
-	Add,
+	Raise,
 	Dig,
 	Flatten
+};
+
+enum VertexPaintType
+{
+	RemovePaint,
+	AddPaint	
 };
 
 enum VertexSculptMode
@@ -40,6 +46,7 @@ public:
 
 	TerrainSculptMode m_terrainSculptMode = TerrainSculptMode::Paint;
 	VertexSculptMode m_vertexSculptMode = VertexSculptMode::Hill;
+
 	
 	inline bool	 GetEnable()	{ return Enabled; }
 	inline VertexSculptType GetSculptType()	{ return m_sculptType; }
@@ -48,6 +55,9 @@ public:
 	inline void SetEnable(bool do_enable) { Enabled = do_enable; }
 	inline void SetSculptType(VertexSculptType sculptType) { m_sculptType = sculptType; }
 	inline void SetManipulationOffset (DirectX::XMFLOAT3 offset){ manipulationOffset = offset; }
+
+	inline VertexPaintType GetPaintType() { return m_paintType; }
+	inline void SetPaintType(VertexPaintType paintType) { m_paintType = paintType; }
 ;
 	void LoadAllTexturePaths();
 
@@ -57,7 +67,8 @@ public:
 private:
 
 	bool	Enabled = false; // Can use tool
-	VertexSculptType m_sculptType = VertexSculptType::Add;
+	VertexSculptType m_sculptType = VertexSculptType::Raise;
+	VertexPaintType m_paintType = VertexPaintType::AddPaint;
 	DirectX::XMFLOAT3 manipulationOffset;
 };
 

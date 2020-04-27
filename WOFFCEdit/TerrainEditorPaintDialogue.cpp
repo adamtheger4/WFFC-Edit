@@ -10,6 +10,7 @@ BEGIN_MESSAGE_MAP(TerrainEditorPaintDialogue, CDialogEx)
 	ON_BN_CLICKED(IDOK, &TerrainEditorPaintDialogue::End)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN1, &TerrainEditorPaintDialogue::OnDeltaSpin1)
 	ON_BN_CLICKED(ID_BUTTON40001, &TerrainEditorPaintDialogue::OnBnClickedButton40001)
+	ON_BN_CLICKED(IDC_DELBUTTON, &TerrainEditorPaintDialogue::OnBnClickedDELBUTTON)
 	ON_BN_CLICKED(SAVEBUTTON, &TerrainEditorPaintDialogue::OnBnClickedButtonSAVEBUTTON)
 	ON_LBN_SELCHANGE(IDC_TEXLIST, &TerrainEditorPaintDialogue::OnLbnSelchangeTexlist)
 END_MESSAGE_MAP()
@@ -179,6 +180,8 @@ void TerrainEditorPaintDialogue::SetData()
 	CWnd* pWnd = GetDlgItem(LAYERTEXT);
 	pWnd->SetWindowText(t);
 
+	m_listBox.SetCurSel(m_toolMain->GetTerrainLayerTextureIndex());
+
 	m_toolMain->windowOpen = true;
 }
 
@@ -211,6 +214,11 @@ void TerrainEditorPaintDialogue::OnBnClickedButton40001()
 
 	m_toolMain->UpdateTerrainText();
 	// TODO: Add your control notification handler code here
+}
+
+void TerrainEditorPaintDialogue::OnBnClickedDELBUTTON()
+{
+	m_toolMain->DeleteCurrentTextureLayer();
 }
 
 void TerrainEditorPaintDialogue::OnBnClickedButtonSAVEBUTTON()

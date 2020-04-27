@@ -56,8 +56,6 @@ void Game::Initialize(HWND window, int width, int height)
     m_deviceResources->CreateWindowSizeDependentResources();
     CreateWindowSizeDependentResources();
 
-	//m_displayChunk.m_terrainPaintDiffuse = LoadTextureToPaint("database/data/terraintextures/rock.dds");
-
 #ifdef DXTK_AUDIO
     // Create DirectXTK for Audio objects
     AUDIO_ENGINE_FLAGS eflags = AudioEngine_Default;
@@ -261,6 +259,11 @@ void Game::Render()
 		{
 			std::wstring terrainEditor = L"Terrain Paint Tool: ";
 			m_font->DrawString(m_sprites.get(), terrainEditor.c_str(), XMFLOAT2(580, 10), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+
+			std::wstring paintType = L"Paint Type: ";
+			if (debug1 == 1) paintType += L"Add";
+			else if (debug1 == 0) paintType += L"Remove";
+			m_font->DrawString(m_sprites.get(), paintType.c_str(), XMFLOAT2(580, 70), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
 		}
 	}
 	else if (showObjText)
@@ -439,8 +442,7 @@ ID3D11ShaderResourceView*  Game::LoadTextureToPaint(std::string inTexturePath, i
 	HRESULT rs;
 	rs = CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), texturewstr.c_str(), NULL, &texture);	//load tex into Shader resource	view and resource
 
-	m_displayChunk.m_terrainPaintDiffuse = texture;
-	m_displayChunk.SetTerrainLayerTexture(texture, textureIndex);
+	m_displayChunk.SetTerrainLayerTexture(texture, inTexturePath, textureIndex);
 
 	return texture;
 }
@@ -908,9 +910,9 @@ void Game::SmoothSculptTerrain(int row, int column, DirectX::XMFLOAT3 offset, in
 	}
 }
 
-void Game::PaintTerrain(int row, int column)
+void Game::PaintTerrain(int row, int column, bool add)
 {
-	m_displayChunk.PaintTerrain(row, column);
+	m_displayChunk.PaintTerrain(row, column, add);
 }
 
 void Game::UpdateDisplayChunkNormals()
@@ -936,11 +938,25 @@ void Game::UndoHeightmapChanges()
 void Game::InitTerrainLayers(int numLayers)
 {
 	m_displayChunk.InitTerrainLayers(numLayers);
+	m_displayChunk.LoadAllTextures();
+
+	for (int i = 0; i < m_displayChunk.m_terrains.size(); i++)
+	{
+		SetTerrainPaintLayer(i);
+		LoadTextureToPaint(m_displayChunk.m_terrains[i].texPath, m_displayChunk.m_terrains[i].texIndex);
+	}
+
+	SetTerrainPaintLayer(0);
 }
 
 void Game::SaveTerrainTextures()
 {
 	m_displayChunk.SaveAllTextures();
+}
+
+void Game::DeleteCurrentTextureLayer()
+{
+	m_displayChunk.DeleteLayer();
 }
 
 void Game::SavePreviousTerrainPaint()

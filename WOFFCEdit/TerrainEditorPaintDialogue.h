@@ -53,6 +53,7 @@ public:
 	void SetData();
 
 	afx_msg void OnBnClickedButton40001();
+	afx_msg void OnBnClickedDELBUTTON();
 	afx_msg void OnBnClickedButtonSAVEBUTTON();
 	afx_msg void OnDeltaSpin1(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnLbnSelchangeTexlist();

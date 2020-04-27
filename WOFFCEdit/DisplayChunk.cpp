@@ -63,13 +63,25 @@ void DisplayChunk::RenderBatch(std::shared_ptr<DX::DeviceResources>  DevResource
 	}
 	m_batch->End();
 
-	if (m_terrain.size() > 0)
+	/*if (m_terrain.size() > 0)
 	{
 		m_batch->Begin();
 		m_terrainEffect->SetTexture(m_terrainPaintDiffuse);
 		m_terrainEffect->Apply(context);
 		DrawTerrain(m_terrain);
 		m_batch->End();
+	}*/
+
+	if (m_terrains.size() > 0)
+	{
+		for (int i = 0; i < m_terrains.size(); i++)
+		{
+			m_batch->Begin();
+			m_terrainEffect->SetTexture(m_terrains[i].texture_diffuse);
+			m_terrainEffect->Apply(context);
+			DrawTerrain(m_terrains[i].terrain);
+			m_batch->End();
+		}
 	}
 
 }
@@ -92,8 +104,6 @@ void DisplayChunk::InitialiseBatch()
 		}
 	}
 	CalculateTerrainNormals();
-
-	LoadAllTextures();
 }
 
 void DisplayChunk::InitTerrainLayers(int numLayers)
@@ -101,6 +111,8 @@ void DisplayChunk::InitTerrainLayers(int numLayers)
 	for (int i = 0; i < numLayers; i++)
 	{
 		TerrainType t;
+		t.texture_diffuse = m_texture_diffuse;
+
 		m_terrains.push_back(t);
 	}
 }
@@ -186,12 +198,21 @@ void DisplayChunk::SaveHeightMap()
 
 void DisplayChunk::SaveAllTextures()
 {
-	SaveTexture("database/terrain.csv", m_terrain);
+	for (int i = 0; i < m_terrains.size(); i++)
+	{
+		std::string path = "database/terrain";
+		path += std::to_string(i);
+		path += ".csv";
+
+		SaveTexture(path, m_terrains[i].terrain, m_terrains[i].texPath);
+	}
 }
 
-void DisplayChunk::SaveTexture(std::string path, std::vector<std::pair<int, int>> inTerrain)
+void DisplayChunk::SaveTexture(std::string filePath, std::vector<std::pair<int, int>> inTerrain, std::string texPath)
 {
-	std::ofstream f(path);
+	std::ofstream f(filePath);
+
+	f << texPath << "\n";
 
 	for (int i = 0; i < inTerrain.size(); i++)
 	{
@@ -204,50 +225,55 @@ void DisplayChunk::SaveTexture(std::string path, std::vector<std::pair<int, int>
 
 void DisplayChunk::LoadAllTextures()
 {
-	LoadTexture("database/terrain.csv", m_terrain);
+	for (int i = 0; i < m_terrains.size(); i++)
+	{
+		std::string path = "database/terrain";
+		path += std::to_string(i);
+		path += ".csv";
+
+		LoadTexture(path, m_terrains[i].terrain, m_terrains[i].texPath);
+	}
 }
 
-void DisplayChunk::LoadTexture(std::string path, std::vector<std::pair<int, int>>& inTerrain)
+void DisplayChunk::LoadTexture(std::string filePath, std::vector<std::pair<int, int>>& inTerrain, std::string &texPath)
 {
-	std::ifstream f(path);
+	std::ifstream f(filePath);
+	bool bDoOnce = true; // DoOnce to read the top line of the file.
 
 	std::string line;
 	while (std::getline(f, line))
 	{
 		std::pair<int, int> p; // current row/column
+		std::string s;
 		
-		while (getline(f, line)) //Read the file line by line
-		{
 			std::stringstream ss(line);
-			
-			//Cell Row
-			std::string x;
-			getline(ss, x, ',');
-			std::stringstream(x) >> p.first;
-			
-			//Cell Column
-			std::string y;
-			getline(ss, y);
-			std::stringstream(y) >> p.second;
 
-			inTerrain.push_back(p);
-		}
+			if (bDoOnce)
+			{
+				bDoOnce = false;
+
+				std::string x;
+				getline(ss, x);
+				std::stringstream(x) >> s;
+
+				texPath = s;
+			}
+			else
+			{
+				std::string x;
+				getline(ss, x, ',');
+				std::stringstream(x) >> p.first;
+
+			
+				std::string y;
+				getline(ss, y);
+				std::stringstream(y) >> p.second;
+
+				inTerrain.push_back(p);
+			}
 	}
 
 	f.close();
-	
-	for (int i = 0; i < path.size(); i++)
-	{
-		if (path[i] == '.')
-		{
-			path.insert(i, "l");
-			break;
-		}
-	}
-
-	std::ofstream outF(path);
-	outF << path;
-	outF.close();
 }
 
 void DisplayChunk::UpdateTerrain()
@@ -320,9 +346,47 @@ void DisplayChunk::CalculateTerrainNormals()
 	}
 }
 
-void DisplayChunk::PaintTerrain(int row, int column)
+void DisplayChunk::PaintTerrain(int row, int column, bool add)
 {
-	m_terrain.push_back(std::pair<int, int>(row, column));
+	if (add)
+	{
+		//If this terrain isnt already painted on with this texture layer
+		if(!CheckTerrainDuplicates(row, column))
+		m_terrains[m_terrainIndex].terrain.push_back(std::pair<int, int>(row, column));
+	}
+	else
+	{
+		RemoveTerrain(row, column);
+	}
+}
+
+bool DisplayChunk::CheckTerrainDuplicates(int row, int column)
+{
+	for (int i = 0; i < m_terrains[m_terrainIndex].terrain.size(); i++)
+	{
+		if (m_terrains[m_terrainIndex].terrain[i].first == row && m_terrains[m_terrainIndex].terrain[i].second == column)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void DisplayChunk::RemoveTerrain(int row, int column)
+{
+	for (int i = 0; i < m_terrains[m_terrainIndex].terrain.size(); i++)
+	{
+		if (m_terrains[m_terrainIndex].terrain[i].first == row && m_terrains[m_terrainIndex].terrain[i].second == column)
+		{
+			m_terrains[m_terrainIndex].terrain.erase(m_terrains[m_terrainIndex].terrain.begin() + i);
+		}
+	}
+}
+
+void DisplayChunk::DeleteLayer()
+{
+	m_terrains[m_terrainIndex].terrain.clear();
 }
 
 void DisplayChunk::SavePrevHeightmap()
@@ -337,11 +401,6 @@ void DisplayChunk::SavePrevHeightmap()
 			m_prevHeightMap[index] = m_terrainGeometry[i][j].position.y / m_terrainHeightScale;
 		}
 	}
-}
-
-void DisplayChunk::SavePrevTerrainTexture()
-{
-	m_prevTerrain = m_terrain;
 }
 
 void DisplayChunk::HeightmapUndo()
@@ -361,9 +420,16 @@ void DisplayChunk::HeightmapUndo()
 	CalculateTerrainNormals();
 }
 
+void DisplayChunk::SavePrevTerrainTexture()
+{
+	//m_prevTerrain = m_terrain;
+	m_prevTerrains = m_terrains;
+}
+
 void DisplayChunk::TerrainPaintUndo()
 {
-	m_terrain = m_prevTerrain;
+	//m_terrain = m_prevTerrain;
+	m_terrains = m_prevTerrains;	
 }
 
 void DisplayChunk::DrawTerrain(std::vector<std::pair<int, int>> inTerrain)
@@ -379,10 +445,11 @@ void DisplayChunk::DrawTerrain(std::vector<std::pair<int, int>> inTerrain)
 	}
 }
 
-void DisplayChunk::SetTerrainLayerTexture(ID3D11ShaderResourceView * texture, int texIndex)
+void DisplayChunk::SetTerrainLayerTexture(ID3D11ShaderResourceView * texture, std::string texPath, int texIndex)
 {
 	m_terrains[m_terrainIndex].texture_diffuse = texture;
 	m_terrains[m_terrainIndex].texIndex = texIndex;
+	m_terrains[m_terrainIndex].texPath = texPath;
 }
 
 void DisplayChunk::SetTerrainLayerTerrain(std::vector<std::pair<int, int>> terrain)

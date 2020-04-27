@@ -19,6 +19,7 @@ struct TerrainType
 	std::vector<std::pair<int, int>>	terrain;
 	ID3D11ShaderResourceView *			texture_diffuse;
 	int									texIndex;
+	std::string							texPath;
 };
 
 class DisplayChunk
@@ -45,7 +46,10 @@ public:
 	inline void SetTerrainGeometryPosition(int row, int column, DirectX::SimpleMath::Vector3 p) {m_terrainGeometry[row][column].position = p; }
 	inline DirectX::XMFLOAT3 GetTerrainGeometryPosition(int row, int column) { return m_terrainGeometry[row][column].position; }
 
-	void PaintTerrain(int row, int column);
+	void PaintTerrain(int row, int column, bool add);
+	bool CheckTerrainDuplicates(int row, int column);
+	void RemoveTerrain(int row, int column);
+	void DeleteLayer();
 
 	void SavePrevHeightmap();
 	void SavePrevTerrainTexture();
@@ -53,17 +57,15 @@ public:
 	void CalculateTerrainNormals();
 
 	void SaveAllTextures();
-	void SaveTexture(std::string path, std::vector<std::pair<int, int>> inTerrain); //saves the textures to file.
+	void SaveTexture(std::string filePath, std::vector<std::pair<int, int>> inTerrain, std::string texPath); //saves the textures to file.
 	void LoadAllTextures();
-	void LoadTexture(std::string path, std::vector<std::pair<int, int>> &inTerrain);
+	void LoadTexture(std::string filePath, std::vector<std::pair<int, int>> &inTerrain, std::string &texPath);
 	void HeightmapUndo();
 	void TerrainPaintUndo();
 
 	void DrawTerrain(std::vector<std::pair<int, int>> inTerrain);
 
-	ID3D11ShaderResourceView*	m_terrainPaintDiffuse;
-
-	void SetTerrainLayerTexture(ID3D11ShaderResourceView* texture, int texIndex);
+	void SetTerrainLayerTexture(ID3D11ShaderResourceView* texture, std::string texPath, int texIndex);
 	void SetTerrainLayerTerrain(std::vector<std::pair<int, int>> terrain);
 	void SetTerrainLayerIndex(int index);
 	inline int GetTerrainLayerIndex() { return m_terrainIndex; }
@@ -73,13 +75,8 @@ public:
 	std::vector<TerrainType> m_prevTerrains;
 
 private:
-	
-	std::vector<std::pair<int, int>> m_terrain;
-	std::vector<std::pair<int, int>> m_prevTerrain;
 
 	int m_terrainIndex = 0;
-
-
 
 	DirectX::VertexPositionNormalTexture m_terrainGeometry[TERRAINRESOLUTION][TERRAINRESOLUTION];
 

@@ -40,6 +40,7 @@ public: //methods
 	void SavePreviousHeightmap();
 	void UndoHeightmapChanges();
 
+	void DeleteCurrentTextureLayer();
 	void LoadTextureToPaint(std::string inPath, int texIndex);
 	void SaveTerrainTextures();
 	void SavePreviousTerrainTextures();

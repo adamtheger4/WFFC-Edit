@@ -382,11 +382,8 @@ void MouseTool::TerrainToolLogic(Ray in_ray)
 		}
 
 		else if (m_terrainTool->m_terrainSculptMode = TerrainSculptMode::Paint) // If tool is in vertex Paint mode
-		{
-			if (x != m_prevX || y != m_prevY) // only update the mouse terrain position if the mouse moves.
-			{
-				m_terrainTool->mouseTerrainManipReturn = m_d3dRenderer->RayToDisplayChunkCollision(in_ray);
-			}
+		{	
+			m_terrainTool->mouseTerrainManipReturn = m_d3dRenderer->RayToDisplayChunkCollision(in_ray);
 
 			if (m_terrainTool->mouseTerrainManipReturn.did_hit) // if the mouse hit a tri on the terrain.
 			{
@@ -394,7 +391,7 @@ void MouseTool::TerrainToolLogic(Ray in_ray)
 				std::vector<Quad> quads1 = m_d3dRenderer->BoxToQuads(m_terrainTool->mouseTerrainManipReturn.hit_location, DirectX::XMFLOAT3{ 0.2f, 0.2f, 0.2f });
 				m_d3dRenderer->m_terrainToolCursor = quads1;
 
-				m_d3dRenderer->PaintTerrain(m_terrainTool->mouseTerrainManipReturn.row, m_terrainTool->mouseTerrainManipReturn.column);
+				m_d3dRenderer->PaintTerrain(m_terrainTool->mouseTerrainManipReturn.row, m_terrainTool->mouseTerrainManipReturn.column, m_terrainTool->GetPaintType());
 			}
 		}
 	}

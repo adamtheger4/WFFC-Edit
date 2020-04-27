@@ -451,8 +451,10 @@ void ToolMain::UpdateInput(MSG * msg)
 		else if (m_keyArray[17]) // L CTRL
 		{
 			m_terrainTool.SetSculptType(VertexSculptType::Dig);
+			m_terrainTool.SetPaintType(VertexPaintType::RemovePaint);
 		}
-		else  m_terrainTool.SetSculptType(VertexSculptType::Add);
+		else  m_terrainTool.SetSculptType(VertexSculptType::Raise),
+			  m_terrainTool.SetPaintType(VertexPaintType::AddPaint);
 	}
 	else //Controls when no tools active.
 	{
@@ -572,7 +574,7 @@ void ToolMain::UpdateTerrainText()
 	}
 	else if (m_terrainTool.m_terrainSculptMode == TerrainSculptMode::Paint)
 	{
-	
+		m_d3dRenderer.debug1 = m_terrainTool.GetPaintType();
 	}
 }
 
@@ -589,6 +591,11 @@ void ToolMain::SavePreviousHeightmap()
 void ToolMain::UndoHeightmapChanges()
 {
 	m_d3dRenderer.UndoHeightmapChanges();
+}
+
+void ToolMain::DeleteCurrentTextureLayer()
+{
+	m_d3dRenderer.DeleteCurrentTextureLayer();
 }
 
 void ToolMain::LoadTextureToPaint(std::string inPath, int texIndex)
