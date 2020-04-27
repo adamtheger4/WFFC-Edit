@@ -349,10 +349,10 @@ void MouseTool::TerrainToolLogic(Ray in_ray)
 			}
 
 			//Clicking Terrain
-			//if (x != m_prevX || y != m_prevY) // only update the mouse terrain position if the mouse moves.
-			//{
+			if (x != m_prevX || y != m_prevY) // only update the mouse terrain position if the mouse moves.
+			{
 				m_terrainTool->mouseTerrainManipReturn = m_d3dRenderer->RayToDisplayChunkCollision(in_ray);
-			//}
+			}
 
 			if (m_terrainTool->mouseTerrainManipReturn.did_hit) // if the mouse hit a tri on the terrain.
 			{

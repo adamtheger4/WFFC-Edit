@@ -1,20 +1,12 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(391,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Win32SimpleSample.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  DisplayChunk.cpp
-c:\users\adamt\documents\github\wffc-edit\woffcedit\displaychunk.cpp(16): warning C4305: '=': truncation from 'double' to 'float'
-c:\users\adamt\documents\github\wffc-edit\woffcedit\displaychunk.cpp(17): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\displaychunk.cpp(88): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\displaychunk.cpp(110): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(205): note: see declaration of 'fopen'
-c:\users\adamt\documents\github\wffc-edit\woffcedit\displaychunk.cpp(165): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(205): note: see declaration of 'fopen'
-c:\users\adamt\documents\github\wffc-edit\woffcedit\displaychunk.cpp(188): warning C4018: '<': signed/unsigned mismatch
-c:\users\adamt\documents\github\wffc-edit\woffcedit\displaychunk.cpp(231): warning C4018: '<': signed/unsigned mismatch
-c:\users\adamt\documents\github\wffc-edit\woffcedit\displaychunk.cpp(270): warning C4244: '=': conversion from 'float' to 'BYTE', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\displaychunk.cpp(291): warning C4101: 'index4': unreferenced local variable
-c:\users\adamt\documents\github\wffc-edit\woffcedit\displaychunk.cpp(291): warning C4101: 'index2': unreferenced local variable
-c:\users\adamt\documents\github\wffc-edit\woffcedit\displaychunk.cpp(291): warning C4101: 'index3': unreferenced local variable
-c:\users\adamt\documents\github\wffc-edit\woffcedit\displaychunk.cpp(291): warning C4101: 'index1': unreferenced local variable
-c:\users\adamt\documents\github\wffc-edit\woffcedit\displaychunk.cpp(329): warning C4244: '=': conversion from 'float' to 'BYTE', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\displaychunk.cpp(348): warning C4244: '=': conversion from 'float' to 'BYTE', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\displaychunk.cpp(363): warning C4018: '<': signed/unsigned mismatch
+  Game.cpp
+c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(192): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(191): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(190): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(268): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(225): warning C4101: 'Buffer': unreferenced local variable
+c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(371): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(420): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(722): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(724): warning C4018: '<': signed/unsigned mismatch
   Win32SimpleSample.vcxproj -> C:\Users\adamt\Documents\GitHub\WFFC-Edit\WOFFCEdit\Debug\WoFEdit.exe

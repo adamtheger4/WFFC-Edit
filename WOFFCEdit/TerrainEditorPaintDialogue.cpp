@@ -165,6 +165,14 @@ void TerrainEditorPaintDialogue::SetData()
 		m_ctlCheck1->SetCheck(0);
 	}
 
+	//roll through all the textures and put an entry for each in the listbox
+	int numTextures = m_toolMain->m_terrainTool.m_terrainTexturePaths.GetSize();
+
+	for (int i = 0; i < numTextures; i++)
+	{
+		m_listBox.AddString(m_toolMain->m_terrainTool.m_terrainTexturePaths.GetAt(i));
+	}
+
 	m_toolMain->windowOpen = true;
 }
 
@@ -227,8 +235,21 @@ void TerrainEditorPaintDialogue::OnDeltaSpin1(NMHDR *pNMHDR, LRESULT *pResult)
 
 void TerrainEditorPaintDialogue::OnLbnSelchangeTexlist()
 {
-	// TODO: Add your control notification handler code here
-	CListBox *m_listBox = (CListBox*)GetDlgItem(IDC_TEXLIST);
+	int index = m_listBox.GetCurSel();
 
+	CString currentSelectionValue;
 
+	m_listBox.GetText(index, currentSelectionValue);
+
+	//Append the directory to the selected file.
+	CString cs = "database/data/terraintextures/" + currentSelectionValue;
+
+	// Convert a TCHAR string to a LPCSTR
+	CT2CA ConvertedAnsiString(cs);
+
+	// construct a std::string using the LPCSTR input
+	std::string s(ConvertedAnsiString);
+
+	m_toolMain->m_terrainTool.m_paintTexturePath = s;
+	m_toolMain->LoadTextureToPaint(s);
 }

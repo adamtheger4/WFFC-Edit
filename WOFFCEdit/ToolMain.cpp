@@ -44,6 +44,8 @@ void ToolMain::onActionInitialise(HWND handle, int width, int height)
 	m_toolHandle = handle;
 	GetWindowRect(m_toolHandle, &WindowRECT);
 
+	//m_terrainTool.LoadAllTexturePaths();
+
 	//database connection establish
 	int rc;
 	rc = sqlite3_open_v2("database/test.db",&m_databaseConnection, SQLITE_OPEN_READWRITE, NULL);
@@ -72,6 +74,8 @@ void ToolMain::onActionLoad()
 	{
 		m_gameGraph.clear();
 	}
+
+	m_terrainTool.LoadAllTexturePaths();
 
 	//SQL
 	int rc;
@@ -586,8 +590,9 @@ void ToolMain::UndoHeightmapChanges()
 	m_d3dRenderer.UndoHeightmapChanges();
 }
 
-void ToolMain::LoadTextureLocations()
+void ToolMain::LoadTextureToPaint(std::string inPath)
 {
+	m_d3dRenderer.LoadTextureToPaint(inPath);
 }
 
 void ToolMain::SaveTerrainTextures()

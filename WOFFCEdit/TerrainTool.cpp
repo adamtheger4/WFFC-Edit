@@ -12,3 +12,33 @@ TerrainTool::TerrainTool()
 TerrainTool::~TerrainTool()
 {
 }
+
+void TerrainTool::LoadAllTexturePaths()
+{
+	CFileFind finder;
+
+	// start working for files
+	BOOL bFind = finder.FindFile(_T("database/data/terraintextures/*.dds"));
+
+	while (bFind)
+	{
+		bFind = finder.FindNextFile();
+
+		if (finder.IsDots())
+			continue;
+
+		if (finder.IsDirectory())
+		{
+			//wprintf(_T("[%s]\n"), finder.GetFileName());
+
+			m_terrainTexturePaths.Add(finder.GetFileName());
+
+			//m_terrainTexturePaths.Add(s);
+		}
+		else
+			m_terrainTexturePaths.Add(finder.GetFileName());
+			//wprintf(_T("%s\n"), finder.GetFileName());
+	}
+
+	finder.Close();
+}

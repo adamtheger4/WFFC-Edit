@@ -69,7 +69,6 @@ public:
 
 	ID3D11ShaderResourceView* LoadTextureToPaint(std::string inTexturePath);
 
-
 	//Save/Undo changes made by terrain tool.
 	void UpdateDisplayChunkNormals();
 	void SaveHeightmap();

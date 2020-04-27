@@ -1,4 +1,5 @@
 #pragma once
+#include <afxext.h>
 #include "pch.h"
 #include "DisplayChunk.h"
 
@@ -47,9 +48,11 @@ public:
 	inline void SetEnable(bool do_enable) { Enabled = do_enable; }
 	inline void SetSculptType(VertexSculptType sculptType) { m_sculptType = sculptType; }
 	inline void SetManipulationOffset (DirectX::XMFLOAT3 offset){ manipulationOffset = offset; }
+;
+	void LoadAllTexturePaths();
 
-	std::string m_paintTexturePath = "database/data/rock.dds";
-
+	std::string m_paintTexturePath = "database/data/terraintextures/rock.dds";
+	CStringArray   m_terrainTexturePaths;
 
 private:
 

@@ -56,7 +56,7 @@ void Game::Initialize(HWND window, int width, int height)
     m_deviceResources->CreateWindowSizeDependentResources();
     CreateWindowSizeDependentResources();
 
-	m_displayChunk.m_terrainPaintDiffuse = LoadTextureToPaint("database/data/rock.dds");
+	m_displayChunk.m_terrainPaintDiffuse = LoadTextureToPaint("database/data/terraintextures/rock.dds");
 
 #ifdef DXTK_AUDIO
     // Create DirectXTK for Audio objects
@@ -438,6 +438,8 @@ ID3D11ShaderResourceView*  Game::LoadTextureToPaint(std::string inTexturePath)
 	std::wstring texturewstr = StringToWCHART(inTexturePath);
 	HRESULT rs;
 	rs = CreateDDSTextureFromFile(m_deviceResources->GetD3DDevice(), texturewstr.c_str(), NULL, &texture);	//load tex into Shader resource	view and resource
+
+	m_displayChunk.m_terrainPaintDiffuse = texture;
 
 	return texture;
 }

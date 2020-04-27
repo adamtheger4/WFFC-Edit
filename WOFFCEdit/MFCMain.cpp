@@ -144,9 +144,9 @@ void MFCMain::OpenTerrainVertexDialogue()
 void MFCMain::OpenTerrainPaintDialogue()
 {
 	m_TerrainEditorPaintDialogue.Create(IDD_DIALOG5);	//Start up modeless
+	m_TerrainEditorPaintDialogue.ShowWindow(SW_SHOW);	//show modeless
 	m_TerrainEditorPaintDialogue.SetText();
 	m_TerrainEditorPaintDialogue.SetData();
-	m_TerrainEditorPaintDialogue.ShowWindow(SW_SHOW);	//show modeless
 
 	m_ToolSystem.windowOpen = true;
 }
