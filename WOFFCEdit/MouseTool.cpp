@@ -432,33 +432,35 @@ void MouseTool::CamControls()
 		{
 			std::vector<int> rotate{ 0, 0 };
 
+			int center_x = m_windowRECT.CenterPoint().x - m_windowRECT.TopLeft().x - 2;
+			int center_y = m_windowRECT.CenterPoint().y - m_windowRECT.TopLeft().y - 2;
 			if (m_d3dRenderer->m_camera.m_arcBallMovement == false)
 			{
-				if (x + 113 > m_windowRECT.CenterPoint().x)
+				if (x  > center_x)
 				{
 					m_toolInputCommands->rotRight = true;
-					rotate[0] = std::abs(m_windowRECT.CenterPoint().x - (x + 113));
+					rotate[0] = std::abs(center_x - x);
 				}
 				else m_toolInputCommands->rotRight = false;
 
-				if (x + 113 < m_windowRECT.CenterPoint().x)
+				if (x  < center_x)
 				{
 					m_toolInputCommands->rotLeft = true;
-					rotate[0] = std::abs(m_windowRECT.CenterPoint().x - (x + 113));
+					rotate[0] = std::abs(center_x - x);
 				}
 				else  m_toolInputCommands->rotLeft = false;
 
-				if (y + 191 < m_windowRECT.CenterPoint().y)
+				if (y  < center_y)
 				{
 					m_toolInputCommands->rotUp = true;
-					rotate[1] = std::abs(m_windowRECT.CenterPoint().y - (y + 191));
+					rotate[1] = std::abs(center_y - y);
 				}
 				else m_toolInputCommands->rotUp = false;
 
-				if (y + 191 > m_windowRECT.CenterPoint().y)
+				if (y  > center_y)
 				{
 					m_toolInputCommands->rotDown = true;
-					rotate[1] = std::abs(m_windowRECT.CenterPoint().y - (y + 191));
+					rotate[1] = std::abs(center_y - y);
 				}
 				else m_toolInputCommands->rotDown = false;
 			}
@@ -493,6 +495,7 @@ void MouseTool::CamControls()
 				else m_toolInputCommands->down = false;
 			}
 
+			m_d3dRenderer->debug3 = m_windowRECT.CenterPoint().x - m_windowRECT.TopLeft().x;
 			m_toolInputCommands->camRotateX = rotate[0];
 			m_toolInputCommands->camRotateY = rotate[1];
 		}

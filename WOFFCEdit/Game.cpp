@@ -115,7 +115,7 @@ void Game::Update(DX::StepTimer const& timer)
 {
 	m_view = m_camera.Update(m_dt, m_InputCommands);
 
-	debug3 = m_camera.m_camLookDirection.y;
+	//debug3 = m_camera.m_camLookDirection.y;
 
     m_batchEffect->SetView(m_view);
     m_batchEffect->SetWorld(Matrix::Identity);
@@ -280,8 +280,8 @@ void Game::Render()
 	}
 
 
-	//std::wstring DebugT = L"Debug: " + std::to_wstring(debug3);
-	//m_font->DrawString(m_sprites.get(), DebugT.c_str(), XMFLOAT2(580, 120), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
+	std::wstring DebugT = L"Debug: " + std::to_wstring(debug3);
+	m_font->DrawString(m_sprites.get(), DebugT.c_str(), XMFLOAT2(580, 120), Colors::Yellow, 0.0f, DirectX::XMFLOAT2{ 0.0f, 0.0f }, 0.70f);
 
 	m_sprites->End();
 

@@ -1,13 +1,79 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(391,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Win32SimpleSample.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  Game.cpp
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(190): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(189): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(188): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(271): warning C4018: '<': signed/unsigned mismatch
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(223): warning C4101: 'Buffer': unreferenced local variable
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(374): warning C4018: '<': signed/unsigned mismatch
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(423): warning C4018: '<': signed/unsigned mismatch
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(740): warning C4018: '<': signed/unsigned mismatch
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(742): warning C4018: '<': signed/unsigned mismatch
-c:\users\adamt\documents\github\wffc-edit\woffcedit\game.cpp(943): warning C4018: '<': signed/unsigned mismatch
+  MouseTool.cpp
+  _WIN32_WINNT not defined. Defaulting to _WIN32_WINNT_MAXVER (see WinSDKVer.h)
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(112): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(122): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(136): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(148): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(164): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(174): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(192): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(202): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(212): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(230): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(240): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(253): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(263): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(276): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(286): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(323): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(327): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(331): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(442): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(449): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(456): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(463): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(472): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(479): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(486): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(493): warning C4244: '=': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(498): warning C4244: '=': conversion from 'LONG' to 'float', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(499): warning C4244: '=': conversion from '_Ty' to 'float', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(500): warning C4244: '=': conversion from '_Ty' to 'float', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(543): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(645): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(649): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(653): warning C4018: '<': signed/unsigned mismatch
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(669): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\adamt\documents\github\wffc-edit\woffcedit\mousetool.cpp(672): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   Win32SimpleSample.vcxproj -> C:\Users\adamt\Documents\GitHub\WFFC-Edit\WOFFCEdit\Debug\WoFEdit.exe

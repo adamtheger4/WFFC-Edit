@@ -304,6 +304,8 @@ void ToolMain::onActionSaveTerrain()
 
 void ToolMain::Tick(MSG *msg)
 {
+	GetWindowRect(m_toolHandle, &WindowRECT);
+
 	m_mouseTool.Update(msg, WindowRECT);
 
 	//Renderer Update Call
